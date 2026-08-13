@@ -655,3 +655,316 @@ html { scrollbar-width: thin; scrollbar-color: #d8c9a6 #f1ead8; }
   .mushaf-page { box-shadow: none; outline: 1px solid #b8902f; }
   body { background: #fff; }
 }
+/* ============================================================
+   12. UNIVERSAL PHONE RESPONSIVE — جميع أحجام الهواتف
+   ============================================================ */
+
+/* === الهواتف الصغيرة جداً (أقل من 280px) === */
+@media (max-width: 279.98px) {
+  html { font-size: 9px; }
+  .container-responsive, .container {
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+  }
+  h1 { font-size: 1rem !important; }
+  h2 { font-size: 0.85rem !important; }
+  h3 { font-size: 0.75rem !important; }
+  p, span, div { font-size: 0.6rem !important; }
+  .btn-primary, .btn-ghost {
+    padding: 2px 4px !important;
+    font-size: 0.5rem !important;
+    min-height: 24px !important;
+    border-radius: 4px !important;
+  }
+  .card, .card-warm {
+    padding: 4px !important;
+    border-radius: 4px !important;
+    margin: 2px 0 !important;
+  }
+  .mushaf-page { padding: 4px !important; }
+  .mushaf-text { font-size: 0.6rem !important; }
+  .intro-verse { font-size: 0.7rem !important; }
+  .enter-btn { width: 48px !important; height: 48px !important; }
+}
+
+/* === الهواتف صغيرة جداً (280px - 319px) === */
+@media (min-width: 280px) and (max-width: 319.98px) {
+  html { font-size: 10px; }
+  .container-responsive, .container {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+  h1 { font-size: 1.1rem !important; }
+  h2 { font-size: 0.95rem !important; }
+  h3 { font-size: 0.85rem !important; }
+  p, span, div { font-size: 0.7rem !important; }
+  .btn-primary, .btn-ghost {
+    padding: 4px 6px !important;
+    font-size: 0.55rem !important;
+    min-height: 28px !important;
+    border-radius: 6px !important;
+  }
+  .card, .card-warm {
+    padding: 6px !important;
+    border-radius: 6px !important;
+    margin: 3px 0 !important;
+  }
+  .mushaf-page { padding: 4px !important; }
+  .mushaf-text { font-size: 0.65rem !important; }
+  .intro-verse { font-size: 0.8rem !important; }
+  .enter-btn { width: 56px !important; height: 56px !important; }
+  .grid-cols-2 { grid-template-columns: 1fr 1fr !important; gap: 4px !important; }
+  .grid-cols-3 { grid-template-columns: 1fr 1fr !important; gap: 4px !important; }
+  .grid-cols-4 { grid-template-columns: 1fr 1fr !important; gap: 4px !important; }
+}
+
+/* === الهواتف الصغيرة (320px - 359px) === */
+@media (min-width: 320px) and (max-width: 359.98px) {
+  html { font-size: 11px; }
+  .container-responsive, .container {
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+  }
+  h1 { font-size: 1.2rem !important; }
+  h2 { font-size: 1rem !important; }
+  h3 { font-size: 0.9rem !important; }
+  p, span, div { font-size: 0.75rem !important; }
+  .btn-primary, .btn-ghost {
+    padding: 6px 8px !important;
+    font-size: 0.6rem !important;
+    min-height: 32px !important;
+    border-radius: 8px !important;
+  }
+  .card, .card-warm {
+    padding: 8px !important;
+    border-radius: 8px !important;
+    margin: 4px 0 !important;
+  }
+  .mushaf-page { padding: 4px !important; }
+  .mushaf-text { font-size: 0.7rem !important; }
+  .intro-verse { font-size: 0.85rem !important; }
+  .enter-btn { width: 64px !important; height: 64px !important; }
+  .grid-cols-2 { grid-template-columns: 1fr 1fr !important; gap: 4px !important; }
+  .grid-cols-3 { grid-template-columns: 1fr 1fr !important; gap: 4px !important; }
+  .grid-cols-4 { grid-template-columns: 1fr 1fr !important; gap: 4px !important; }
+}
+
+/* === الهواتف المتوسطة الصغيرة (360px - 399px) === */
+@media (min-width: 360px) and (max-width: 399.98px) {
+  html { font-size: 12px; }
+  .container-responsive, .container {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+  h1 { font-size: 1.4rem !important; }
+  h2 { font-size: 1.1rem !important; }
+  h3 { font-size: 0.95rem !important; }
+  p, span, div { font-size: 0.8rem !important; }
+  .btn-primary, .btn-ghost {
+    padding: 8px 10px !important;
+    font-size: 0.65rem !important;
+    min-height: 36px !important;
+    border-radius: 10px !important;
+  }
+  .card, .card-warm {
+    padding: 10px !important;
+    border-radius: 10px !important;
+    margin: 6px 0 !important;
+  }
+  .mushaf-page { padding: 6px !important; }
+  .mushaf-text { font-size: 0.75rem !important; }
+  .intro-verse { font-size: 0.9rem !important; }
+  .enter-btn { width: 72px !important; height: 72px !important; }
+  .grid-cols-2 { grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
+  .grid-cols-3 { grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
+  .grid-cols-4 { grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
+}
+
+/* === الهواتف المتوسطة (400px - 479px) === */
+@media (min-width: 400px) and (max-width: 479.98px) {
+  html { font-size: 13px; }
+  .container-responsive, .container {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+  h1 { font-size: 1.6rem !important; }
+  h2 { font-size: 1.3rem !important; }
+  h3 { font-size: 1.05rem !important; }
+  p, span, div { font-size: 0.85rem !important; }
+  .btn-primary, .btn-ghost {
+    padding: 10px 14px !important;
+    font-size: 0.7rem !important;
+    min-height: 40px !important;
+    border-radius: 12px !important;
+  }
+  .card, .card-warm {
+    padding: 12px !important;
+    border-radius: 12px !important;
+    margin: 8px 0 !important;
+  }
+  .mushaf-page { padding: 8px !important; }
+  .mushaf-text { font-size: 0.8rem !important; }
+  .intro-verse { font-size: 1rem !important; }
+  .enter-btn { width: 80px !important; height: 80px !important; }
+  .grid-cols-2 { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+  .grid-cols-3 { grid-template-columns: 1fr 1fr 1fr !important; gap: 8px !important; }
+  .grid-cols-4 { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+}
+
+/* === الهواتف الكبيرة (480px - 639px) === */
+@media (min-width: 480px) and (max-width: 639.98px) {
+  html { font-size: 14px; }
+  .container-responsive, .container {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+  h1 { font-size: 1.8rem !important; }
+  h2 { font-size: 1.5rem !important; }
+  h3 { font-size: 1.15rem !important; }
+  p, span, div { font-size: 0.9rem !important; }
+  .btn-primary, .btn-ghost {
+    padding: 12px 18px !important;
+    font-size: 0.8rem !important;
+    min-height: 44px !important;
+    border-radius: 14px !important;
+  }
+  .card, .card-warm {
+    padding: 14px !important;
+    border-radius: 14px !important;
+    margin: 10px 0 !important;
+  }
+  .mushaf-page { padding: 10px !important; }
+  .mushaf-text { font-size: 0.85rem !important; }
+  .intro-verse { font-size: 1.1rem !important; }
+  .enter-btn { width: 88px !important; height: 88px !important; }
+  .grid-cols-2 { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+  .grid-cols-3 { grid-template-columns: 1fr 1fr 1fr !important; gap: 10px !important; }
+  .grid-cols-4 { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+}
+
+/* ============================================================
+   13. تحسينات إضافية للهواتف الطويلة (20:9, 21:9)
+   ============================================================ */
+
+@media (min-aspect-ratio: 19/9) and (max-width: 480px) {
+  /* هواتف INFINIX و Samsung الطويلة */
+  .hero-section { padding-top: 0.5rem !important; }
+  .hero-section h1 { font-size: 1.4rem !important; }
+  .hero-section p { font-size: 0.75rem !important; }
+  .space-y-24 { space-y: 1rem !important; }
+  .mt-12 { margin-top: 0.5rem !important; }
+  .mt-6 { margin-top: 0.25rem !important; }
+  .pt-8 { padding-top: 0.25rem !important; }
+  .pb-8 { padding-bottom: 0.25rem !important; }
+  .card { padding: 8px !important; }
+  .btn-primary, .btn-ghost { 
+    padding: 6px 10px !important;
+    font-size: 0.6rem !important;
+    min-height: 32px !important;
+  }
+}
+
+/* ============================================================
+   14. تحسينات للوضع الليلي على جميع الأجهزة
+   ============================================================ */
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #fdfcf8 !important;
+    color: #2a2723 !important;
+  }
+  .card, .card-warm {
+    background: #ffffff !important;
+    border-color: rgba(184, 144, 47, 0.14) !important;
+  }
+  .mushaf-page {
+    background: radial-gradient(120% 90% at 50% 0%, #fffefb 0%, #fcf8ee 55%, #f7f0e0 100%) !important;
+  }
+  .btn-ghost {
+    background: #ffffff !important;
+    border-color: rgba(184, 144, 47, 0.25) !important;
+  }
+  input, select, textarea {
+    background: #ffffff !important;
+    color: #2a2723 !important;
+  }
+}
+
+/* ============================================================
+   15. تحسينات للمستخدمين الذين يفضلون التباين العالي
+   ============================================================ */
+
+@media (prefers-contrast: high) {
+  .card, .card-warm {
+    border: 2px solid #2a2723 !important;
+  }
+  .btn-primary {
+    background: #b8902f !important;
+    color: #ffffff !important;
+    border: 2px solid #2a2723 !important;
+  }
+  .btn-ghost {
+    background: #ffffff !important;
+    border: 2px solid #2a2723 !important;
+    color: #2a2723 !important;
+  }
+  .gold-text {
+    color: #b8902f !important;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    background-clip: unset !important;
+  }
+}
+
+/* ============================================================
+   16. كلاسات مساعدة إضافية
+   ============================================================ */
+
+/* حاوية مرنة جداً */
+.container-fluid {
+  width: 100%;
+  max-width: 100%;
+  padding-left: max(env(safe-area-inset-left), 0.5rem);
+  padding-right: max(env(safe-area-inset-right), 0.5rem);
+}
+
+/* شبكة مرنة جداً */
+.grid-fluid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+  gap: clamp(4px, 1vw, 12px);
+}
+
+/* إخفاء العناصر على الهواتف الصغيرة جداً */
+.hide-ultra-mobile {
+  display: none !important;
+}
+@media (min-width: 360px) {
+  .hide-ultra-mobile {
+    display: block !important;
+  }
+}
+
+/* إظهار العناصر فقط على الهواتف الصغيرة جداً */
+.show-ultra-mobile {
+  display: block !important;
+}
+@media (min-width: 360px) {
+  .show-ultra-mobile {
+    display: none !important;
+  }
+}
+
+/* نصوص قابلة للتكيف تلقائياً */
+.text-auto {
+  font-size: clamp(0.6rem, 1.8vw, 1rem);
+  line-height: 1.5;
+}
+
+/* هوامش قابلة للتكيف تلقائياً */
+.m-auto {
+  margin: clamp(2px, 0.5vw, 8px) 0;
+}
+.p-auto {
+  padding: clamp(4px, 1vw, 12px);
+}
