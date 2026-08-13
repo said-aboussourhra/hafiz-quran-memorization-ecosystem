@@ -18,10 +18,22 @@ const FEATURES = [
 
 export default async function HomePage() {
   const user = await getCurrentUser();
-  const [universe, stats] = await Promise.all([
-    getUniverseData(user?.id ?? null),
-    getProgressStats(user?.id ?? null),
-  ]);
+  
+  // تجنب الأخطاء إذا لم يكن هناك مستخدم
+  let universe = [];
+  let stats = { completionPct: 0 };
+  
+  try {
+    const [universeData, progressStats] = await Promise.all([
+      getUniverseData(user?.id ?? null),
+      getProgressStats(user?.id ?? null),
+    ]);
+    universe = universeData || [];
+    stats = progressStats || { completionPct: 0 };
+  } catch (error) {
+    console.error("Error loading data:", error);
+    // استمرار مع البيانات الفارغة
+  }
 
   return (
     <div className="space-y-24">
@@ -65,9 +77,9 @@ export default async function HomePage() {
       <section className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         {[
           { v: "١١٤", l: "سورة كاملة" },
-          { v: TOTAL_AYAHS.toLocaleString("ar-EG"), l: "آية بالرسم العثماني" },
+          { v: TOTAL_AYAHS?.toLocaleString("ar-EG") || "٦٢٣٦", l: "آية بالرسم العثماني" },
           { v: "٣٠", l: "جزءاً" },
-          { v: user ? `${stats.completionPct}٪` : "ابدأ", l: user ? "نسبة إتمامك" : "رحلتك الآن" },
+          { v: user ? `${stats.completionPct || 0}٪` : "ابدأ", l: user ? "نسبة إتمامك" : "رحلتك الآن" },
         ].map((s) => (
           <div key={s.l} className="card rounded-2xl p-5 text-center">
             <div className="font-display text-2xl font-bold gold-text sm:text-3xl">{s.v}</div>
@@ -94,7 +106,7 @@ export default async function HomePage() {
           <p className="mx-auto mt-3 max-w-xl text-ink-500">آيات وأحاديث صحيحة تذكّرك بعظيم الأجر في كل حرف تقرؤه.</p>
         </div>
         <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {VIRTUES.slice(0, 6).map((v, i) => (
+          {VIRTUES && VIRTUES.slice(0, 6).map((v, i) => (
             <div key={i} className="relative overflow-hidden rounded-3xl card p-7">
               <span className="absolute -left-3 -top-5 text-7xl text-gold-500/10">”</span>
               <span className={`inline-block rounded-full px-3 py-1 text-[11px] font-semibold ${v.kind === "ayah" ? "bg-emerald-700/10 text-emerald-700" : "bg-gold-500/10 text-gold-600"}`}>
