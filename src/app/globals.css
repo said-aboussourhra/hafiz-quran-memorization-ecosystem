@@ -24,9 +24,25 @@
   color-scheme: light;
 }
 
-html { scroll-behavior: smooth; }
+/* ===== RESET & BASE ===== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
 body {
+  overflow-x: hidden;
+  width: 100%;
+  min-height: 100vh;
   background:
     radial-gradient(900px 600px at 85% -5%, rgba(184, 144, 47, 0.06), transparent 60%),
     radial-gradient(800px 600px at 5% 5%, rgba(31, 111, 92, 0.05), transparent 55%),
@@ -36,17 +52,20 @@ body {
   font-family: var(--font-ui);
 }
 
-::selection { background: rgba(184, 144, 47, 0.2); color: #2a2723; }
-
+/* ===== SCROLLBAR ===== */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: #f1ead8; }
 ::-webkit-scrollbar-thumb { background: #d8c9a6; border-radius: 999px; }
 ::-webkit-scrollbar-thumb:hover { background: #c4ad7e; }
 
+/* ===== SELECTION ===== */
+::selection { background: rgba(184, 144, 47, 0.2); color: #2a2723; }
+
+/* ===== TYPOGRAPHY ===== */
 .font-arabic { font-family: var(--font-arabic); }
 .font-display { font-family: var(--font-display); }
 
-/* ===== Surfaces ===== */
+/* ===== SURFACES ===== */
 .card {
   background: #ffffff;
   border: 1px solid rgba(184, 144, 47, 0.14);
@@ -87,7 +106,7 @@ body {
   background: linear-gradient(90deg, transparent, rgba(184,144,47,0.35), transparent);
 }
 
-/* ===== Sky/galaxy for universe (light) ===== */
+/* ===== SKY / GALAXY ===== */
 .sky {
   background:
     radial-gradient(60% 60% at 50% 45%, rgba(184,144,47,0.08), transparent 70%),
@@ -95,6 +114,7 @@ body {
     linear-gradient(180deg, #fbf7ee, #f4ecda);
 }
 
+/* ===== ANIMATIONS ===== */
 @keyframes twinkle { 0%,100%{opacity:.5;transform:scale(.92)} 50%{opacity:1;transform:scale(1.08)} }
 @keyframes pulseGlow { 0%,100%{box-shadow:0 0 6px 1px currentColor;opacity:.8} 50%{box-shadow:0 0 16px 4px currentColor;opacity:1} }
 @keyframes floaty { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
@@ -116,7 +136,7 @@ body {
 .star-node { border-radius:999px; transition: transform .25s ease, box-shadow .25s ease; }
 .star-node:hover { transform: scale(1.4); z-index:20; }
 
-/* Mushaf page styling */
+/* ===== MUSHAF ===== */
 .mushaf-frame {
   background:
     linear-gradient(180deg, #fffdf6, #fbf5e6);
@@ -134,7 +154,6 @@ body {
 .ayah-active { background: rgba(31,111,92,0.12); box-shadow: 0 0 0 1px rgba(31,111,92,0.25); }
 .ayah-playing { background: rgba(58,163,132,0.16); border-radius: 8px; box-shadow: 0 0 0 1px rgba(58,163,132,0.35), 0 0 18px rgba(58,163,132,0.18); }
 
-/* ===== Real Mushaf page ===== */
 .mushaf-page {
   position: relative;
   background:
@@ -144,7 +163,6 @@ body {
     0 1px 0 rgba(255,255,255,0.8),
     0 30px 70px -24px rgba(42,39,35,0.28),
     0 10px 30px -18px rgba(184,144,47,0.25);
-  /* gold double frame */
   outline: 2px solid rgba(184,144,47,0.55);
   outline-offset: -2px;
 }
@@ -204,9 +222,7 @@ body {
   letter-spacing: 0;
 }
 
-.basmala-quran {
-  font-family: var(--font-quran);
-}
+.basmala-quran { font-family: var(--font-quran); }
 
 .basmala-ornament {
   position: relative;
@@ -224,7 +240,6 @@ body {
   font-size: 14px;
 }
 
-/* Ornamental ayah end marker (gold rosette + eastern digits) */
 .ayah-rosette {
   display: inline-grid;
   place-items: center;
@@ -245,10 +260,7 @@ body {
 }
 .ayah-rosette span { position: relative; z-index: 1; }
 
-/* Ayah action popover */
-.ayah-pop {
-  animation: popIn 0.18s ease-out both;
-}
+.ayah-pop { animation: popIn 0.18s ease-out both; }
 @keyframes popIn {
   from { opacity: 0; transform: translateY(6px) scale(0.96); }
   to { opacity: 1; transform: translateY(0) scale(1); }
@@ -354,12 +366,8 @@ body {
   100% { --reveal: 108%; }
 }
 
-.intro-verse-decor {
-  color: #b8902f;
-  font-weight: 700;
-}
+.intro-verse-decor { color: #b8902f; font-weight: 700; }
 
-/* النور transition */
 .intro-noor {
   position: absolute;
   left: 50%;
@@ -388,9 +396,7 @@ body {
   100% { opacity: 0; filter: blur(14px); transform: scale(1.06); }
 }
 
-.intro-root.fade-out {
-  animation: introFadeOut 1s ease-out forwards;
-}
+.intro-root.fade-out { animation: introFadeOut 1s ease-out forwards; }
 @keyframes introFadeOut {
   0% { opacity: 1; }
   100% { opacity: 0; visibility: hidden; }
@@ -401,7 +407,6 @@ body {
   animation: introFadeUp 1.6s ease 6.5s forwards;
 }
 
-/* Sacred entry gate (guarantees audio plays on tap) */
 .intro-gate {
   position: absolute;
   inset: 0;
@@ -481,3 +486,102 @@ body {
 }
 @keyframes skipIn { to { opacity: 0.7; } }
 .intro-skip:hover { color: #8a8068; }
+
+/* ============================================================
+   RESPONSIVE IMPROVEMENTS
+   ============================================================ */
+
+/* === MOBILE (≤ 640px) === */
+@media (max-width: 640px) {
+  html { font-size: 15px; }
+
+  .intro-basmala { font-size: 1.6rem; }
+  .intro-verse { font-size: 1.2rem; line-height: 2.2; }
+  .enter-btn { width: 100px; height: 100px; }
+  .enter-btn::before, .enter-btn::after { inset: -10px; }
+
+  .mushaf-page {
+    border-radius: 16px;
+    padding: 0.5rem !important;
+  }
+  .mushaf-page::before { inset: 6px; border-radius: 10px; }
+  .mushaf-page::after { inset: 9px; border-radius: 8px; }
+  .mushaf-corner { width: 18px; height: 18px; }
+
+  .surah-band { padding: 0.5rem !important; }
+  .surah-band::before, .surah-band::after { width: 16px; height: 16px; }
+  .surah-band::before { right: 6px; }
+  .surah-band::after { left: 6px; }
+
+  .mushaf-text { font-size: 0.9rem; line-height: 1.7; }
+  .basmala-quran { font-size: 1.2rem; }
+  .ayah-marker { width: 1.4em; height: 1.4em; font-size: 0.5em; }
+
+  .card { padding: 0.75rem !important; }
+  .card-warm { padding: 0.75rem !important; }
+
+  .intro-hint { font-size: 0.6rem; bottom: 8%; }
+  .intro-skip { font-size: 0.6rem; bottom: 3%; }
+
+  .intro-root .intro-glow { width: 100vmin; height: 100vmin; }
+}
+
+/* === TABLETS (641px – 1024px) === */
+@media (min-width: 641px) and (max-width: 1024px) {
+  html { font-size: 16px; }
+
+  .intro-basmala { font-size: 2.4rem; }
+  .intro-verse { font-size: 1.6rem; }
+
+  .mushaf-text { font-size: 1rem; line-height: 1.8; }
+  .basmala-quran { font-size: 1.4rem; }
+
+  .mushaf-page { padding: 1rem !important; }
+  .mushaf-corner { width: 22px; height: 22px; }
+
+  .enter-btn { width: 120px; height: 120px; }
+}
+
+/* === DESKTOP (≥ 1025px) === */
+@media (min-width: 1025px) {
+  .mushaf-text { font-size: 1.15rem; line-height: 2; }
+  .basmala-quran { font-size: 1.6rem; }
+
+  .mushaf-page { padding: 1.5rem !important; }
+}
+
+/* === LARGE DESKTOP (≥ 1400px) === */
+@media (min-width: 1400px) {
+  html { font-size: 18px; }
+
+  .mushaf-text { font-size: 1.25rem; line-height: 2.1; }
+  .basmala-quran { font-size: 1.8rem; }
+
+  .mushaf-page { padding: 2rem !important; }
+  .mushaf-corner { width: 30px; height: 30px; }
+}
+
+/* ============================================================
+   UTILITY HELPERS FOR RESPONSIVE
+   ============================================================ */
+.container-responsive {
+  width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-responsive { padding-left: 1.5rem; padding-right: 1.5rem; }
+}
+
+@media (min-width: 1024px) {
+  .container-responsive { padding-left: 2rem; padding-right: 2rem; }
+}
+
+/* Hide scrollbar for mobile */
+@media (max-width: 640px) {
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+}
