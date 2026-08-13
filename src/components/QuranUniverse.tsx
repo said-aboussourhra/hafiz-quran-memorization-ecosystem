@@ -1,0 +1,140 @@
+"use client";
+
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import type { UniverseSurah } from "@/lib/progress";
+
+const STATUS = {
+  mastered: { label: "متقَن", color: "#1f6f5c", glow: "rgba(31,111,92,0.55)" },
+  memorized: { label: "محفوظ", color: "#3aa384", glow: "rgba(58,163,132,0.5)" },
+  learning: { label: "قيد الحفظ", color: "#d4ae54", glow: "rgba(212,174,84,0.55)" },
+  not_started: { label: "لم يبدأ", color: "#cdbf9c", glow: "rgba(205,191,156,0.4)" },
+} as const;
+
+type Filter = "all" | "memorized" | "learning" | "remaining";
+
+export function QuranUniverse({
+  surahs,
+  height = 620,
+  interactive = true,
+}: {
+  surahs: UniverseSurah[];
+  height?: number;
+  interactive?: boolean;
+}) {
+  const [hover, setHover] = useState<UniverseSurah | null>(null);
+  const [filter, setFilter] = useState<Filter>("all");
+
+  const points = useMemo(() => {
+    const golden = Math.PI * (3 - Math.sqrt(5));
+    let maxR = 0;
+    const raw = surahs.map((s, i) => {
+      const r = Math.sqrt(i + 0.5);
+      const theta = i * golden;
+      maxR = Math.max(maxR, r);
+      return { s, x: r * Math.cos(theta), y: r * Math.sin(theta) };
+    });
+    return raw.map((p) => ({
+      ...p,
+      left: 50 + (p.x / maxR) * 44,
+      top: 50 + (p.y / maxR) * 44,
+    }));
+  }, [surahs]);
+
+  const isDim = (s: UniverseSurah) => {
+    if (filter === "all") return false;
+    if (filter === "memorized") return !(s.status === "memorized" || s.status === "mastered");
+    if (filter === "learning") return s.status !== "learning";
+    if (filter === "remaining") return s.status !== "not_started";
+    return false;
+  };
+
+  return (
+    <div>
+      {interactive && (
+        <div className="mb-4 flex flex-wrap items-center justify-center gap-2">
+          {([
+            ["all", "الكون كاملاً"],
+            ["memorized", "المحفوظ"],
+            ["learning", "قيد الحفظ"],
+            ["remaining", "المتبقي"],
+          ] as [Filter, string][]).map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setFilter(key)}
+              className={`rounded-full px-4 py-1.5 text-xs transition ${filter === key ? "btn-primary font-semibold" : "btn-ghost"}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className="sky relative w-full overflow-hidden rounded-3xl border hairline" style={{ height }}>
+        <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <div className="animate-spin-slow h-40 w-40 rounded-full border border-gold-500/20" />
+          <div className="absolute inset-0 grid place-items-center">
+            <span className="font-arabic text-2xl gold-text opacity-80">﷽</span>
+          </div>
+        </div>
+
+        {points.map(({ s, left, top }) => {
+          const conf = STATUS[s.status as keyof typeof STATUS] ?? STATUS.not_started;
+          const size = Math.max(8, Math.min(20, 6 + Math.sqrt(s.ayahCount) * 1.1));
+          const dim = isDim(s);
+          const node = (
+            <span
+              className={`star-node block ${s.status === "learning" ? "animate-pulse-glow" : ""}`}
+              style={{
+                width: size,
+                height: size,
+                background: conf.color,
+                color: conf.glow,
+                boxShadow: `0 0 ${size}px ${size / 3}px ${conf.glow}`,
+                opacity: dim ? 0.18 : 1,
+              }}
+            />
+          );
+          return (
+            <div
+              key={s.number}
+              className="absolute -translate-x-1/2 -translate-y-1/2"
+              style={{ left: `${left}%`, top: `${top}%` }}
+              onMouseEnter={() => interactive && setHover(s)}
+              onMouseLeave={() => interactive && setHover(null)}
+            >
+              {interactive ? <Link href={`/mushaf/${s.number}`} aria-label={s.nameAr}>{node}</Link> : node}
+            </div>
+          );
+        })}
+
+        {hover && (
+          <div
+            className="pointer-events-none absolute z-30 w-52 -translate-x-1/2 rounded-2xl bg-white p-3 text-center shadow-lg"
+            style={{
+              left: `${points.find((p) => p.s.number === hover.number)!.left}%`,
+              top: `calc(${points.find((p) => p.s.number === hover.number)!.top}% - 90px)`,
+            }}
+          >
+            <div className="font-arabic text-xl text-ink-900">{hover.nameAr}</div>
+            <div className="text-[11px] text-ink-500">{hover.meaning}</div>
+            <div className="mt-2 text-[11px]">
+              <span className="rounded-full px-2 py-0.5" style={{ background: `${(STATUS[hover.status as keyof typeof STATUS] ?? STATUS.not_started).color}22`, color: (STATUS[hover.status as keyof typeof STATUS] ?? STATUS.not_started).color }}>
+                {(STATUS[hover.status as keyof typeof STATUS] ?? STATUS.not_started).label}
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center justify-center gap-4 text-xs text-ink-500">
+        {Object.entries(STATUS).map(([k, v]) => (
+          <span key={k} className="flex items-center gap-2">
+            <span className="h-2.5 w-2.5 rounded-full" style={{ background: v.color }} />
+            {v.label}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
