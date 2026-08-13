@@ -1,5 +1,26 @@
+/* ============================================================================
+   حافظ — GLOBAL STYLESHEET
+   Organized in sections (search for the === banners):
+     1. Design Tokens              6. Motion · Keyframes
+     2. Base & Resets              7. Motion · Utility Classes
+     3. Accessibility              8. Mushaf System (page, text, markers)
+     4. Typography Utilities       9. Ayah Interactions (popover, sheet)
+     5. Surfaces & Buttons        10. Sacred Intro Experience
+                                   11. Cross-Device Fine-Tuning
+   Breakpoint reference used throughout (mobile-first):
+     xs   <380px   very small / older & folded phones
+     sm   380–639px  phones
+     md   640–1023px tablets / phones landscape
+     lg   1024–1279px small laptops
+     xl   1280–1535px desktops
+     2xl  ≥1536px large / wide monitors
+   ============================================================================ */
+
 @import "tailwindcss";
 
+/* ============================================================
+   1. DESIGN TOKENS
+   ============================================================ */
 @theme {
   --color-cream-50: #fdfcf8;
   --color-cream-100: #f9f5ec;
@@ -21,28 +42,29 @@
 }
 
 :root {
-  color-scheme: light;
+  color-scheme: light only;
+
+  /* Safe-area insets for notches / dynamic islands / gesture bars */
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+
+  /* Stable viewport height (falls back gracefully on old browsers) */
+  --app-100vh: 100vh;
+  --app-100vh: 100dvh;
 }
 
-/* ===== RESET & BASE ===== */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
+/* ============================================================
+   2. BASE & RESETS
+   ============================================================ */
 html {
   scroll-behavior: smooth;
-  font-size: 16px;
   -webkit-text-size-adjust: 100%;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  text-size-adjust: 100%;
 }
 
 body {
-  overflow-x: hidden;
-  width: 100%;
-  min-height: 100vh;
   background:
     radial-gradient(900px 600px at 85% -5%, rgba(184, 144, 47, 0.06), transparent 60%),
     radial-gradient(800px 600px at 5% 5%, rgba(31, 111, 92, 0.05), transparent 55%),
@@ -50,22 +72,68 @@ body {
   background-attachment: fixed;
   color: #2a2723;
   font-family: var(--font-ui);
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
 }
 
-/* ===== SCROLLBAR ===== */
+/* iOS Safari repaints fixed backgrounds badly on scroll; keep it simple on phones */
+@media (max-width: 767px), (hover: none) and (pointer: coarse) {
+  body { background-attachment: scroll; }
+}
+
+::selection { background: rgba(184, 144, 47, 0.2); color: #2a2723; }
+
+/* Scrollbar — WebKit */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: #f1ead8; }
 ::-webkit-scrollbar-thumb { background: #d8c9a6; border-radius: 999px; }
 ::-webkit-scrollbar-thumb:hover { background: #c4ad7e; }
+@media (max-width: 767px) {
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+}
+/* Scrollbar — Firefox */
+html { scrollbar-width: thin; scrollbar-color: #d8c9a6 #f1ead8; }
 
-/* ===== SELECTION ===== */
-::selection { background: rgba(184, 144, 47, 0.2); color: #2a2723; }
+/* ============================================================
+   3. ACCESSIBILITY
+   ============================================================ */
+:focus-visible {
+  outline: 2px solid rgba(184, 144, 47, 0.75);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
 
-/* ===== TYPOGRAPHY ===== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .intro-verse { -webkit-mask-image: none; mask-image: none; }
+}
+
+@media (forced-colors: active) {
+  .card, .card-warm, .btn-primary, .btn-ghost, .mushaf-page, .mushaf-frame, .surah-band {
+    border: 1px solid CanvasText;
+  }
+}
+
+/* Touch devices need real hit targets, even when a design uses small text buttons */
+@media (hover: none) and (pointer: coarse) {
+  .btn-primary, .btn-ghost { min-height: 44px; }
+  .star-node { min-width: 10px; min-height: 10px; }
+}
+
+/* ============================================================
+   4. TYPOGRAPHY UTILITIES
+   ============================================================ */
 .font-arabic { font-family: var(--font-arabic); }
 .font-display { font-family: var(--font-display); }
 
-/* ===== SURFACES ===== */
+/* ============================================================
+   5. SURFACES & BUTTONS
+   ============================================================ */
 .card {
   background: #ffffff;
   border: 1px solid rgba(184, 144, 47, 0.14);
@@ -91,22 +159,27 @@ body {
   color: #fff;
   box-shadow: 0 6px 18px rgba(184, 144, 47, 0.28);
   transition: filter .2s ease, transform .2s ease;
+  touch-action: manipulation;
 }
 .btn-primary:hover { filter: brightness(1.05); }
+.btn-primary:active { transform: scale(0.98); }
+
 .btn-ghost {
   background: #fff;
   border: 1px solid rgba(184, 144, 47, 0.25);
   color: #4a463e;
-  transition: background .2s ease;
+  transition: background .2s ease, transform .2s ease;
+  touch-action: manipulation;
 }
 .btn-ghost:hover { background: #fbf6ea; }
+.btn-ghost:active { transform: scale(0.98); }
 
 .divider-ornament {
   height: 1px;
   background: linear-gradient(90deg, transparent, rgba(184,144,47,0.35), transparent);
 }
 
-/* ===== SKY / GALAXY ===== */
+/* Sky / galaxy backdrop (universe view) */
 .sky {
   background:
     radial-gradient(60% 60% at 50% 45%, rgba(184,144,47,0.08), transparent 70%),
@@ -114,7 +187,9 @@ body {
     linear-gradient(180deg, #fbf7ee, #f4ecda);
 }
 
-/* ===== ANIMATIONS ===== */
+/* ============================================================
+   6. MOTION · KEYFRAMES
+   ============================================================ */
 @keyframes twinkle { 0%,100%{opacity:.5;transform:scale(.92)} 50%{opacity:1;transform:scale(1.08)} }
 @keyframes pulseGlow { 0%,100%{box-shadow:0 0 6px 1px currentColor;opacity:.8} 50%{box-shadow:0 0 16px 4px currentColor;opacity:1} }
 @keyframes floaty { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
@@ -122,6 +197,9 @@ body {
 @keyframes riseFade { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
 @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
 
+/* ============================================================
+   7. MOTION · UTILITY CLASSES
+   ============================================================ */
 .animate-twinkle { animation: twinkle 4s ease-in-out infinite; }
 .animate-pulse-glow { animation: pulseGlow 3.2s ease-in-out infinite; }
 .animate-floaty { animation: floaty 6s ease-in-out infinite; }
@@ -135,15 +213,24 @@ body {
 
 .star-node { border-radius:999px; transition: transform .25s ease, box-shadow .25s ease; }
 .star-node:hover { transform: scale(1.4); z-index:20; }
+/* Touch screens have no hover — tap feedback instead of relying on :hover */
+@media (hover: none) and (pointer: coarse) {
+  .star-node:active { transform: scale(1.4); z-index:20; }
+}
 
-/* ===== MUSHAF ===== */
+/* ============================================================
+   8. MUSHAF SYSTEM
+   ============================================================ */
+
+/* --- Frame (legacy wrapper) --- */
 .mushaf-frame {
-  background:
-    linear-gradient(180deg, #fffdf6, #fbf5e6);
+  background: linear-gradient(180deg, #fffdf6, #fbf5e6);
   border: 2px solid rgba(184,144,47,0.35);
   box-shadow: inset 0 0 0 6px rgba(255,255,255,0.7), inset 0 0 0 7px rgba(184,144,47,0.18), 0 12px 40px rgba(42,39,35,0.08);
-  border-radius: 24px;
+  border-radius: clamp(14px, 3vw, 24px);
 }
+
+/* --- Ayah word tokens (tap targets inside the reading text) --- */
 .ayah-word {
   cursor: pointer;
   border-radius: 6px;
@@ -151,14 +238,17 @@ body {
   transition: background .15s ease, color .15s ease;
 }
 .ayah-word:hover { background: rgba(184,144,47,0.14); }
+@media (hover: none) and (pointer: coarse) {
+  .ayah-word { padding: 2px 3px; } /* a little breathing room for fingertip taps */
+}
 .ayah-active { background: rgba(31,111,92,0.12); box-shadow: 0 0 0 1px rgba(31,111,92,0.25); }
 .ayah-playing { background: rgba(58,163,132,0.16); border-radius: 8px; box-shadow: 0 0 0 1px rgba(58,163,132,0.35), 0 0 18px rgba(58,163,132,0.18); }
 
+/* --- The Mushaf page itself --- */
 .mushaf-page {
   position: relative;
-  background:
-    radial-gradient(120% 90% at 50% 0%, #fffefb 0%, #fcf8ee 55%, #f7f0e0 100%);
-  border-radius: 22px;
+  background: radial-gradient(120% 90% at 50% 0%, #fffefb 0%, #fcf8ee 55%, #f7f0e0 100%);
+  border-radius: clamp(12px, 2.5vw, 22px);
   box-shadow:
     0 1px 0 rgba(255,255,255,0.8),
     0 30px 70px -24px rgba(42,39,35,0.28),
@@ -169,22 +259,29 @@ body {
 .mushaf-page::before {
   content: "";
   position: absolute;
-  inset: 12px;
+  inset: clamp(6px, 1.6vw, 12px);
   border: 1.5px solid rgba(184,144,47,0.40);
-  border-radius: 14px;
+  border-radius: clamp(8px, 1.8vw, 14px);
   pointer-events: none;
 }
 .mushaf-page::after {
   content: "";
   position: absolute;
-  inset: 16px;
+  inset: clamp(9px, 2vw, 16px);
   border: 1px solid rgba(184,144,47,0.18);
-  border-radius: 11px;
+  border-radius: clamp(6px, 1.4vw, 11px);
   pointer-events: none;
 }
+/* Very narrow phones (<380px): thin the ornamental frame further so text area stays generous */
+@media (max-width: 379.98px) {
+  .mushaf-page::before { inset: 5px; }
+  .mushaf-page::after { inset: 8px; }
+}
+
 .mushaf-corner {
   position: absolute;
-  width: 26px; height: 26px;
+  width: clamp(16px, 4vw, 26px);
+  height: clamp(16px, 4vw, 26px);
   border-color: rgba(184,144,47,0.7);
   pointer-events: none;
   z-index: 1;
@@ -192,9 +289,8 @@ body {
 
 .surah-band {
   position: relative;
-  border-radius: 14px;
-  background:
-    linear-gradient(180deg, #fcf3da 0%, #f4e6c2 55%, #efdcae 100%);
+  border-radius: clamp(10px, 2.4vw, 14px);
+  background: linear-gradient(180deg, #fcf3da 0%, #f4e6c2 55%, #efdcae 100%);
   border: 1px solid rgba(184,144,47,0.55);
   box-shadow:
     inset 0 0 0 1px rgba(255,255,255,0.6),
@@ -205,12 +301,17 @@ body {
   content: "";
   position: absolute;
   top: 50%; transform: translateY(-50%);
-  width: 22px; height: 22px;
+  width: clamp(16px, 4vw, 22px);
+  height: clamp(16px, 4vw, 22px);
   border: 1px solid rgba(184,144,47,0.5);
   border-radius: 50%;
 }
 .surah-band::before { right: 10px; }
 .surah-band::after { left: 10px; }
+@media (max-width: 379.98px) {
+  .surah-band::before { right: 6px; }
+  .surah-band::after { left: 6px; }
+}
 
 .mushaf-text {
   font-family: var(--font-quran);
@@ -220,6 +321,11 @@ body {
   text-justify: inter-word;
   word-spacing: 0.02em;
   letter-spacing: 0;
+}
+/* Reading text is set with a JS font-size slider; tighten line rhythm a touch on phones
+   so a full ayah still wraps predictably without overflowing the page frame. */
+@media (max-width: 639.98px) {
+  .mushaf-text { word-spacing: 0.01em; }
 }
 
 .basmala-quran { font-family: var(--font-quran); }
@@ -240,6 +346,7 @@ body {
   font-size: 14px;
 }
 
+/* Ornamental ayah end marker (gold rosette + eastern digits) */
 .ayah-rosette {
   display: inline-grid;
   place-items: center;
@@ -253,23 +360,9 @@ body {
   color: #9c7826;
   line-height: 1;
 }
-.ayah-rosette svg {
-  position: absolute;
-  inset: 0;
-  width: 100%; height: 100%;
-}
+.ayah-rosette svg { position: absolute; inset: 0; width: 100%; height: 100%; }
 .ayah-rosette span { position: relative; z-index: 1; }
 
-.ayah-pop { animation: popIn 0.18s ease-out both; }
-@keyframes popIn {
-  from { opacity: 0; transform: translateY(6px) scale(0.96); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.sheet-backdrop { animation: fadeIn 0.25s ease both; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-.sheet-panel { animation: sheetUp 0.32s cubic-bezier(0.22,1,0.36,1) both; }
-@keyframes sheetUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
 .ayah-marker {
   display: inline-grid;
   place-items: center;
@@ -285,7 +378,35 @@ body {
 }
 
 /* ============================================================
-   SACRED INTRO EXPERIENCE
+   9. AYAH INTERACTIONS — popover & bottom sheet
+   ============================================================ */
+.ayah-pop {
+  animation: popIn 0.18s ease-out both;
+  max-width: calc(100vw - 2rem); /* never spill off small screens */
+}
+@keyframes popIn {
+  from { opacity: 0; transform: translateY(6px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.sheet-backdrop {
+  animation: fadeIn 0.25s ease both;
+  overscroll-behavior: contain;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.sheet-panel {
+  animation: sheetUp 0.32s cubic-bezier(0.22,1,0.36,1) both;
+  /* Respect the home-indicator / gesture bar on notched phones */
+  padding-bottom: var(--safe-b);
+  max-height: min(85vh, 85dvh);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+@keyframes sheetUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ============================================================
+   10. SACRED INTRO EXPERIENCE
    ============================================================ */
 @property --reveal {
   syntax: "<percentage>";
@@ -300,8 +421,9 @@ body {
   display: grid;
   place-items: center;
   overflow: hidden;
-  background:
-    radial-gradient(60% 55% at 50% 46%, #ffffff 0%, #fdfcf9 45%, #f7f2e8 100%);
+  height: var(--app-100vh);
+  background: radial-gradient(60% 55% at 50% 46%, #ffffff 0%, #fdfcf9 45%, #f7f2e8 100%);
+  overscroll-behavior: contain;
 }
 
 .intro-glow {
@@ -368,6 +490,7 @@ body {
 
 .intro-verse-decor { color: #b8902f; font-weight: 700; }
 
+/* النور transition */
 .intro-noor {
   position: absolute;
   left: 50%;
@@ -380,58 +503,60 @@ body {
   opacity: 0;
   pointer-events: none;
 }
-.intro-root.noor .intro-noor {
-  animation: noorExpand 2.8s cubic-bezier(0.45, 0, 0.2, 1) forwards;
-}
+.intro-root.noor .intro-noor { animation: noorExpand 2.8s cubic-bezier(0.45, 0, 0.2, 1) forwards; }
 @keyframes noorExpand {
   0% { opacity: 0.2; width: 10vmin; height: 10vmin; }
   35% { opacity: 1; }
   100% { opacity: 1; width: 320vmax; height: 320vmax; }
 }
-.intro-root.noor .intro-stage {
-  animation: verseDissolve 1.6s ease-in forwards;
-}
+.intro-root.noor .intro-stage { animation: verseDissolve 1.6s ease-in forwards; }
 @keyframes verseDissolve {
   0% { opacity: 1; filter: blur(0); transform: scale(1); }
   100% { opacity: 0; filter: blur(14px); transform: scale(1.06); }
 }
 
 .intro-root.fade-out { animation: introFadeOut 1s ease-out forwards; }
-@keyframes introFadeOut {
-  0% { opacity: 1; }
-  100% { opacity: 0; visibility: hidden; }
-}
+@keyframes introFadeOut { 0% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
 
 .intro-attribution {
   opacity: 0;
   animation: introFadeUp 1.6s ease 6.5s forwards;
+  padding-bottom: var(--safe-b);
 }
 
+/* Sacred entry gate (guarantees audio plays on tap) */
 .intro-gate {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
   z-index: 20;
+  padding: max(1.5rem, var(--safe-t)) max(1rem, var(--safe-r)) max(1.5rem, var(--safe-b)) max(1rem, var(--safe-l));
 }
 .intro-gate-inner {
   text-align: center;
   animation: introFadeUp 1.4s cubic-bezier(0.22,1,0.36,1) both;
   padding: 0 1.5rem;
+  width: 100%;
+  max-width: 28rem;
 }
+
 .enter-btn {
   position: relative;
   display: inline-grid;
   place-items: center;
-  width: 130px; height: 130px;
+  width: clamp(92px, 26vw, 130px);
+  height: clamp(92px, 26vw, 130px);
   border-radius: 50%;
   background: radial-gradient(circle at 50% 35%, #fffdf7, #f6ead0);
   border: 1px solid rgba(184,144,47,0.4);
   box-shadow: 0 10px 40px rgba(184,144,47,0.25), inset 0 0 0 1px rgba(255,255,255,0.8);
   cursor: pointer;
   transition: transform .3s ease, box-shadow .3s ease;
+  touch-action: manipulation;
 }
 .enter-btn:hover { transform: scale(1.05); box-shadow: 0 14px 50px rgba(184,144,47,0.35); }
+.enter-btn:active { transform: scale(0.97); }
 .enter-btn::before {
   content: "";
   position: absolute;
@@ -455,7 +580,7 @@ body {
 
 .intro-hint {
   position: absolute;
-  bottom: 12%;
+  bottom: calc(12% + var(--safe-b));
   left: 0;
   right: 0;
   text-align: center;
@@ -464,15 +589,13 @@ body {
   letter-spacing: 0.25em;
   opacity: 0;
   animation: hintPulse 3.5s ease-in-out 1.2s infinite;
+  padding: 0 1rem;
 }
-@keyframes hintPulse {
-  0%, 100% { opacity: 0; }
-  50% { opacity: 0.85; }
-}
+@keyframes hintPulse { 0%, 100% { opacity: 0; } 50% { opacity: 0.85; } }
 
 .intro-skip {
   position: absolute;
-  bottom: 5%;
+  bottom: calc(5% + var(--safe-b));
   left: 50%;
   transform: translateX(-50%);
   color: #b3a988;
@@ -483,105 +606,52 @@ body {
   cursor: pointer;
   opacity: 0;
   animation: skipIn 1.2s ease 4s forwards;
+  padding: 0.5rem 1rem; /* comfortable tap target beyond the visible label */
+  touch-action: manipulation;
 }
 @keyframes skipIn { to { opacity: 0.7; } }
 .intro-skip:hover { color: #8a8068; }
 
+/* --- Intro: small phones --- */
+@media (max-width: 379.98px) {
+  .intro-glow, .intro-noor { width: 70vmin; height: 70vmin; }
+  .intro-hint { letter-spacing: 0.18em; font-size: 0.72rem; }
+}
+
+/* --- Intro: short / landscape viewports (phones rotated, small laptops in split view) --- */
+@media (max-height: 520px) {
+  .intro-verse { line-height: 1.55; margin-top: 1.5rem !important; }
+  .intro-basmala { margin-top: 0 !important; }
+  .enter-btn { width: 84px; height: 84px; }
+  .intro-hint { display: none; }
+  .intro-skip { bottom: calc(3% + var(--safe-b)); }
+}
+
+/* --- Intro: tablets and up, a little more breathing room --- */
+@media (min-width: 768px) {
+  .intro-gate-inner { max-width: 32rem; }
+}
+
 /* ============================================================
-   RESPONSIVE IMPROVEMENTS
+   11. CROSS-DEVICE FINE-TUNING
    ============================================================ */
 
-/* === MOBILE (≤ 640px) === */
-@media (max-width: 640px) {
-  html { font-size: 15px; }
+/* Large / wide monitors: keep the manuscript from stretching edge-to-edge */
+@media (min-width: 1536px) {
+  .mushaf-page { max-width: 900px; margin-inline: auto; }
+}
 
-  .intro-basmala { font-size: 1.6rem; }
-  .intro-verse { font-size: 1.2rem; line-height: 2.2; }
-  .enter-btn { width: 100px; height: 100px; }
-  .enter-btn::before, .enter-btn::after { inset: -10px; }
+/* Foldables & very small phones: shrink ornamental padding across the board */
+@media (max-width: 359.98px) {
+  .card, .card-warm { border-radius: 14px; }
+}
 
-  .mushaf-page {
-    border-radius: 16px;
-    padding: 0.5rem !important;
+/* Print: the sacred intro and decorative motion have no place on paper */
+@media print {
+  .intro-root, .shimmer, .animate-pulse-glow, .animate-floaty, .animate-spin-slow, .animate-twinkle {
+    display: none !important;
+    animation: none !important;
   }
-  .mushaf-page::before { inset: 6px; border-radius: 10px; }
-  .mushaf-page::after { inset: 9px; border-radius: 8px; }
-  .mushaf-corner { width: 18px; height: 18px; }
-
-  .surah-band { padding: 0.5rem !important; }
-  .surah-band::before, .surah-band::after { width: 16px; height: 16px; }
-  .surah-band::before { right: 6px; }
-  .surah-band::after { left: 6px; }
-
-  .mushaf-text { font-size: 0.9rem; line-height: 1.7; }
-  .basmala-quran { font-size: 1.2rem; }
-  .ayah-marker { width: 1.4em; height: 1.4em; font-size: 0.5em; }
-
-  .card { padding: 0.75rem !important; }
-  .card-warm { padding: 0.75rem !important; }
-
-  .intro-hint { font-size: 0.6rem; bottom: 8%; }
-  .intro-skip { font-size: 0.6rem; bottom: 3%; }
-
-  .intro-root .intro-glow { width: 100vmin; height: 100vmin; }
-}
-
-/* === TABLETS (641px – 1024px) === */
-@media (min-width: 641px) and (max-width: 1024px) {
-  html { font-size: 16px; }
-
-  .intro-basmala { font-size: 2.4rem; }
-  .intro-verse { font-size: 1.6rem; }
-
-  .mushaf-text { font-size: 1rem; line-height: 1.8; }
-  .basmala-quran { font-size: 1.4rem; }
-
-  .mushaf-page { padding: 1rem !important; }
-  .mushaf-corner { width: 22px; height: 22px; }
-
-  .enter-btn { width: 120px; height: 120px; }
-}
-
-/* === DESKTOP (≥ 1025px) === */
-@media (min-width: 1025px) {
-  .mushaf-text { font-size: 1.15rem; line-height: 2; }
-  .basmala-quran { font-size: 1.6rem; }
-
-  .mushaf-page { padding: 1.5rem !important; }
-}
-
-/* === LARGE DESKTOP (≥ 1400px) === */
-@media (min-width: 1400px) {
-  html { font-size: 18px; }
-
-  .mushaf-text { font-size: 1.25rem; line-height: 2.1; }
-  .basmala-quran { font-size: 1.8rem; }
-
-  .mushaf-page { padding: 2rem !important; }
-  .mushaf-corner { width: 30px; height: 30px; }
-}
-
-/* ============================================================
-   UTILITY HELPERS FOR RESPONSIVE
-   ============================================================ */
-.container-responsive {
-  width: 100%;
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-
-@media (min-width: 640px) {
-  .container-responsive { padding-left: 1.5rem; padding-right: 1.5rem; }
-}
-
-@media (min-width: 1024px) {
-  .container-responsive { padding-left: 2rem; padding-right: 2rem; }
-}
-
-/* Hide scrollbar for mobile */
-@media (max-width: 640px) {
-  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  .mushaf-page { box-shadow: none; outline: 1px solid #b8902f; }
+  body { background: #fff; }
 }
