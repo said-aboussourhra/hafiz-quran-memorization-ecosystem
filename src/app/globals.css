@@ -1,26 +1,5 @@
-/* ============================================================================
-   حافظ — GLOBAL STYLESHEET
-   Organized in sections (search for the === banners):
-     1. Design Tokens              6. Motion · Keyframes
-     2. Base & Resets              7. Motion · Utility Classes
-     3. Accessibility              8. Mushaf System (page, text, markers)
-     4. Typography Utilities       9. Ayah Interactions (popover, sheet)
-     5. Surfaces & Buttons        10. Sacred Intro Experience
-                                   11. Cross-Device Fine-Tuning
-   Breakpoint reference used throughout (mobile-first):
-     xs   <380px   very small / older & folded phones
-     sm   380–639px  phones
-     md   640–1023px tablets / phones landscape
-     lg   1024–1279px small laptops
-     xl   1280–1535px desktops
-     2xl  ≥1536px large / wide monitors
-   ============================================================================ */
-
 @import "tailwindcss";
 
-/* ============================================================
-   1. DESIGN TOKENS
-   ============================================================ */
 @theme {
   --color-cream-50: #fdfcf8;
   --color-cream-100: #f9f5ec;
@@ -42,22 +21,18 @@
 }
 
 :root {
-  color-scheme: light only;
-
-  /* Safe-area insets for notches / dynamic islands / gesture bars */
-  --safe-t: env(safe-area-inset-top, 0px);
-  --safe-r: env(safe-area-inset-right, 0px);
-  --safe-b: env(safe-area-inset-bottom, 0px);
-  --safe-l: env(safe-area-inset-left, 0px);
-
-  /* Stable viewport height (falls back gracefully on old browsers) */
-  --app-100vh: 100vh;
-  --app-100vh: 100dvh;
+  color-scheme: light;
 }
 
 /* ============================================================
-   2. BASE & RESETS
+   RESET & BASE
    ============================================================ */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
@@ -76,75 +51,273 @@ body {
   overflow-x: hidden;
 }
 
-/* iOS Safari repaints fixed backgrounds badly on scroll; keep it simple on phones */
-@media (max-width: 767px), (hover: none) and (pointer: coarse) {
-  body { background-attachment: scroll; }
+/* ============================================================
+   RESPONSIVE — جميع الهواتف الذكية
+   ============================================================ */
+
+/* === 1. هواتف صغيرة جداً (< 320px) === */
+@media (max-width: 319.98px) {
+  html { font-size: 10px; }
+  .container-responsive { padding-left: 4px; padding-right: 4px; }
+  h1 { font-size: 1.1rem !important; }
+  h2 { font-size: 0.9rem !important; }
+  h3 { font-size: 0.8rem !important; }
+  p { font-size: 0.65rem !important; }
+  .btn-primary, .btn-ghost {
+    padding: 4px 6px !important;
+    font-size: 0.55rem !important;
+    min-height: 28px !important;
+    border-radius: 6px !important;
+  }
+  .card { padding: 6px !important; border-radius: 6px !important; }
+  .card-warm { padding: 6px !important; border-radius: 6px !important; }
+  .grid-cols-2 { grid-template-columns: 1fr 1fr !important; gap: 4px !important; }
+  .grid-cols-3 { grid-template-columns: 1fr 1fr !important; gap: 4px !important; }
+  .grid-cols-4 { grid-template-columns: 1fr 1fr !important; gap: 4px !important; }
 }
 
-::selection { background: rgba(184, 144, 47, 0.2); color: #2a2723; }
-
-/* Scrollbar — WebKit */
-::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-track { background: #f1ead8; }
-::-webkit-scrollbar-thumb { background: #d8c9a6; border-radius: 999px; }
-::-webkit-scrollbar-thumb:hover { background: #c4ad7e; }
-@media (max-width: 767px) {
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
+/* === 2. هواتف صغيرة (320px - 359px) === */
+@media (min-width: 320px) and (max-width: 359.98px) {
+  html { font-size: 11px; }
+  .container-responsive { padding-left: 6px; padding-right: 6px; }
+  h1 { font-size: 1.2rem !important; }
+  h2 { font-size: 1rem !important; }
+  h3 { font-size: 0.85rem !important; }
+  p { font-size: 0.7rem !important; }
+  .btn-primary, .btn-ghost {
+    padding: 6px 8px !important;
+    font-size: 0.6rem !important;
+    min-height: 32px !important;
+    border-radius: 8px !important;
+  }
+  .card { padding: 8px !important; border-radius: 8px !important; }
+  .card-warm { padding: 8px !important; border-radius: 8px !important; }
+  .grid-cols-2 { grid-template-columns: 1fr 1fr !important; gap: 4px !important; }
+  .grid-cols-3 { grid-template-columns: 1fr 1fr !important; gap: 4px !important; }
+  .grid-cols-4 { grid-template-columns: 1fr 1fr !important; gap: 4px !important; }
 }
-/* Scrollbar — Firefox */
-html { scrollbar-width: thin; scrollbar-color: #d8c9a6 #f1ead8; }
+
+/* === 3. هواتف متوسطة صغيرة (360px - 399px) — INFINIX Hot, Samsung A === */
+@media (min-width: 360px) and (max-width: 399.98px) {
+  html { font-size: 12px; }
+  .container-responsive { padding-left: 8px; padding-right: 8px; }
+  h1 { font-size: 1.4rem !important; }
+  h2 { font-size: 1.1rem !important; }
+  h3 { font-size: 0.95rem !important; }
+  p { font-size: 0.75rem !important; }
+  .btn-primary, .btn-ghost {
+    padding: 8px 10px !important;
+    font-size: 0.65rem !important;
+    min-height: 36px !important;
+    border-radius: 10px !important;
+  }
+  .card { padding: 10px !important; border-radius: 10px !important; }
+  .card-warm { padding: 10px !important; border-radius: 10px !important; }
+  .grid-cols-2 { grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
+  .grid-cols-3 { grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
+  .grid-cols-4 { grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
+}
+
+/* === 4. هواتف متوسطة (400px - 479px) — iPhone SE, Galaxy S === */
+@media (min-width: 400px) and (max-width: 479.98px) {
+  html { font-size: 13px; }
+  .container-responsive { padding-left: 10px; padding-right: 10px; }
+  h1 { font-size: 1.6rem !important; }
+  h2 { font-size: 1.3rem !important; }
+  h3 { font-size: 1.05rem !important; }
+  p { font-size: 0.8rem !important; }
+  .btn-primary, .btn-ghost {
+    padding: 10px 14px !important;
+    font-size: 0.7rem !important;
+    min-height: 40px !important;
+    border-radius: 12px !important;
+  }
+  .card { padding: 12px !important; border-radius: 12px !important; }
+  .card-warm { padding: 12px !important; border-radius: 12px !important; }
+  .grid-cols-2 { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+  .grid-cols-3 { grid-template-columns: 1fr 1fr 1fr !important; gap: 8px !important; }
+  .grid-cols-4 { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+}
+
+/* === 5. هواتف كبيرة (480px - 639px) — iPhone Plus, Galaxy Note === */
+@media (min-width: 480px) and (max-width: 639.98px) {
+  html { font-size: 14px; }
+  .container-responsive { padding-left: 14px; padding-right: 14px; }
+  h1 { font-size: 1.8rem !important; }
+  h2 { font-size: 1.5rem !important; }
+  h3 { font-size: 1.15rem !important; }
+  p { font-size: 0.85rem !important; }
+  .btn-primary, .btn-ghost {
+    padding: 12px 18px !important;
+    font-size: 0.8rem !important;
+    min-height: 44px !important;
+    border-radius: 14px !important;
+  }
+  .card { padding: 14px !important; border-radius: 14px !important; }
+  .card-warm { padding: 14px !important; border-radius: 14px !important; }
+  .grid-cols-2 { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+  .grid-cols-3 { grid-template-columns: 1fr 1fr 1fr !important; gap: 10px !important; }
+  .grid-cols-4 { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+}
+
+/* === 6. أجهزة لوحية صغيرة (640px - 767px) === */
+@media (min-width: 640px) and (max-width: 767.98px) {
+  html { font-size: 15px; }
+  .container-responsive { padding-left: 18px; padding-right: 18px; }
+  h1 { font-size: 2.2rem !important; }
+  h2 { font-size: 1.8rem !important; }
+  h3 { font-size: 1.3rem !important; }
+  p { font-size: 0.9rem !important; }
+  .btn-primary, .btn-ghost {
+    padding: 14px 22px !important;
+    font-size: 0.85rem !important;
+    min-height: 48px !important;
+    border-radius: 14px !important;
+  }
+  .card { padding: 16px !important; border-radius: 16px !important; }
+  .card-warm { padding: 16px !important; border-radius: 16px !important; }
+}
+
+/* === 7. أجهزة لوحية كبيرة (768px - 1024px) === */
+@media (min-width: 768px) and (max-width: 1024px) {
+  html { font-size: 16px; }
+  .container-responsive { 
+    padding-left: 24px; 
+    padding-right: 24px;
+    max-width: 100%;
+  }
+  h1 { font-size: 2.6rem !important; }
+  h2 { font-size: 2rem !important; }
+  h3 { font-size: 1.4rem !important; }
+  p { font-size: 0.95rem !important; }
+  .btn-primary, .btn-ghost {
+    padding: 16px 26px !important;
+    font-size: 0.9rem !important;
+    min-height: 52px !important;
+    border-radius: 16px !important;
+  }
+  .card { padding: 20px !important; border-radius: 18px !important; }
+  .card-warm { padding: 20px !important; border-radius: 18px !important; }
+}
+
+/* === 8. شاشات كبيرة (1025px - 1439px) === */
+@media (min-width: 1025px) and (max-width: 1439.98px) {
+  html { font-size: 17px; }
+  .container-responsive { 
+    max-width: 1200px; 
+    margin-left: auto; 
+    margin-right: auto;
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+  h1 { font-size: 3rem !important; }
+  h2 { font-size: 2.2rem !important; }
+  .card { padding: 24px !important; border-radius: 20px !important; }
+}
+
+/* === 9. شاشات عريضة (1440px+) === */
+@media (min-width: 1440px) {
+  html { font-size: 18px; }
+  .container-responsive { 
+    max-width: 1400px; 
+    margin-left: auto; 
+    margin-right: auto;
+    padding-left: 48px;
+    padding-right: 48px;
+  }
+  h1 { font-size: 3.5rem !important; }
+  h2 { font-size: 2.6rem !important; }
+  .card { padding: 28px !important; border-radius: 24px !important; }
+}
 
 /* ============================================================
-   3. ACCESSIBILITY
+   تحسينات خاصة للهواتف الطويلة (20:9, 21:9)
    ============================================================ */
-:focus-visible {
-  outline: 2px solid rgba(184, 144, 47, 0.75);
-  outline-offset: 2px;
-  border-radius: 4px;
+
+@media (min-aspect-ratio: 19/9) and (max-width: 480px) {
+  .hero-section { padding-top: 0.25rem !important; }
+  .hero-section h1 { font-size: 1.2rem !important; }
+  .hero-section p { font-size: 0.7rem !important; }
+  .space-y-24 { space-y: 0.75rem !important; }
+  .mt-12 { margin-top: 0.25rem !important; }
+  .mt-6 { margin-top: 0.15rem !important; }
+  .pt-8 { padding-top: 0.15rem !important; }
+  .pb-8 { padding-bottom: 0.15rem !important; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-    scroll-behavior: auto !important;
+/* ============================================================
+   تحسينات للوضع الأفقي (Landscape)
+   ============================================================ */
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .hero-section { padding-top: 0.1rem !important; }
+  .hero-section h1 { font-size: 1rem !important; }
+  .hero-section p { font-size: 0.6rem !important; }
+  .btn-primary, .btn-ghost { 
+    padding: 2px 6px !important; 
+    font-size: 0.5rem !important;
+    min-height: 24px !important;
   }
-  .intro-verse { -webkit-mask-image: none; mask-image: none; }
+  .card { padding: 4px !important; }
+  .card-warm { padding: 4px !important; }
+  .space-y-24 { space-y: 0.25rem !important; }
+  .mt-12 { margin-top: 0.1rem !important; }
+  .pt-8 { padding-top: 0.1rem !important; }
+  .pb-8 { padding-bottom: 0.1rem !important; }
+  .mushaf-page { padding: 2px !important; }
+  .mushaf-text { font-size: 0.5rem !important; }
 }
 
-@media (forced-colors: active) {
-  .card, .card-warm, .btn-primary, .btn-ghost, .mushaf-page, .mushaf-frame, .surah-band {
-    border: 1px solid CanvasText;
-  }
-}
+/* ============================================================
+   تحسينات اللمس
+   ============================================================ */
 
-/* Touch devices need real hit targets, even when a design uses small text buttons */
 @media (hover: none) and (pointer: coarse) {
-  .btn-primary, .btn-ghost { min-height: 44px; }
-  .star-node { min-width: 10px; min-height: 10px; }
+  .btn-primary, .btn-ghost, button, a[role="button"] {
+    min-height: 44px !important;
+    min-width: 44px !important;
+    touch-action: manipulation;
+  }
+  input, select, textarea {
+    font-size: 16px !important;
+    min-height: 44px !important;
+    padding: 10px 14px !important;
+  }
+  * {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
 }
 
 /* ============================================================
-   4. TYPOGRAPHY UTILITIES
+   تحسينات Notch / Dynamic Island
    ============================================================ */
+
+@supports (padding: max(0px)) {
+  .safe-top { padding-top: max(env(safe-area-inset-top), 0.5rem); }
+  .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 0.5rem); }
+  .safe-left { padding-left: max(env(safe-area-inset-left), 0.5rem); }
+  .safe-right { padding-right: max(env(safe-area-inset-right), 0.5rem); }
+}
+
+/* ============================================================
+   كلاسات مساعدة
+   ============================================================ */
+
 .font-arabic { font-family: var(--font-arabic); }
 .font-display { font-family: var(--font-display); }
 
-/* ============================================================
-   5. SURFACES & BUTTONS
-   ============================================================ */
 .card {
   background: #ffffff;
   border: 1px solid rgba(184, 144, 47, 0.14);
   box-shadow: 0 1px 2px rgba(42, 39, 35, 0.04), 0 8px 24px rgba(42, 39, 35, 0.05);
 }
+
 .card-warm {
   background: linear-gradient(180deg, #fffdf7, #fbf6ea);
   border: 1px solid rgba(184, 144, 47, 0.22);
   box-shadow: 0 8px 28px rgba(184, 144, 47, 0.08);
 }
-.hairline { border-color: rgba(184, 144, 47, 0.16); }
 
 .gold-text {
   background: linear-gradient(180deg, #d4ae54 0%, #b8902f 60%, #9c7826 100%);
@@ -152,7 +325,6 @@ html { scrollbar-width: thin; scrollbar-color: #d8c9a6 #f1ead8; }
   background-clip: text;
   color: transparent;
 }
-.emerald-text { color: #1f6f5c; }
 
 .btn-primary {
   background: linear-gradient(180deg, #d4ae54, #b8902f);
@@ -160,7 +332,15 @@ html { scrollbar-width: thin; scrollbar-color: #d8c9a6 #f1ead8; }
   box-shadow: 0 6px 18px rgba(184, 144, 47, 0.28);
   transition: filter .2s ease, transform .2s ease;
   touch-action: manipulation;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: 600;
 }
+
 .btn-primary:hover { filter: brightness(1.05); }
 .btn-primary:active { transform: scale(0.98); }
 
@@ -170,7 +350,14 @@ html { scrollbar-width: thin; scrollbar-color: #d8c9a6 #f1ead8; }
   color: #4a463e;
   transition: background .2s ease, transform .2s ease;
   touch-action: manipulation;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: 600;
 }
+
 .btn-ghost:hover { background: #fbf6ea; }
 .btn-ghost:active { transform: scale(0.98); }
 
@@ -179,138 +366,17 @@ html { scrollbar-width: thin; scrollbar-color: #d8c9a6 #f1ead8; }
   background: linear-gradient(90deg, transparent, rgba(184,144,47,0.35), transparent);
 }
 
-/* Sky / galaxy backdrop (universe view) */
-.sky {
-  background:
-    radial-gradient(60% 60% at 50% 45%, rgba(184,144,47,0.08), transparent 70%),
-    radial-gradient(40% 40% at 50% 50%, rgba(31,111,92,0.06), transparent 65%),
-    linear-gradient(180deg, #fbf7ee, #f4ecda);
-}
-
 /* ============================================================
-   6. MOTION · KEYFRAMES
-   ============================================================ */
-@keyframes twinkle { 0%,100%{opacity:.5;transform:scale(.92)} 50%{opacity:1;transform:scale(1.08)} }
-@keyframes pulseGlow { 0%,100%{box-shadow:0 0 6px 1px currentColor;opacity:.8} 50%{box-shadow:0 0 16px 4px currentColor;opacity:1} }
-@keyframes floaty { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
-@keyframes spinSlow { from{transform:rotate(0)} to{transform:rotate(360deg)} }
-@keyframes riseFade { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
-@keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
-
-/* ============================================================
-   7. MOTION · UTILITY CLASSES
-   ============================================================ */
-.animate-twinkle { animation: twinkle 4s ease-in-out infinite; }
-.animate-pulse-glow { animation: pulseGlow 3.2s ease-in-out infinite; }
-.animate-floaty { animation: floaty 6s ease-in-out infinite; }
-.animate-spin-slow { animation: spinSlow 80s linear infinite; }
-.rise { animation: riseFade .7s ease-out both; }
-.shimmer {
-  background: linear-gradient(90deg, transparent, rgba(184,144,47,0.3), transparent);
-  background-size: 200% 100%;
-  animation: shimmer 3s linear infinite;
-}
-
-.star-node { border-radius:999px; transition: transform .25s ease, box-shadow .25s ease; }
-.star-node:hover { transform: scale(1.4); z-index:20; }
-/* Touch screens have no hover — tap feedback instead of relying on :hover */
-@media (hover: none) and (pointer: coarse) {
-  .star-node:active { transform: scale(1.4); z-index:20; }
-}
-
-/* ============================================================
-   8. MUSHAF SYSTEM
+   تحسينات المصحف
    ============================================================ */
 
-/* --- Frame (legacy wrapper) --- */
-.mushaf-frame {
-  background: linear-gradient(180deg, #fffdf6, #fbf5e6);
-  border: 2px solid rgba(184,144,47,0.35);
-  box-shadow: inset 0 0 0 6px rgba(255,255,255,0.7), inset 0 0 0 7px rgba(184,144,47,0.18), 0 12px 40px rgba(42,39,35,0.08);
-  border-radius: clamp(14px, 3vw, 24px);
-}
-
-/* --- Ayah word tokens (tap targets inside the reading text) --- */
-.ayah-word {
-  cursor: pointer;
-  border-radius: 6px;
-  padding: 0 2px;
-  transition: background .15s ease, color .15s ease;
-}
-.ayah-word:hover { background: rgba(184,144,47,0.14); }
-@media (hover: none) and (pointer: coarse) {
-  .ayah-word { padding: 2px 3px; } /* a little breathing room for fingertip taps */
-}
-.ayah-active { background: rgba(31,111,92,0.12); box-shadow: 0 0 0 1px rgba(31,111,92,0.25); }
-.ayah-playing { background: rgba(58,163,132,0.16); border-radius: 8px; box-shadow: 0 0 0 1px rgba(58,163,132,0.35), 0 0 18px rgba(58,163,132,0.18); }
-
-/* --- The Mushaf page itself --- */
 .mushaf-page {
   position: relative;
   background: radial-gradient(120% 90% at 50% 0%, #fffefb 0%, #fcf8ee 55%, #f7f0e0 100%);
   border-radius: clamp(12px, 2.5vw, 22px);
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.8),
-    0 30px 70px -24px rgba(42,39,35,0.28),
-    0 10px 30px -18px rgba(184,144,47,0.25);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.8), 0 30px 70px -24px rgba(42,39,35,0.28), 0 10px 30px -18px rgba(184,144,47,0.25);
   outline: 2px solid rgba(184,144,47,0.55);
   outline-offset: -2px;
-}
-.mushaf-page::before {
-  content: "";
-  position: absolute;
-  inset: clamp(6px, 1.6vw, 12px);
-  border: 1.5px solid rgba(184,144,47,0.40);
-  border-radius: clamp(8px, 1.8vw, 14px);
-  pointer-events: none;
-}
-.mushaf-page::after {
-  content: "";
-  position: absolute;
-  inset: clamp(9px, 2vw, 16px);
-  border: 1px solid rgba(184,144,47,0.18);
-  border-radius: clamp(6px, 1.4vw, 11px);
-  pointer-events: none;
-}
-/* Very narrow phones (<380px): thin the ornamental frame further so text area stays generous */
-@media (max-width: 379.98px) {
-  .mushaf-page::before { inset: 5px; }
-  .mushaf-page::after { inset: 8px; }
-}
-
-.mushaf-corner {
-  position: absolute;
-  width: clamp(16px, 4vw, 26px);
-  height: clamp(16px, 4vw, 26px);
-  border-color: rgba(184,144,47,0.7);
-  pointer-events: none;
-  z-index: 1;
-}
-
-.surah-band {
-  position: relative;
-  border-radius: clamp(10px, 2.4vw, 14px);
-  background: linear-gradient(180deg, #fcf3da 0%, #f4e6c2 55%, #efdcae 100%);
-  border: 1px solid rgba(184,144,47,0.55);
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,0.6),
-    inset 0 0 18px rgba(184,144,47,0.10),
-    0 3px 14px rgba(184,144,47,0.18);
-}
-.surah-band::before, .surah-band::after {
-  content: "";
-  position: absolute;
-  top: 50%; transform: translateY(-50%);
-  width: clamp(16px, 4vw, 22px);
-  height: clamp(16px, 4vw, 22px);
-  border: 1px solid rgba(184,144,47,0.5);
-  border-radius: 50%;
-}
-.surah-band::before { right: 10px; }
-.surah-band::after { left: 10px; }
-@media (max-width: 379.98px) {
-  .surah-band::before { right: 6px; }
-  .surah-band::after { left: 6px; }
 }
 
 .mushaf-text {
@@ -322,223 +388,16 @@ html { scrollbar-width: thin; scrollbar-color: #d8c9a6 #f1ead8; }
   word-spacing: 0.02em;
   letter-spacing: 0;
 }
-/* Reading text is set with a JS font-size slider; tighten line rhythm a touch on phones
-   so a full ayah still wraps predictably without overflowing the page frame. */
-@media (max-width: 639.98px) {
-  .mushaf-text { word-spacing: 0.01em; }
-}
-
-.basmala-quran { font-family: var(--font-quran); }
-
-.basmala-ornament {
-  position: relative;
-  background: linear-gradient(90deg, transparent, rgba(184,144,47,0.55), transparent);
-  height: 1px;
-}
-.basmala-ornament::after {
-  content: "۞";
-  position: absolute;
-  left: 50%; top: 50%;
-  transform: translate(-50%, -50%);
-  color: #b8902f;
-  background: #fcf8ee;
-  padding: 0 10px;
-  font-size: 14px;
-}
-
-/* Ornamental ayah end marker (gold rosette + eastern digits) */
-.ayah-rosette {
-  display: inline-grid;
-  place-items: center;
-  position: relative;
-  vertical-align: middle;
-  width: 1.55em; height: 1.55em;
-  margin: 0 0.18em;
-  font-family: var(--font-ui);
-  font-size: 0.5em;
-  font-weight: 700;
-  color: #9c7826;
-  line-height: 1;
-}
-.ayah-rosette svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-.ayah-rosette span { position: relative; z-index: 1; }
-
-.ayah-marker {
-  display: inline-grid;
-  place-items: center;
-  vertical-align: middle;
-  width: 1.9em; height: 1.9em;
-  font-size: .62em;
-  color: #b8902f;
-  background: radial-gradient(circle, #fff 55%, rgba(184,144,47,0.12) 100%);
-  border: 1px solid rgba(184,144,47,0.5);
-  border-radius: 999px;
-  margin: 0 .25em;
-  font-family: var(--font-ui);
-}
 
 /* ============================================================
-   9. AYAH INTERACTIONS — popover & bottom sheet
+   تحسينات شاشة الدخول
    ============================================================ */
-.ayah-pop {
-  animation: popIn 0.18s ease-out both;
-  max-width: calc(100vw - 2rem); /* never spill off small screens */
-}
-@keyframes popIn {
-  from { opacity: 0; transform: translateY(6px) scale(0.96); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.sheet-backdrop {
-  animation: fadeIn 0.25s ease both;
-  overscroll-behavior: contain;
-}
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-.sheet-panel {
-  animation: sheetUp 0.32s cubic-bezier(0.22,1,0.36,1) both;
-  /* Respect the home-indicator / gesture bar on notched phones */
-  padding-bottom: var(--safe-b);
-  max-height: min(85vh, 85dvh);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-@keyframes sheetUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
-
-/* ============================================================
-   10. SACRED INTRO EXPERIENCE
-   ============================================================ */
-@property --reveal {
-  syntax: "<percentage>";
-  inherits: false;
-  initial-value: 0%;
-}
-
-.intro-root {
-  position: fixed;
-  inset: 0;
-  z-index: 200;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  height: var(--app-100vh);
-  background: radial-gradient(60% 55% at 50% 46%, #ffffff 0%, #fdfcf9 45%, #f7f2e8 100%);
-  overscroll-behavior: contain;
-}
-
-.intro-glow {
-  position: absolute;
-  left: 50%;
-  top: 46%;
-  width: 80vmin;
-  height: 80vmin;
-  transform: translate(-50%, -50%) scale(0.6);
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,250,235,0.95) 0%, rgba(247,238,214,0.5) 35%, rgba(247,238,214,0) 70%);
-  opacity: 0;
-  animation: introGlow 3.2s ease-out forwards;
-  pointer-events: none;
-}
-@keyframes introGlow {
-  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
-  60% { opacity: 1; }
-  100% { opacity: 0.9; transform: translate(-50%, -50%) scale(1); }
-}
-
-.intro-pattern {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  color: #c9a24a;
-  animation: introPattern 4s ease-out forwards;
-  pointer-events: none;
-}
-@keyframes introPattern {
-  0% { opacity: 0; transform: scale(1.04); }
-  100% { opacity: 0.05; transform: scale(1); }
-}
-
-.intro-basmala {
-  font-family: var(--font-arabic);
-  color: #111111;
-  text-align: center;
-  opacity: 0;
-  letter-spacing: 0.01em;
-  animation: introFadeUp 2s cubic-bezier(0.22, 1, 0.36, 1) 0.6s forwards;
-  text-shadow: 0 0 28px rgba(255, 248, 230, 0.9);
-}
-@keyframes introFadeUp {
-  0% { opacity: 0; transform: translateY(14px); filter: blur(6px); }
-  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
-}
 
 .intro-verse {
   font-family: var(--font-arabic);
   color: #111111;
   text-align: center;
   line-height: 2.05;
-  -webkit-mask-image: linear-gradient(to left, #000 var(--reveal), rgba(0,0,0,0) calc(var(--reveal) + 7%));
-  mask-image: linear-gradient(to left, #000 var(--reveal), rgba(0,0,0,0) calc(var(--reveal) + 7%));
-  --reveal: 0%;
-  animation: introWrite 5.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  text-shadow: 0 0 1px rgba(0,0,0,0.15), 0 0 36px rgba(255, 246, 222, 0.7);
-}
-@keyframes introWrite {
-  0% { --reveal: 0%; }
-  100% { --reveal: 108%; }
-}
-
-.intro-verse-decor { color: #b8902f; font-weight: 700; }
-
-/* النور transition */
-.intro-noor {
-  position: absolute;
-  left: 50%;
-  top: 46%;
-  width: 10vmin;
-  height: 10vmin;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background: radial-gradient(circle, #ffffff 0%, #fffdf7 40%, rgba(255,255,255,0.9) 70%, rgba(255,255,255,0) 100%);
-  opacity: 0;
-  pointer-events: none;
-}
-.intro-root.noor .intro-noor { animation: noorExpand 2.8s cubic-bezier(0.45, 0, 0.2, 1) forwards; }
-@keyframes noorExpand {
-  0% { opacity: 0.2; width: 10vmin; height: 10vmin; }
-  35% { opacity: 1; }
-  100% { opacity: 1; width: 320vmax; height: 320vmax; }
-}
-.intro-root.noor .intro-stage { animation: verseDissolve 1.6s ease-in forwards; }
-@keyframes verseDissolve {
-  0% { opacity: 1; filter: blur(0); transform: scale(1); }
-  100% { opacity: 0; filter: blur(14px); transform: scale(1.06); }
-}
-
-.intro-root.fade-out { animation: introFadeOut 1s ease-out forwards; }
-@keyframes introFadeOut { 0% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
-
-.intro-attribution {
-  opacity: 0;
-  animation: introFadeUp 1.6s ease 6.5s forwards;
-  padding-bottom: var(--safe-b);
-}
-
-/* Sacred entry gate (guarantees audio plays on tap) */
-.intro-gate {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  z-index: 20;
-  padding: max(1.5rem, var(--safe-t)) max(1rem, var(--safe-r)) max(1.5rem, var(--safe-b)) max(1rem, var(--safe-l));
-}
-.intro-gate-inner {
-  text-align: center;
-  animation: introFadeUp 1.4s cubic-bezier(0.22,1,0.36,1) both;
-  padding: 0 1.5rem;
-  width: 100%;
-  max-width: 28rem;
 }
 
 .enter-btn {
@@ -555,317 +414,9 @@ html { scrollbar-width: thin; scrollbar-color: #d8c9a6 #f1ead8; }
   transition: transform .3s ease, box-shadow .3s ease;
   touch-action: manipulation;
 }
-.enter-btn:hover { transform: scale(1.05); box-shadow: 0 14px 50px rgba(184,144,47,0.35); }
-.enter-btn:active { transform: scale(0.97); }
-.enter-btn::before {
-  content: "";
-  position: absolute;
-  inset: -14px;
-  border-radius: 50%;
-  border: 1px solid rgba(184,144,47,0.3);
-  animation: ringPulse 2.8s ease-out infinite;
-}
-.enter-btn::after {
-  content: "";
-  position: absolute;
-  inset: -14px;
-  border-radius: 50%;
-  border: 1px solid rgba(184,144,47,0.25);
-  animation: ringPulse 2.8s ease-out 1.4s infinite;
-}
-@keyframes ringPulse {
-  0% { transform: scale(0.9); opacity: 0.8; }
-  100% { transform: scale(1.5); opacity: 0; }
-}
-
-.intro-hint {
-  position: absolute;
-  bottom: calc(12% + var(--safe-b));
-  left: 0;
-  right: 0;
-  text-align: center;
-  color: #9a8f74;
-  font-size: 0.8rem;
-  letter-spacing: 0.25em;
-  opacity: 0;
-  animation: hintPulse 3.5s ease-in-out 1.2s infinite;
-  padding: 0 1rem;
-}
-@keyframes hintPulse { 0%, 100% { opacity: 0; } 50% { opacity: 0.85; } }
-
-.intro-skip {
-  position: absolute;
-  bottom: calc(5% + var(--safe-b));
-  left: 50%;
-  transform: translateX(-50%);
-  color: #b3a988;
-  font-size: 0.72rem;
-  letter-spacing: 0.2em;
-  background: none;
-  border: none;
-  cursor: pointer;
-  opacity: 0;
-  animation: skipIn 1.2s ease 4s forwards;
-  padding: 0.5rem 1rem; /* comfortable tap target beyond the visible label */
-  touch-action: manipulation;
-}
-@keyframes skipIn { to { opacity: 0.7; } }
-.intro-skip:hover { color: #8a8068; }
-
-/* --- Intro: small phones --- */
-@media (max-width: 379.98px) {
-  .intro-glow, .intro-noor { width: 70vmin; height: 70vmin; }
-  .intro-hint { letter-spacing: 0.18em; font-size: 0.72rem; }
-}
-
-/* --- Intro: short / landscape viewports (phones rotated, small laptops in split view) --- */
-@media (max-height: 520px) {
-  .intro-verse { line-height: 1.55; margin-top: 1.5rem !important; }
-  .intro-basmala { margin-top: 0 !important; }
-  .enter-btn { width: 84px; height: 84px; }
-  .intro-hint { display: none; }
-  .intro-skip { bottom: calc(3% + var(--safe-b)); }
-}
-
-/* --- Intro: tablets and up, a little more breathing room --- */
-@media (min-width: 768px) {
-  .intro-gate-inner { max-width: 32rem; }
-}
 
 /* ============================================================
-   11. CROSS-DEVICE FINE-TUNING
-   ============================================================ */
-
-/* Large / wide monitors: keep the manuscript from stretching edge-to-edge */
-@media (min-width: 1536px) {
-  .mushaf-page { max-width: 900px; margin-inline: auto; }
-}
-
-/* Foldables & very small phones: shrink ornamental padding across the board */
-@media (max-width: 359.98px) {
-  .card, .card-warm { border-radius: 14px; }
-}
-
-/* Print: the sacred intro and decorative motion have no place on paper */
-@media print {
-  .intro-root, .shimmer, .animate-pulse-glow, .animate-floaty, .animate-spin-slow, .animate-twinkle {
-    display: none !important;
-    animation: none !important;
-  }
-  .mushaf-page { box-shadow: none; outline: 1px solid #b8902f; }
-  body { background: #fff; }
-}
-/* ============================================================
-   12. UNIVERSAL PHONE RESPONSIVE — جميع أحجام الهواتف
-   ============================================================ */
-
-/* === الهواتف الصغيرة جداً (أقل من 280px) === */
-@media (max-width: 279.98px) {
-  html { font-size: 9px; }
-  .container-responsive, .container {
-    padding-left: 2px !important;
-    padding-right: 2px !important;
-  }
-  h1 { font-size: 1rem !important; }
-  h2 { font-size: 0.85rem !important; }
-  h3 { font-size: 0.75rem !important; }
-  p, span, div { font-size: 0.6rem !important; }
-  .btn-primary, .btn-ghost {
-    padding: 2px 4px !important;
-    font-size: 0.5rem !important;
-    min-height: 24px !important;
-    border-radius: 4px !important;
-  }
-  .card, .card-warm {
-    padding: 4px !important;
-    border-radius: 4px !important;
-    margin: 2px 0 !important;
-  }
-  .mushaf-page { padding: 4px !important; }
-  .mushaf-text { font-size: 0.6rem !important; }
-  .intro-verse { font-size: 0.7rem !important; }
-  .enter-btn { width: 48px !important; height: 48px !important; }
-}
-
-/* === الهواتف صغيرة جداً (280px - 319px) === */
-@media (min-width: 280px) and (max-width: 319.98px) {
-  html { font-size: 10px; }
-  .container-responsive, .container {
-    padding-left: 4px !important;
-    padding-right: 4px !important;
-  }
-  h1 { font-size: 1.1rem !important; }
-  h2 { font-size: 0.95rem !important; }
-  h3 { font-size: 0.85rem !important; }
-  p, span, div { font-size: 0.7rem !important; }
-  .btn-primary, .btn-ghost {
-    padding: 4px 6px !important;
-    font-size: 0.55rem !important;
-    min-height: 28px !important;
-    border-radius: 6px !important;
-  }
-  .card, .card-warm {
-    padding: 6px !important;
-    border-radius: 6px !important;
-    margin: 3px 0 !important;
-  }
-  .mushaf-page { padding: 4px !important; }
-  .mushaf-text { font-size: 0.65rem !important; }
-  .intro-verse { font-size: 0.8rem !important; }
-  .enter-btn { width: 56px !important; height: 56px !important; }
-  .grid-cols-2 { grid-template-columns: 1fr 1fr !important; gap: 4px !important; }
-  .grid-cols-3 { grid-template-columns: 1fr 1fr !important; gap: 4px !important; }
-  .grid-cols-4 { grid-template-columns: 1fr 1fr !important; gap: 4px !important; }
-}
-
-/* === الهواتف الصغيرة (320px - 359px) === */
-@media (min-width: 320px) and (max-width: 359.98px) {
-  html { font-size: 11px; }
-  .container-responsive, .container {
-    padding-left: 6px !important;
-    padding-right: 6px !important;
-  }
-  h1 { font-size: 1.2rem !important; }
-  h2 { font-size: 1rem !important; }
-  h3 { font-size: 0.9rem !important; }
-  p, span, div { font-size: 0.75rem !important; }
-  .btn-primary, .btn-ghost {
-    padding: 6px 8px !important;
-    font-size: 0.6rem !important;
-    min-height: 32px !important;
-    border-radius: 8px !important;
-  }
-  .card, .card-warm {
-    padding: 8px !important;
-    border-radius: 8px !important;
-    margin: 4px 0 !important;
-  }
-  .mushaf-page { padding: 4px !important; }
-  .mushaf-text { font-size: 0.7rem !important; }
-  .intro-verse { font-size: 0.85rem !important; }
-  .enter-btn { width: 64px !important; height: 64px !important; }
-  .grid-cols-2 { grid-template-columns: 1fr 1fr !important; gap: 4px !important; }
-  .grid-cols-3 { grid-template-columns: 1fr 1fr !important; gap: 4px !important; }
-  .grid-cols-4 { grid-template-columns: 1fr 1fr !important; gap: 4px !important; }
-}
-
-/* === الهواتف المتوسطة الصغيرة (360px - 399px) === */
-@media (min-width: 360px) and (max-width: 399.98px) {
-  html { font-size: 12px; }
-  .container-responsive, .container {
-    padding-left: 8px !important;
-    padding-right: 8px !important;
-  }
-  h1 { font-size: 1.4rem !important; }
-  h2 { font-size: 1.1rem !important; }
-  h3 { font-size: 0.95rem !important; }
-  p, span, div { font-size: 0.8rem !important; }
-  .btn-primary, .btn-ghost {
-    padding: 8px 10px !important;
-    font-size: 0.65rem !important;
-    min-height: 36px !important;
-    border-radius: 10px !important;
-  }
-  .card, .card-warm {
-    padding: 10px !important;
-    border-radius: 10px !important;
-    margin: 6px 0 !important;
-  }
-  .mushaf-page { padding: 6px !important; }
-  .mushaf-text { font-size: 0.75rem !important; }
-  .intro-verse { font-size: 0.9rem !important; }
-  .enter-btn { width: 72px !important; height: 72px !important; }
-  .grid-cols-2 { grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
-  .grid-cols-3 { grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
-  .grid-cols-4 { grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
-}
-
-/* === الهواتف المتوسطة (400px - 479px) === */
-@media (min-width: 400px) and (max-width: 479.98px) {
-  html { font-size: 13px; }
-  .container-responsive, .container {
-    padding-left: 10px !important;
-    padding-right: 10px !important;
-  }
-  h1 { font-size: 1.6rem !important; }
-  h2 { font-size: 1.3rem !important; }
-  h3 { font-size: 1.05rem !important; }
-  p, span, div { font-size: 0.85rem !important; }
-  .btn-primary, .btn-ghost {
-    padding: 10px 14px !important;
-    font-size: 0.7rem !important;
-    min-height: 40px !important;
-    border-radius: 12px !important;
-  }
-  .card, .card-warm {
-    padding: 12px !important;
-    border-radius: 12px !important;
-    margin: 8px 0 !important;
-  }
-  .mushaf-page { padding: 8px !important; }
-  .mushaf-text { font-size: 0.8rem !important; }
-  .intro-verse { font-size: 1rem !important; }
-  .enter-btn { width: 80px !important; height: 80px !important; }
-  .grid-cols-2 { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
-  .grid-cols-3 { grid-template-columns: 1fr 1fr 1fr !important; gap: 8px !important; }
-  .grid-cols-4 { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
-}
-
-/* === الهواتف الكبيرة (480px - 639px) === */
-@media (min-width: 480px) and (max-width: 639.98px) {
-  html { font-size: 14px; }
-  .container-responsive, .container {
-    padding-left: 14px !important;
-    padding-right: 14px !important;
-  }
-  h1 { font-size: 1.8rem !important; }
-  h2 { font-size: 1.5rem !important; }
-  h3 { font-size: 1.15rem !important; }
-  p, span, div { font-size: 0.9rem !important; }
-  .btn-primary, .btn-ghost {
-    padding: 12px 18px !important;
-    font-size: 0.8rem !important;
-    min-height: 44px !important;
-    border-radius: 14px !important;
-  }
-  .card, .card-warm {
-    padding: 14px !important;
-    border-radius: 14px !important;
-    margin: 10px 0 !important;
-  }
-  .mushaf-page { padding: 10px !important; }
-  .mushaf-text { font-size: 0.85rem !important; }
-  .intro-verse { font-size: 1.1rem !important; }
-  .enter-btn { width: 88px !important; height: 88px !important; }
-  .grid-cols-2 { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
-  .grid-cols-3 { grid-template-columns: 1fr 1fr 1fr !important; gap: 10px !important; }
-  .grid-cols-4 { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
-}
-
-/* ============================================================
-   13. تحسينات إضافية للهواتف الطويلة (20:9, 21:9)
-   ============================================================ */
-
-@media (min-aspect-ratio: 19/9) and (max-width: 480px) {
-  /* هواتف INFINIX و Samsung الطويلة */
-  .hero-section { padding-top: 0.5rem !important; }
-  .hero-section h1 { font-size: 1.4rem !important; }
-  .hero-section p { font-size: 0.75rem !important; }
-  .space-y-24 { space-y: 1rem !important; }
-  .mt-12 { margin-top: 0.5rem !important; }
-  .mt-6 { margin-top: 0.25rem !important; }
-  .pt-8 { padding-top: 0.25rem !important; }
-  .pb-8 { padding-bottom: 0.25rem !important; }
-  .card { padding: 8px !important; }
-  .btn-primary, .btn-ghost { 
-    padding: 6px 10px !important;
-    font-size: 0.6rem !important;
-    min-height: 32px !important;
-  }
-}
-
-/* ============================================================
-   14. تحسينات للوضع الليلي على جميع الأجهزة
+   تحسينات للوضع الليلي
    ============================================================ */
 
 @media (prefers-color-scheme: dark) {
@@ -884,43 +435,24 @@ html { scrollbar-width: thin; scrollbar-color: #d8c9a6 #f1ead8; }
     background: #ffffff !important;
     border-color: rgba(184, 144, 47, 0.25) !important;
   }
-  input, select, textarea {
-    background: #ffffff !important;
-    color: #2a2723 !important;
-  }
 }
 
 /* ============================================================
-   15. تحسينات للمستخدمين الذين يفضلون التباين العالي
+   إخفاء شريط التمرير
    ============================================================ */
 
-@media (prefers-contrast: high) {
-  .card, .card-warm {
-    border: 2px solid #2a2723 !important;
-  }
-  .btn-primary {
-    background: #b8902f !important;
-    color: #ffffff !important;
-    border: 2px solid #2a2723 !important;
-  }
-  .btn-ghost {
-    background: #ffffff !important;
-    border: 2px solid #2a2723 !important;
-    color: #2a2723 !important;
-  }
-  .gold-text {
-    color: #b8902f !important;
-    background: none !important;
-    -webkit-background-clip: unset !important;
-    background-clip: unset !important;
-  }
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 /* ============================================================
-   16. كلاسات مساعدة إضافية
+   حاوية مرنة
    ============================================================ */
 
-/* حاوية مرنة جداً */
 .container-fluid {
   width: 100%;
   max-width: 100%;
@@ -928,43 +460,8 @@ html { scrollbar-width: thin; scrollbar-color: #d8c9a6 #f1ead8; }
   padding-right: max(env(safe-area-inset-right), 0.5rem);
 }
 
-/* شبكة مرنة جداً */
 .grid-fluid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
   gap: clamp(4px, 1vw, 12px);
-}
-
-/* إخفاء العناصر على الهواتف الصغيرة جداً */
-.hide-ultra-mobile {
-  display: none !important;
-}
-@media (min-width: 360px) {
-  .hide-ultra-mobile {
-    display: block !important;
-  }
-}
-
-/* إظهار العناصر فقط على الهواتف الصغيرة جداً */
-.show-ultra-mobile {
-  display: block !important;
-}
-@media (min-width: 360px) {
-  .show-ultra-mobile {
-    display: none !important;
-  }
-}
-
-/* نصوص قابلة للتكيف تلقائياً */
-.text-auto {
-  font-size: clamp(0.6rem, 1.8vw, 1rem);
-  line-height: 1.5;
-}
-
-/* هوامش قابلة للتكيف تلقائياً */
-.m-auto {
-  margin: clamp(2px, 0.5vw, 8px) 0;
-}
-.p-auto {
-  padding: clamp(4px, 1vw, 12px);
 }
