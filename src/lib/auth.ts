@@ -52,11 +52,15 @@ export function clearSessionCookie() {
 }
 
 export async function getCurrentUser(): Promise<User | null> {
-  const store = await cookies();
-  const token = store.get(COOKIE)?.value;
-  if (!token) return null;
-  const id = verifyToken(token);
-  if (!id) return null;
-  const [user] = await db.select().from(users).where(eq(users.id, id));
-  return user ?? null;
+  try {
+    const store = await cookies();
+    const token = store.get(COOKIE)?.value;
+    if (!token) return null;
+    const id = verifyToken(token);
+    if (!id) return null;
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user ?? null;
+  } catch {
+    return null;
+  }
 }

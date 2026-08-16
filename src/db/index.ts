@@ -1,30 +1,23 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
-// منع الاتصال بقاعدة البيانات أثناء البناء
-const isBuild = process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL;
+const databaseUrl = process.env.DATABASE_URL;
 
-let pool: Pool | null = null;
-let db: any = null;
-
-if (!isBuild && process.env.DATABASE_URL) {
-  const globalForDb = globalThis as typeof globalThis & {
-    __hafizPostgresqlPool?: Pool;
-  };
-
-  pool =
-    globalForDb.__hafizPostgresqlPool ??
-    new Pool({
-      connectionString: process.env.DATABASE_URL,
-    });
-
-  if (process.env.NODE_ENV !== "production") {
-    globalForDb.__hafizPostgresqlPool = pool;
-  }
-
-  db = drizzle(pool);
-} else {
-  console.log('⚠️ Skipping database connection during build');
+if (!databaseUrl) {
+  console.warn("⚠️ DATABASE_URL is not set. Database features will not work.");
 }
 
-export { pool, db };
+const globalForDb = globalThis as typeof globalThis & {
+  __hafizPostgresqlPool?: Pool;
+};
+
+export const pool = databaseUrl
+  ? (globalForDb.__hafizPostgresqlPool ??
+      new Pool({ connectionString: databaseUrl }))
+  : null;
+
+if (process.env.NODE_ENV !== "production" && pool) {
+  globalForDb.__hafizPostgresqlPool = pool;
+}
+
+export const db = pool ? drizzle(pool) : null;
