@@ -8,6 +8,15 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
+    // التحقق من وجود اتصال بقاعدة البيانات
+    if (!db) {
+      console.error("❌ Database not connected");
+      return NextResponse.json(
+        { ok: false, error: "قاعدة البيانات غير متصلة." },
+        { status: 500 }
+      );
+    }
+
     const body = await req.json();
     const name = String(body.name ?? "").trim().slice(0, 120);
     const email = String(body.email ?? "").trim().toLowerCase().slice(0, 200);
@@ -44,7 +53,7 @@ export async function POST(req: Request) {
     res.cookies.set(buildSessionCookie(created.id));
     return res;
   } catch (error) {
-    console.error("Signup error:", error);
+    console.error("❌ Signup error:", error);
     return NextResponse.json(
       { ok: false, error: "حدث خطأ في الخادم." },
       { status: 500 }

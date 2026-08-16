@@ -11,6 +11,8 @@ const nextConfig: NextConfig = {
   env: {
     DATABASE_URL: process.env.DATABASE_URL || '',
   },
+  // منع الاتصال بقاعدة البيانات أثناء البناء
+  staticPageGenerationTimeout: 120,
 };
 
 export default nextConfig;
