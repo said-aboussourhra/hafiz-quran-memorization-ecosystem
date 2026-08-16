@@ -38,7 +38,12 @@ export async function POST(req: Request) {
     const { hash, salt } = hashPassword(password);
     const [created] = await db
       .insert(users)
-      .values({ name, email, password_hash: hash, password_salt: salt })
+      .values({ 
+        name, 
+        email, 
+        passwordHash: hash,   // ✅ تم التصحيح
+        passwordSalt: salt    // ✅ تم التصحيح
+      })
       .returning();
 
     const res = NextResponse.json({ ok: true, user: { id: created.id, name: created.name } });
