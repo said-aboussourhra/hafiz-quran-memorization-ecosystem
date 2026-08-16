@@ -1,5 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { PWARegister } from "@/components/PWARegister";
+import { IdleDhikr } from "@/components/IdleDhikr";
 import { Amiri, Amiri_Quran, Reem_Kufi, Tajawal } from "next/font/google";
 import "./globals.css";
 import { SiteChrome } from "@/components/SiteChrome";
@@ -38,67 +40,34 @@ export const metadata: Metadata = {
   title: "حافظ — رحلتك مع القرآن الكريم",
   description:
     "حافظ منصة حفظ القرآن الكريم: المصحف كاملاً بالرسم العثماني مع التفسير الميسر، وطرق حفظ ذهنية واختبارات ذكية.",
-  // إضافات PWA
   manifest: "/manifest.json",
-  themeColor: "#b8902f",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "حافظ",
   },
   icons: {
-    apple: "/icons/icon-192.png",
-    icon: [
-      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
-    ],
+    icon: [{ url: "/icon-192.png", sizes: "192x192", type: "image/png" }],
+    apple: [{ url: "/icon-512.png", sizes: "512x512", type: "image/png" }],
   },
-  // تحسينات SEO
-  openGraph: {
-    title: "حافظ — رحلتك مع القرآن الكريم",
-    description: "منصة حفظ القرآن الكريم مع التفسير والاختبارات الذكية",
-    type: "website",
-    url: "https://hafiz-quran.vercel.app",
-    images: [
-      {
-        url: "/icons/icon-512.png",
-        width: 512,
-        height: 512,
-        alt: "حافظ - تطبيق حفظ القرآن",
-      },
-    ],
-  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#059669",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const user = await getCurrentUser();
   return (
     <html lang="ar" dir="rtl" className={`${amiri.variable} ${amiriQuran.variable} ${reem.variable} ${tajawal.variable}`}>
-      <head>
-        {/* PWA Meta Tags */}
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="apple-touch-fullscreen" content="yes" />
-        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
-        <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192.png" />
-        <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512.png" />
-        {/* Service Worker Registration */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/sw.js')
-                  .then(() => console.log('✅ Service Worker registered'))
-                  .catch((err) => console.log('❌ Service Worker error:', err));
-              }
-            `,
-          }}
-        />
-      </head>
       <body className="min-h-screen antialiased">
+        <PWARegister />
         <Intro />
         <SiteChrome userName={user?.name ?? null}>{children}</SiteChrome>
+        <IdleDhikr name={user?.name ?? null} />
       </body>
     </html>
   );

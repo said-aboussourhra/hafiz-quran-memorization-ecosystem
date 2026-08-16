@@ -5,10 +5,10 @@ import { useMemo, useState } from "react";
 import type { UniverseSurah } from "@/lib/progress";
 
 const STATUS = {
-  mastered: { label: "متقَن", color: "#1f6f5c", glow: "rgba(31,111,92,0.55)" },
-  memorized: { label: "محفوظ", color: "#3aa384", glow: "rgba(58,163,132,0.5)" },
-  learning: { label: "قيد الحفظ", color: "#d4ae54", glow: "rgba(212,174,84,0.55)" },
-  not_started: { label: "لم يبدأ", color: "#cdbf9c", glow: "rgba(205,191,156,0.4)" },
+  mastered: { label: "متقَن", color: "#047857", glow: "rgba(4,120,87,0.6)" },
+  memorized: { label: "محفوظ", color: "#10b981", glow: "rgba(16,185,129,0.55)" },
+  learning: { label: "قيد الحفظ", color: "#3b82f6", glow: "rgba(59,130,246,0.55)" },
+  not_started: { label: "لم يبدأ", color: "#b5c9cc", glow: "rgba(181,201,204,0.4)" },
 } as const;
 
 type Filter = "all" | "memorized" | "learning" | "remaining";

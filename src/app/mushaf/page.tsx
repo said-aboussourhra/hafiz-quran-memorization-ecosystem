@@ -1,4 +1,5 @@
 import { MushafIndex } from "@/components/MushafIndex";
+import { LastReadCard } from "@/components/LastRead";
 import { getCurrentUser } from "@/lib/auth";
 import { getUserProgress } from "@/lib/progress";
 
@@ -22,6 +23,7 @@ export default async function MushafPage() {
           اختر سورة لتُفتح على هيئة مصحف.
         </p>
       </header>
+      <LastReadCard />
       <MushafIndex statuses={statuses} />
     </div>
   );

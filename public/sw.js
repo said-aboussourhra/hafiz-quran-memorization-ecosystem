@@ -1,37 +1,53 @@
-const CACHE_NAME = 'hafiz-v1.0.0';
-const ASSETS = [
-  '/',
-  '/mushaf',
-  '/memorize',
-  '/login',
-  '/signup',
-  '/universe',
-  '/achievements',
-];
+// HAFIZ service worker — basic offline shell + runtime caching
+const CACHE = "hafiz-v1";
+const CORE = ["/", "/mushaf", "/memorize", "/search", "/names", "/manifest.json", "/icon-192.png", "/icon-512.png"];
 
-self.addEventListener('install', (event) => {
+self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS);
-    })
+    caches.open(CACHE).then((c) => c.addAll(CORE)).catch(() => {})
   );
+  self.skipWaiting();
 });
 
-self.addEventListener('fetch', (event) => {
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
+    )
+  );
+  self.clients.claim();
+});
+
+self.addEventListener("fetch", (event) => {
+  const { request } = event;
+  if (request.method !== "GET") return;
+
+  const url = new URL(request.url);
+
+  // Network-first for navigations and API/auth (always fresh content).
+  if (request.mode === "navigate" || url.pathname.startsWith("/api/")) {
+    event.respondWith(
+      fetch(request)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(request, copy)).catch(() => {});
+          return res;
+        })
+        .catch(() => caches.match(request).then((r) => r || caches.match("/")))
+    );
+    return;
+  }
+
+  // Cache-first for static assets (fast + offline).
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
-    })
-  );
-});
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.filter((key) => key !== CACHE_NAME)
-          .map((key) => caches.delete(key))
-      );
-    })
+    caches.match(request).then(
+      (cached) =>
+        cached ||
+        fetch(request).then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(request, copy)).catch(() => {});
+          return res;
+        }).catch(() => cached)
+    )
   );
 });

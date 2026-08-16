@@ -33,7 +33,7 @@ export default async function UniversePage() {
         {[
           { v: mastered, l: "نجوم متقَنة", c: "#1f6f5c" },
           { v: memorized, l: "نجوم محفوظة", c: "#3aa384" },
-          { v: learning, l: "نجوم قيد الحفظ", c: "#d4ae54" },
+          { v: learning, l: "نجوم قيد الحفظ", c: "#3b82f6" },
         ].map((s) => (
           <div key={s.l} className="card rounded-2xl p-5 text-center">
             <div className="font-display text-3xl font-bold" style={{ color: s.c }}>{s.v.toLocaleString("ar-EG")}</div>
@@ -58,7 +58,7 @@ export default async function UniversePage() {
                     <span className="text-xs text-gold-600">{pct}٪</span>
                   </div>
                   <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-cream-200">
-                    <div className="h-full rounded-full" style={{ width: `${pct}%`, background: "linear-gradient(90deg,#3aa384,#b8902f)" }} />
+                    <div className="h-full rounded-full" style={{ width: `${pct}%`, background: "linear-gradient(90deg,#10b981,#3b82f6)" }} />
                   </div>
                 </div>
               );

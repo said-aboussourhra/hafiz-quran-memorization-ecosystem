@@ -1,40 +1,23 @@
-/* ============================================================================
-   حافظ — GLOBAL STYLESHEET
-   Organized in sections (search for the === banners):
-     1. Design Tokens              6. Motion · Keyframes
-     2. Base & Resets              7. Motion · Utility Classes
-     3. Accessibility              8. Mushaf System (page, text, markers)
-     4. Typography Utilities       9. Ayah Interactions (popover, sheet)
-     5. Surfaces & Buttons        10. Sacred Intro Experience
-                                   11. Cross-Device Fine-Tuning
-   Breakpoint reference used throughout (mobile-first):
-     xs   <380px   very small / older & folded phones
-     sm   380–639px  phones
-     md   640–1023px tablets / phones landscape
-     lg   1024–1279px small laptops
-     xl   1280–1535px desktops
-     2xl  ≥1536px large / wide monitors
-   ============================================================================ */
-
 @import "tailwindcss";
 
-/* ============================================================
-   1. DESIGN TOKENS
-   ============================================================ */
 @theme {
-  --color-cream-50: #fdfcf8;
-  --color-cream-100: #f9f5ec;
-  --color-cream-200: #f1ead8;
-  --color-sand-300: #e7dcc2;
-  --color-ink-900: #2a2723;
-  --color-ink-700: #4a463e;
-  --color-ink-500: #6f6a5f;
-  --color-gold-500: #b8902f;
-  --color-gold-600: #9c7826;
-  --color-gold-400: #d4ae54;
-  --color-emerald-700: #1f6f5c;
-  --color-emerald-600: #2e8b6f;
-  --color-emerald-500: #3aa384;
+  --color-cream-50: #f5fbfa;
+  --color-cream-100: #ebf5f3;
+  --color-cream-200: #dcefec;
+  --color-sand-300: #c4e3df;
+  --color-ink-900: #071a1c;
+  --color-ink-700: #1e3d40;
+  --color-ink-500: #4a6664;
+  --color-gold-500: #059669;
+  --color-gold-600: #047857;
+  --color-gold-400: #10b981;
+  --color-emerald-700: #047857;
+  --color-emerald-600: #059669;
+  --color-emerald-500: #10b981;
+  --color-ocean-700: #1d4ed8;
+  --color-ocean-600: #2563eb;
+  --color-ocean-500: #3b82f6;
+  --color-ocean-400: #60a5fa;
   --font-arabic: var(--font-arabic), "Amiri", serif;
   --font-quran: var(--font-quran), "Amiri Quran", "Amiri", serif;
   --font-display: var(--font-display), serif;
@@ -42,154 +25,299 @@
 }
 
 :root {
-  color-scheme: light only;
-
-  /* Safe-area insets for notches / dynamic islands / gesture bars */
-  --safe-t: env(safe-area-inset-top, 0px);
-  --safe-r: env(safe-area-inset-right, 0px);
-  --safe-b: env(safe-area-inset-bottom, 0px);
-  --safe-l: env(safe-area-inset-left, 0px);
-
-  /* Stable viewport height (falls back gracefully on old browsers) */
-  --app-100vh: 100vh;
-  --app-100vh: 100dvh;
+  color-scheme: light;
 }
 
-/* ============================================================
-   2. BASE & RESETS
-   ============================================================ */
-html {
-  scroll-behavior: smooth;
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-}
+html { scroll-behavior: smooth; }
 
 body {
   background:
-    radial-gradient(900px 600px at 85% -5%, rgba(184, 144, 47, 0.06), transparent 60%),
-    radial-gradient(800px 600px at 5% 5%, rgba(31, 111, 92, 0.05), transparent 55%),
-    linear-gradient(180deg, #fdfcf8 0%, #f9f5ec 100%);
+    radial-gradient(900px 600px at 90% -10%, rgba(59,130,246, 0.07), transparent 60%),
+    radial-gradient(800px 600px at 5% 0%, rgba(16,185,129, 0.07), transparent 58%),
+    #ffffff;
   background-attachment: fixed;
-  color: #2a2723;
+  color: #071a1c;
   font-family: var(--font-ui);
-  -webkit-tap-highlight-color: transparent;
-  overflow-x: hidden;
+  font-weight: 500;
 }
 
-/* iOS Safari repaints fixed backgrounds badly on scroll; keep it simple on phones */
-@media (max-width: 767px), (hover: none) and (pointer: coarse) {
-  body { background-attachment: scroll; }
-}
+::selection { background: rgba(16,185,129, 0.25); color: #102a2e; }
 
-::selection { background: rgba(184, 144, 47, 0.2); color: #2a2723; }
-
-/* Scrollbar — WebKit */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-track { background: #f1ead8; }
-::-webkit-scrollbar-thumb { background: #1ee808; border-radius: 999px; }
-::-webkit-scrollbar-thumb:hover { background: #05e1e9; }
-@media (max-width: 767px) {
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
-}
-/* Scrollbar — Firefox */
-html { scrollbar-width: thin; scrollbar-color: #ec380b #f1ead8; }
+::-webkit-scrollbar-track { background: #e3f1ee; }
+::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #10b981, #3b82f6); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #059669, #2563eb); }
 
-/* ============================================================
-   3. ACCESSIBILITY
-   ============================================================ */
-:focus-visible {
-  outline: 2px solid rgba(42, 30, 2, 0.75);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-    scroll-behavior: auto !important;
-  }
-  .intro-verse { -webkit-mask-image: none; mask-image: none; }
-}
-
-@media (forced-colors: active) {
-  .card, .card-warm, .btn-primary, .btn-ghost, .mushaf-page, .mushaf-frame, .surah-band {
-    border: 1px solid CanvasText;
-  }
-}
-
-/* Touch devices need real hit targets, even when a design uses small text buttons */
-@media (hover: none) and (pointer: coarse) {
-  .btn-primary, .btn-ghost { min-height: 44px; }
-  .star-node { min-width: 10px; min-height: 10px; }
-}
-
-/* ============================================================
-   4. TYPOGRAPHY UTILITIES
-   ============================================================ */
 .font-arabic { font-family: var(--font-arabic); }
 .font-display { font-family: var(--font-display); }
 
-/* ============================================================
-   5. SURFACES & BUTTONS
-   ============================================================ */
+/* ===== Surfaces ===== */
 .card {
   background: #ffffff;
-  border: 1px solid rgba(184, 144, 47, 0.14);
-  box-shadow: 0 1px 2px rgba(42, 39, 35, 0.04), 0 8px 24px rgba(42, 39, 35, 0.05);
+  border: 1px solid rgba(26, 127, 181, 0.14);
+  box-shadow: 0 1px 2px rgba(16, 42, 46, 0.04), 0 10px 28px rgba(20, 97, 143, 0.07);
 }
 .card-warm {
-  background: linear-gradient(180deg, #fffdf7, #fbf6ea);
-  border: 1px solid rgba(184, 144, 47, 0.22);
-  box-shadow: 0 8px 28px rgba(184, 144, 47, 0.08);
+  background: linear-gradient(180deg, #f4fbf9, #eaf6f4);
+  border: 1px solid rgba(16,185,129, 0.28);
+  box-shadow: 0 10px 30px rgba(26, 127, 181, 0.10);
 }
-.hairline { border-color: rgba(184, 144, 47, 0.16); }
+.card-ocean {
+  background: linear-gradient(160deg, #eef8fb, #e4f2f7);
+  border: 1px solid rgba(59,130,246, 0.28);
+  box-shadow: 0 10px 30px rgba(26, 127, 181, 0.12);
+}
+.hairline { border-color: rgba(16,185,129, 0.18); }
 
 .gold-text {
-  background: linear-gradient(180deg, #cfe90a 0%, #3fd802 60%, #9c7826 100%);
+  background: linear-gradient(120deg, #10b981 0%, #059669 45%, #2563eb 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
-.emerald-text { color: #1f6f5c; }
+.ocean-text {
+  background: linear-gradient(120deg, #3b82f6 0%, #1d4ed8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.emerald-text { color: #047857; }
 
 .btn-primary {
-  background: linear-gradient(180deg, #d4ae54, #b8902f);
+  background: linear-gradient(120deg, #10b981 0%, #059669 50%, #2563eb 100%);
   color: #fff;
-  box-shadow: 0 6px 18px rgba(184, 144, 47, 0.28);
+  box-shadow: 0 8px 22px rgba(17, 160, 138, 0.32);
   transition: filter .2s ease, transform .2s ease;
-  touch-action: manipulation;
 }
-.btn-primary:hover { filter: brightness(1.05); }
-.btn-primary:active { transform: scale(0.98); }
-
+.btn-primary { position: relative; overflow: hidden; }
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  top: 0; left: -60%;
+  width: 40%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.55), transparent);
+  transform: skewX(-20deg);
+  transition: left .6s ease;
+}
+.btn-primary:hover::after { left: 130%; }
+.btn-primary:hover { filter: brightness(1.06); }
 .btn-ghost {
   background: #fff;
-  border: 1px solid rgba(184, 144, 47, 0.25);
-  color: #4a463e;
-  transition: background .2s ease, transform .2s ease;
-  touch-action: manipulation;
+  border: 1px solid rgba(16,185,129, 0.30);
+  color: #2b4a4d;
+  transition: background .2s ease, border-color .2s ease;
 }
-.btn-ghost:hover { background: #fbf6ea; }
-.btn-ghost:active { transform: scale(0.98); }
+.btn-ghost:hover { background: #eef7f5; border-color: rgba(59,130,246, 0.4); }
 
 .divider-ornament {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(184,144,47,0.35), transparent);
+  background: linear-gradient(90deg, transparent, rgba(16,185,129,0.45), rgba(59,130,246,0.45), transparent);
 }
 
-/* Sky / galaxy backdrop (universe view) */
+/* ===== Premium aesthetic utilities ===== */
+.glass {
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(14px) saturate(1.2);
+  border: 1px solid rgba(255,255,255,0.6);
+  box-shadow: 0 10px 40px -16px rgba(29,78,216,0.25);
+}
+
+.glow-emerald { box-shadow: 0 0 0 1px rgba(16,185,129,0.18), 0 18px 50px -20px rgba(16,185,129,0.5); }
+.glow-ocean { box-shadow: 0 0 0 1px rgba(59,130,246,0.18), 0 18px 50px -20px rgba(59,130,246,0.5); }
+
+/* animated aurora background blob */
+.aurora {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: -1;
+  animation: auroraFloat 16s ease-in-out infinite;
+}
+@keyframes auroraFloat {
+  0%,100% { transform: translate(0,0) scale(1); }
+  33% { transform: translate(30px,-26px) scale(1.12); }
+  66% { transform: translate(-24px,18px) scale(0.94); }
+}
+
+/* gradient moving border on hover cards */
+.lift {
+  transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s ease, border-color .35s ease;
+}
+.lift:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 26px 60px -28px rgba(29,78,216,0.4);
+}
+
+/* gradient text shimmer for headings */
+.shine-text {
+  background: linear-gradient(110deg, #047857, #059669 35%, #3b82f6 60%, #1d4ed8);
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shineMove 6s linear infinite;
+}
+@keyframes shineMove { to { background-position: 220% center; } }
+
+/* soft count-up appear */
+@keyframes popUp { from { opacity:0; transform: translateY(10px) scale(.96);} to {opacity:1; transform:translateY(0) scale(1);} }
+.pop { animation: popUp .6s cubic-bezier(.22,1,.36,1) both; }
+
+/* page enter transition */
+@keyframes pageEnter { from { opacity:0; transform: translateY(12px);} to {opacity:1; transform:translateY(0);} }
+.page-enter { animation: pageEnter .5s cubic-bezier(.22,1,.36,1) both; }
+
+/* decorative orbit ring */
+@keyframes orbit { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+.orbit { animation: orbit 28s linear infinite; }
+
+/* breathing glow */
+@keyframes breathe { 0%,100%{opacity:.45; transform:scale(1);} 50%{opacity:.85; transform:scale(1.06);} }
+.breathe { animation: breathe 7s ease-in-out infinite; }
+
+/* staggered entrance for grids */
+@keyframes cardIn { from { opacity:0; transform: translateY(14px) scale(.97);} to {opacity:1; transform:translateY(0) scale(1);} }
+.card-in { animation: cardIn .5s cubic-bezier(.22,1,.36,1) both; }
+
+/* name card — premium hover with gradient sweep */
+.name-card {
+  position: relative;
+  overflow: hidden;
+  transition: transform .4s cubic-bezier(.22,1,.36,1), box-shadow .4s ease, border-color .4s ease;
+}
+.name-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(59,130,246,0.12));
+  opacity: 0;
+  transition: opacity .4s ease;
+}
+.name-card:hover {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 24px 50px -22px rgba(37,99,235,0.5);
+  border-color: rgba(16,185,129,0.5);
+}
+.name-card:hover::before { opacity: 1; }
+.name-card > * { position: relative; z-index: 1; }
+
+/* speaking pulse ring */
+@keyframes speakPulse { 0%{box-shadow:0 0 0 0 rgba(16,185,129,0.5);} 100%{box-shadow:0 0 0 16px rgba(16,185,129,0);} }
+.speaking { animation: speakPulse 1.2s ease-out infinite; border-color: #10b981 !important; }
+
+/* sound icon badge */
+.sound-badge {
+  transition: transform .3s ease, opacity .3s ease;
+  opacity: 0;
+  transform: scale(0.6);
+}
+.name-card:hover .sound-badge, .dhikr-card:hover .sound-badge { opacity: 1; transform: scale(1); }
+
+.dhikr-card { transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s ease; }
+.dhikr-card:hover { transform: translateY(-4px); box-shadow: 0 20px 44px -22px rgba(37,99,235,0.4); }
+
+.mic-btn { transition: transform .2s ease, box-shadow .2s ease; }
+.mic-btn:hover { transform: scale(1.06); }
+.mic-btn.speaking { animation: micPulse 1s ease-out infinite; }
+@keyframes micPulse { 0%{box-shadow:0 0 0 0 rgba(192,57,43,0.5);} 100%{box-shadow:0 0 0 22px rgba(192,57,43,0);} }
+
+/* Inline ayah action chips (appear beside the exact ayah in the flow) */
+.ayah-inline-actions {
+  display: inline-flex;
+  vertical-align: middle;
+  gap: 0.35rem;
+  margin: 0 0.4rem;
+  font-family: var(--font-ui);
+  animation: chipIn .25s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes chipIn { from { opacity:0; transform: scale(.8); } to { opacity:1; transform: scale(1); } }
+.ayah-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 16px -6px rgba(37,99,235,0.4);
+}
+.ayah-chip-tafsir { background: #ffffff; border: 2px solid #10b981; color: #047857; }
+.ayah-chip-listen { background: linear-gradient(135deg,#10b981,#3b82f6); color: #fff; }
+.ayah-chip-close { background: #f1f5f4; color: #64748b; padding: 0.35rem 0.55rem; }
+.ayah-chip:hover { filter: brightness(1.05); transform: translateY(-1px); }
+
+/* Inline tafsir card, right beside the ayah */
+.ayah-tafsir-inline {
+  display: block;
+  margin: 0.8rem 0;
+  padding: 1rem 1.2rem;
+  border-radius: 18px;
+  background: linear-gradient(160deg,#f0faf7,#eaf3fb);
+  border: 2px solid rgba(16,185,129,0.4);
+  box-shadow: 0 12px 30px -14px rgba(37,99,235,0.4);
+  font-family: var(--font-ui);
+  text-align: right;
+  animation: chipIn .25s cubic-bezier(.22,1,.36,1) both;
+}
+.ayah-tafsir-head { display: flex; align-items: center; gap: 0.6rem; }
+.ayah-tafsir-badge {
+  display: inline-grid; place-items: center;
+  min-width: 1.9rem; height: 1.9rem; padding: 0 0.4rem;
+  border-radius: 999px;
+  font-size: 0.85rem; font-weight: 800; color: #fff;
+  background: linear-gradient(135deg,#10b981,#3b82f6);
+}
+.ayah-tafsir-close {
+  margin-inline-start: auto;
+  display: grid; place-items: center;
+  height: 1.8rem; width: 1.8rem; border-radius: 10px;
+  background: #ffffff; border: 1px solid #d7e3e0; color: #64748b; cursor: pointer;
+}
+.ayah-tafsir-body {
+  display: block;
+  margin-top: 0.7rem;
+  font-size: 1rem;
+  line-height: 1.9;
+  color: #1e3d40;
+  font-weight: 500;
+}
+
+.warn-toast { animation: warnShake .5s ease; }
+@keyframes warnShake { 0%,100%{transform:translateX(0);} 20%{transform:translateX(-6px);} 40%{transform:translateX(6px);} 60%{transform:translateX(-4px);} 80%{transform:translateX(4px);} }
+
+/* Developer letter frame */
+.letter-frame {
+  box-shadow: 0 30px 70px -30px rgba(37,99,235,0.35);
+  outline: 2px solid rgba(5,150,105,0.55);
+  outline-offset: -2px;
+}
+.letter-frame::before {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border: 1.5px solid rgba(59,130,246,0.30);
+  border-radius: 22px;
+  pointer-events: none;
+}
+.letter-corner {
+  position: absolute;
+  width: 26px; height: 26px;
+  border-color: #059669;
+  z-index: 1;
+}
+
+/* ===== Sky/galaxy for universe (light) ===== */
 .sky {
   background:
-    radial-gradient(60% 60% at 50% 45%, rgba(184,144,47,0.08), transparent 70%),
-    radial-gradient(40% 40% at 50% 50%, rgba(31,111,92,0.06), transparent 65%),
-    linear-gradient(180deg, #fbf7ee, #f4ecda);
+    radial-gradient(60% 60% at 50% 40%, rgba(59,130,246,0.12), transparent 70%),
+    radial-gradient(50% 50% at 50% 55%, rgba(16,185,129,0.10), transparent 65%),
+    radial-gradient(40% 40% at 80% 80%, rgba(29,78,216,0.08), transparent 60%),
+    linear-gradient(180deg, #eef8f6, #e3f1f4);
 }
 
-/* ============================================================
-   6. MOTION · KEYFRAMES
-   ============================================================ */
 @keyframes twinkle { 0%,100%{opacity:.5;transform:scale(.92)} 50%{opacity:1;transform:scale(1.08)} }
 @keyframes pulseGlow { 0%,100%{box-shadow:0 0 6px 1px currentColor;opacity:.8} 50%{box-shadow:0 0 16px 4px currentColor;opacity:1} }
 @keyframes floaty { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
@@ -197,142 +325,131 @@ html { scrollbar-width: thin; scrollbar-color: #ec380b #f1ead8; }
 @keyframes riseFade { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
 @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
 
-/* ============================================================
-   7. MOTION · UTILITY CLASSES
-   ============================================================ */
 .animate-twinkle { animation: twinkle 4s ease-in-out infinite; }
 .animate-pulse-glow { animation: pulseGlow 3.2s ease-in-out infinite; }
 .animate-floaty { animation: floaty 6s ease-in-out infinite; }
 .animate-spin-slow { animation: spinSlow 80s linear infinite; }
 .rise { animation: riseFade .7s ease-out both; }
 .shimmer {
-  background: linear-gradient(90deg, transparent, rgba(184,144,47,0.3), transparent);
+  background: linear-gradient(90deg, transparent, rgba(16,185,129,0.4), rgba(59,130,246,0.4), transparent);
   background-size: 200% 100%;
   animation: shimmer 3s linear infinite;
 }
 
 .star-node { border-radius:999px; transition: transform .25s ease, box-shadow .25s ease; }
 .star-node:hover { transform: scale(1.4); z-index:20; }
-/* Touch screens have no hover — tap feedback instead of relying on :hover */
-@media (hover: none) and (pointer: coarse) {
-  .star-node:active { transform: scale(1.4); z-index:20; }
-}
 
-/* ============================================================
-   8. MUSHAF SYSTEM
-   ============================================================ */
-
-/* --- Frame (legacy wrapper) --- */
+/* Mushaf page styling */
 .mushaf-frame {
-  background: linear-gradient(180deg, #fffdf6, #fbf5e6);
+  background:
+    linear-gradient(180deg, #fffdf6, #fbf5e6);
   border: 2px solid rgba(184,144,47,0.35);
   box-shadow: inset 0 0 0 6px rgba(255,255,255,0.7), inset 0 0 0 7px rgba(184,144,47,0.18), 0 12px 40px rgba(42,39,35,0.08);
-  border-radius: clamp(14px, 3vw, 24px);
+  border-radius: 24px;
 }
-
-/* --- Ayah word tokens (tap targets inside the reading text) --- */
 .ayah-word {
   cursor: pointer;
   border-radius: 6px;
   padding: 0 2px;
   transition: background .15s ease, color .15s ease;
 }
-.ayah-word:hover { background: rgba(184,144,47,0.14); }
-@media (hover: none) and (pointer: coarse) {
-  .ayah-word { padding: 2px 3px; } /* a little breathing room for fingertip taps */
-}
-.ayah-active { background: rgba(31,111,92,0.12); box-shadow: 0 0 0 1px rgba(31,111,92,0.25); }
-.ayah-playing { background: rgba(58,163,132,0.16); border-radius: 8px; box-shadow: 0 0 0 1px rgba(58,163,132,0.35), 0 0 18px rgba(58,163,132,0.18); }
+.ayah-word:hover { background: rgba(16,185,129,0.14); }
+.ayah-active { background: rgba(4,120,87,0.12); box-shadow: 0 0 0 1px rgba(4,120,87,0.25); }
+.ayah-playing { background: rgba(59,130,246,0.16); border-radius: 8px; box-shadow: 0 0 0 1px rgba(59,130,246,0.4), 0 0 18px rgba(59,130,246,0.22); }
 
-/* --- The Mushaf page itself --- */
+/* ===== Real Mushaf page (emerald-ocean) ===== */
 .mushaf-page {
   position: relative;
-  background: radial-gradient(120% 90% at 50% 0%, #fffefb 0%, #fcf8ee 55%, #f7f0e0 100%);
-  border-radius: clamp(12px, 2.5vw, 22px);
+  background:
+    radial-gradient(60% 40% at 50% 0%, rgba(16,185,129,0.06), transparent 70%),
+    radial-gradient(120% 90% at 50% 0%, #fbfffe 0%, #f2faf9 55%, #e9f5f4 100%);
+  border-radius: 22px;
   box-shadow:
     0 1px 0 rgba(255,255,255,0.8),
-    0 30px 70px -24px rgba(42,39,35,0.28),
-    0 10px 30px -18px rgba(184,144,47,0.25);
-  outline: 2px solid rgba(184,144,47,0.55);
+    0 40px 90px -30px rgba(16,42,46,0.28),
+    0 14px 40px -22px rgba(37,99,235,0.28);
+  /* emerald-ocean double frame */
+  outline: 2px solid rgba(5,150,105,0.55);
   outline-offset: -2px;
+}
+/* faint geometric watermark */
+.mushaf-page > .mushaf-text,
+.mushaf-page > * { position: relative; z-index: 1; }
+.mushaf-watermark {
+  position: absolute;
+  inset: 18px;
+  border-radius: 12px;
+  pointer-events: none;
+  opacity: 0.5;
+  z-index: 0;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(5,150,105,0.04) 0, transparent 12px),
+    radial-gradient(circle at 80% 70%, rgba(59,130,246,0.04) 0, transparent 12px);
+  background-size: 60px 60px;
 }
 .mushaf-page::before {
   content: "";
   position: absolute;
-  inset: clamp(6px, 1.6vw, 12px);
-  border: 1.5px solid rgba(184,144,47,0.40);
-  border-radius: clamp(8px, 1.8vw, 14px);
+  inset: 12px;
+  border: 1.5px solid rgba(59,130,246,0.35);
+  border-radius: 14px;
   pointer-events: none;
 }
 .mushaf-page::after {
   content: "";
   position: absolute;
-  inset: clamp(9px, 2vw, 16px);
-  border: 1px solid rgba(184,144,47,0.18);
-  border-radius: clamp(6px, 1.4vw, 11px);
+  inset: 16px;
+  border: 1px solid rgba(5,150,105,0.20);
+  border-radius: 11px;
   pointer-events: none;
 }
-/* Very narrow phones (<380px): thin the ornamental frame further so text area stays generous */
-@media (max-width: 379.98px) {
-  .mushaf-page::before { inset: 5px; }
-  .mushaf-page::after { inset: 8px; }
-}
-
 .mushaf-corner {
   position: absolute;
-  width: clamp(16px, 4vw, 26px);
-  height: clamp(16px, 4vw, 26px);
-  border-color: rgba(184,144,47,0.7);
+  width: 26px; height: 26px;
+  border-color: rgba(5,150,105,0.75);
   pointer-events: none;
   z-index: 1;
 }
 
 .surah-band {
   position: relative;
-  border-radius: clamp(10px, 2.4vw, 14px);
-  background: linear-gradient(180deg, #fcf3da 0%, #f4e6c2 55%, #efdcae 100%);
-  border: 1px solid rgba(184,144,47,0.55);
+  border-radius: 14px;
+  background:
+    linear-gradient(120deg, #d8f3ec 0%, #cfeaf3 55%, #d6e8f5 100%);
+  border: 1px solid rgba(5,150,105,0.55);
   box-shadow:
     inset 0 0 0 1px rgba(255,255,255,0.6),
-    inset 0 0 18px rgba(184,144,47,0.10),
-    0 3px 14px rgba(184,144,47,0.18);
+    inset 0 0 18px rgba(59,130,246,0.10),
+    0 3px 14px rgba(37,99,235,0.18);
 }
 .surah-band::before, .surah-band::after {
   content: "";
   position: absolute;
   top: 50%; transform: translateY(-50%);
-  width: clamp(16px, 4vw, 22px);
-  height: clamp(16px, 4vw, 22px);
-  border: 1px solid rgba(184,144,47,0.5);
+  width: 22px; height: 22px;
+  border: 1px solid rgba(5,150,105,0.55);
   border-radius: 50%;
 }
 .surah-band::before { right: 10px; }
 .surah-band::after { left: 10px; }
-@media (max-width: 379.98px) {
-  .surah-band::before { right: 6px; }
-  .surah-band::after { left: 6px; }
-}
 
 .mushaf-text {
   font-family: var(--font-quran);
-  color: #1a1408;
+  color: #0f2a2c;
   text-align: justify;
   text-align-last: center;
   text-justify: inter-word;
   word-spacing: 0.02em;
   letter-spacing: 0;
 }
-/* Reading text is set with a JS font-size slider; tighten line rhythm a touch on phones
-   so a full ayah still wraps predictably without overflowing the page frame. */
-@media (max-width: 639.98px) {
-  .mushaf-text { word-spacing: 0.01em; }
-}
 
-.basmala-quran { font-family: var(--font-quran); }
+.basmala-quran {
+  font-family: var(--font-quran);
+}
 
 .basmala-ornament {
   position: relative;
-  background: linear-gradient(90deg, transparent, rgba(184,144,47,0.55), transparent);
+  background: linear-gradient(90deg, transparent, rgba(5,150,105,0.55), rgba(59,130,246,0.55), transparent);
   height: 1px;
 }
 .basmala-ornament::after {
@@ -340,29 +457,46 @@ html { scrollbar-width: thin; scrollbar-color: #ec380b #f1ead8; }
   position: absolute;
   left: 50%; top: 50%;
   transform: translate(-50%, -50%);
-  color: #b8902f;
-  background: #fcf8ee;
+  color: #059669;
+  background: #f1faf8;
   padding: 0 10px;
   font-size: 14px;
 }
 
-/* Ornamental ayah end marker (gold rosette + eastern digits) */
+/* Ornamental ayah end marker (emerald rosette + eastern digits) */
 .ayah-rosette {
   display: inline-grid;
   place-items: center;
   position: relative;
   vertical-align: middle;
-  width: 1.55em; height: 1.55em;
-  margin: 0 0.18em;
+  width: 1.7em; height: 1.7em;
+  margin: 0 0.22em;
   font-family: var(--font-ui);
-  font-size: 0.5em;
-  font-weight: 700;
-  color: #9c7826;
+  font-size: 0.56em;
+  font-weight: 800;
+  color: #0a7468;
   line-height: 1;
 }
-.ayah-rosette svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ayah-rosette svg {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+}
 .ayah-rosette span { position: relative; z-index: 1; }
 
+/* Ayah action popover */
+.ayah-pop {
+  animation: popIn 0.18s ease-out both;
+}
+@keyframes popIn {
+  from { opacity: 0; transform: translateY(6px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.sheet-backdrop { animation: fadeIn 0.25s ease both; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.sheet-panel { animation: sheetUp 0.32s cubic-bezier(0.22,1,0.36,1) both; }
+@keyframes sheetUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
 .ayah-marker {
   display: inline-grid;
   place-items: center;
@@ -378,35 +512,7 @@ html { scrollbar-width: thin; scrollbar-color: #ec380b #f1ead8; }
 }
 
 /* ============================================================
-   9. AYAH INTERACTIONS — popover & bottom sheet
-   ============================================================ */
-.ayah-pop {
-  animation: popIn 0.18s ease-out both;
-  max-width: calc(100vw - 2rem); /* never spill off small screens */
-}
-@keyframes popIn {
-  from { opacity: 0; transform: translateY(6px) scale(0.96); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.sheet-backdrop {
-  animation: fadeIn 0.25s ease both;
-  overscroll-behavior: contain;
-}
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-.sheet-panel {
-  animation: sheetUp 0.32s cubic-bezier(0.22,1,0.36,1) both;
-  /* Respect the home-indicator / gesture bar on notched phones */
-  padding-bottom: var(--safe-b);
-  max-height: min(85vh, 85dvh);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-@keyframes sheetUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
-
-/* ============================================================
-   10. SACRED INTRO EXPERIENCE
+   SACRED INTRO EXPERIENCE
    ============================================================ */
 @property --reveal {
   syntax: "<percentage>";
@@ -421,9 +527,7 @@ html { scrollbar-width: thin; scrollbar-color: #ec380b #f1ead8; }
   display: grid;
   place-items: center;
   overflow: hidden;
-  height: var(--app-100vh);
-  background: radial-gradient(60% 55% at 50% 46%, #ffffff 0%, #fdfcf9 45%, #f7f2e8 100%);
-  overscroll-behavior: contain;
+  background: #ffffff;
 }
 
 .intro-glow {
@@ -434,10 +538,76 @@ html { scrollbar-width: thin; scrollbar-color: #ec380b #f1ead8; }
   height: 80vmin;
   transform: translate(-50%, -50%) scale(0.6);
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,250,235,0.95) 0%, rgba(247,238,214,0.5) 35%, rgba(247,238,214,0) 70%);
+  background: radial-gradient(circle, rgba(230,250,246,0.9) 0%, rgba(212,238,244,0.5) 40%, rgba(212,238,244,0) 72%);
   opacity: 0;
   animation: introGlow 3.2s ease-out forwards;
   pointer-events: none;
+}
+
+/* ===== Luxurious verse frame (blue-green) ===== */
+.intro-frame {
+  position: relative;
+  padding: 2.6rem 2.2rem;
+  border-radius: 28px;
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  animation: frameIn 1.4s cubic-bezier(0.22,1,0.36,1) 0.3s forwards;
+}
+@keyframes frameIn { from { opacity:0; transform: scale(0.94); } to { opacity:1; transform: scale(1); } }
+/* gradient border via mask */
+.intro-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 28px;
+  padding: 2.5px;
+  background: linear-gradient(135deg, #10b981, #059669 40%, #3b82f6 75%, #1d4ed8);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  box-shadow: 0 24px 60px -24px rgba(37,99,235,0.5);
+}
+/* inner thin frame */
+.intro-frame::after {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(5,150,105,0.28);
+  pointer-events: none;
+}
+.intro-frame-corner {
+  position: absolute;
+  width: 24px; height: 24px;
+  border-color: #059669;
+  z-index: 2;
+}
+
+/* Radiant glow burst on "continue" (no lightning) */
+.intro-burst {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 10vmin;
+  height: 10vmin;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.98) 0%, rgba(16,185,129,0.5) 30%, rgba(59,130,246,0.35) 55%, transparent 75%);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 25;
+}
+.intro-root.glow-burst .intro-burst { animation: burstExpand 1.6s cubic-bezier(0.3,0,0.2,1) forwards; }
+@keyframes burstExpand {
+  0% { opacity: 0.3; width: 10vmin; height: 10vmin; }
+  35% { opacity: 1; }
+  100% { opacity: 1; width: 260vmax; height: 260vmax; }
+}
+.intro-root.glow-burst .intro-frame { animation: verseGlowOut 1.2s ease-in forwards; }
+@keyframes verseGlowOut {
+  0% { opacity: 1; filter: blur(0); transform: scale(1); box-shadow: 0 0 0 rgba(16,185,129,0); }
+  100% { opacity: 0; filter: blur(8px); transform: scale(1.08); }
 }
 @keyframes introGlow {
   0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
@@ -449,7 +619,7 @@ html { scrollbar-width: thin; scrollbar-color: #ec380b #f1ead8; }
   position: absolute;
   inset: 0;
   opacity: 0;
-  color: #c9a24a;
+  color: #1d4ed8;
   animation: introPattern 4s ease-out forwards;
   pointer-events: none;
 }
@@ -473,22 +643,23 @@ html { scrollbar-width: thin; scrollbar-color: #ec380b #f1ead8; }
 }
 
 .intro-verse {
-  font-family: var(--font-arabic);
-  color: #111111;
+  font-family: var(--font-quran);
+  color: #071a1c;
   text-align: center;
   line-height: 2.05;
-  -webkit-mask-image: linear-gradient(to left, #000 var(--reveal), rgba(0,0,0,0) calc(var(--reveal) + 7%));
-  mask-image: linear-gradient(to left, #000 var(--reveal), rgba(0,0,0,0) calc(var(--reveal) + 7%));
-  --reveal: 0%;
-  animation: introWrite 5.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  text-shadow: 0 0 1px rgba(0,0,0,0.15), 0 0 36px rgba(255, 246, 222, 0.7);
+  opacity: 0;
+  animation: introVerseIn 1.6s cubic-bezier(0.22, 1, 0.36, 1) 0.5s forwards;
+  text-shadow: 0 0 30px rgba(16,185,129,0.12);
 }
-@keyframes introWrite {
-  0% { --reveal: 0%; }
-  100% { --reveal: 108%; }
+@keyframes introVerseIn {
+  0% { opacity: 0; transform: translateY(12px) scale(0.98); filter: blur(6px); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
 }
 
-.intro-verse-decor { color: #b8902f; font-weight: 700; }
+.intro-verse-decor {
+  color: #059669;
+  font-weight: 700;
+}
 
 /* النور transition */
 .intro-noor {
@@ -503,155 +674,67 @@ html { scrollbar-width: thin; scrollbar-color: #ec380b #f1ead8; }
   opacity: 0;
   pointer-events: none;
 }
-.intro-root.noor .intro-noor { animation: noorExpand 2.8s cubic-bezier(0.45, 0, 0.2, 1) forwards; }
+.intro-root.noor .intro-noor {
+  animation: noorExpand 2.8s cubic-bezier(0.45, 0, 0.2, 1) forwards;
+}
 @keyframes noorExpand {
   0% { opacity: 0.2; width: 10vmin; height: 10vmin; }
   35% { opacity: 1; }
   100% { opacity: 1; width: 320vmax; height: 320vmax; }
 }
-.intro-root.noor .intro-stage { animation: verseDissolve 1.6s ease-in forwards; }
+.intro-root.noor .intro-stage {
+  animation: verseDissolve 1.6s ease-in forwards;
+}
 @keyframes verseDissolve {
   0% { opacity: 1; filter: blur(0); transform: scale(1); }
   100% { opacity: 0; filter: blur(14px); transform: scale(1.06); }
 }
 
-.intro-root.fade-out { animation: introFadeOut 1s ease-out forwards; }
-@keyframes introFadeOut { 0% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
+.intro-root.fade-out {
+  animation: introFadeOut 1s ease-out forwards;
+}
+@keyframes introFadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; visibility: hidden; }
+}
 
 .intro-attribution {
   opacity: 0;
   animation: introFadeUp 1.6s ease 6.5s forwards;
-  padding-bottom: var(--safe-b);
 }
 
-/* Sacred entry gate (guarantees audio plays on tap) */
-.intro-gate {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  z-index: 20;
-  padding: max(1.5rem, var(--safe-t)) max(1rem, var(--safe-r)) max(1.5rem, var(--safe-b)) max(1rem, var(--safe-l));
-}
-.intro-gate-inner {
-  text-align: center;
-  animation: introFadeUp 1.4s cubic-bezier(0.22,1,0.36,1) both;
-  padding: 0 1.5rem;
-  width: 100%;
-  max-width: 28rem;
-}
-
-.enter-btn {
-  position: relative;
-  display: inline-grid;
-  place-items: center;
-  width: clamp(92px, 26vw, 130px);
-  height: clamp(92px, 26vw, 130px);
-  border-radius: 50%;
-  background: radial-gradient(circle at 50% 35%, #fffdf7, #f6ead0);
-  border: 1px solid rgba(184,144,47,0.4);
-  box-shadow: 0 10px 40px rgba(184,144,47,0.25), inset 0 0 0 1px rgba(255,255,255,0.8);
-  cursor: pointer;
-  transition: transform .3s ease, box-shadow .3s ease;
-  touch-action: manipulation;
-}
-.enter-btn:hover { transform: scale(1.05); box-shadow: 0 14px 50px rgba(184,144,47,0.35); }
-.enter-btn:active { transform: scale(0.97); }
-.enter-btn::before {
-  content: "";
-  position: absolute;
-  inset: -14px;
-  border-radius: 50%;
-  border: 1px solid rgba(184,144,47,0.3);
-  animation: ringPulse 2.8s ease-out infinite;
-}
-.enter-btn::after {
-  content: "";
-  position: absolute;
-  inset: -14px;
-  border-radius: 50%;
-  border: 1px solid rgba(184,144,47,0.25);
-  animation: ringPulse 2.8s ease-out 1.4s infinite;
-}
-@keyframes ringPulse {
-  0% { transform: scale(0.9); opacity: 0.8; }
-  100% { transform: scale(1.5); opacity: 0; }
-}
-
-.intro-hint {
-  position: absolute;
-  bottom: calc(12% + var(--safe-b));
-  left: 0;
-  right: 0;
-  text-align: center;
-  color: #9a8f74;
-  font-size: 0.8rem;
-  letter-spacing: 0.25em;
+/* Continue button — appears below the verse, never auto-advances */
+.intro-continue-wrap {
+  margin-top: 3rem;
   opacity: 0;
-  animation: hintPulse 3.5s ease-in-out 1.2s infinite;
-  padding: 0 1rem;
+  transform: translateY(10px);
+  transition: opacity 1s ease, transform 1s ease;
+  pointer-events: none;
 }
-@keyframes hintPulse { 0%, 100% { opacity: 0; } 50% { opacity: 0.85; } }
-
-.intro-skip {
-  position: absolute;
-  bottom: calc(5% + var(--safe-b));
-  left: 50%;
-  transform: translateX(-50%);
-  color: #b3a988;
-  font-size: 0.72rem;
-  letter-spacing: 0.2em;
-  background: none;
+.intro-continue-wrap.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.intro-continue {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.95rem 2.6rem;
+  border-radius: 999px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(120deg, #10b981, #059669 50%, #2563eb);
   border: none;
   cursor: pointer;
-  opacity: 0;
-  animation: skipIn 1.2s ease 4s forwards;
-  padding: 0.5rem 1rem; /* comfortable tap target beyond the visible label */
-  touch-action: manipulation;
+  box-shadow: 0 12px 34px rgba(5,150,105,0.35);
+  transition: transform .25s ease, box-shadow .25s ease, filter .25s ease;
 }
-@keyframes skipIn { to { opacity: 0.7; } }
-.intro-skip:hover { color: #8a8068; }
+.intro-continue:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 16px 44px rgba(37,99,235,0.4); filter: brightness(1.05); }
+.intro-continue:disabled { opacity: 0.5; cursor: default; }
+.intro-continue-arrow { display: inline-block; transition: transform .25s ease; }
+.intro-continue:hover .intro-continue-arrow { transform: translateX(-4px); }
 
-/* --- Intro: small phones --- */
-@media (max-width: 379.98px) {
-  .intro-glow, .intro-noor { width: 70vmin; height: 70vmin; }
-  .intro-hint { letter-spacing: 0.18em; font-size: 0.72rem; }
-}
 
-/* --- Intro: short / landscape viewports (phones rotated, small laptops in split view) --- */
-@media (max-height: 520px) {
-  .intro-verse { line-height: 1.55; margin-top: 1.5rem !important; }
-  .intro-basmala { margin-top: 0 !important; }
-  .enter-btn { width: 84px; height: 84px; }
-  .intro-hint { display: none; }
-  .intro-skip { bottom: calc(3% + var(--safe-b)); }
-}
-
-/* --- Intro: tablets and up, a little more breathing room --- */
-@media (min-width: 768px) {
-  .intro-gate-inner { max-width: 32rem; }
-}
-
-/* ============================================================
-   11. CROSS-DEVICE FINE-TUNING
-   ============================================================ */
-
-/* Large / wide monitors: keep the manuscript from stretching edge-to-edge */
-@media (min-width: 1536px) {
-  .mushaf-page { max-width: 900px; margin-inline: auto; }
-}
-
-/* Foldables & very small phones: shrink ornamental padding across the board */
-@media (max-width: 359.98px) {
-  .card, .card-warm { border-radius: 14px; }
-}
-
-/* Print: the sacred intro and decorative motion have no place on paper */
-@media print {
-  .intro-root, .shimmer, .animate-pulse-glow, .animate-floaty, .animate-spin-slow, .animate-twinkle {
-    display: none !important;
-    animation: none !important;
-  }
-  .mushaf-page { box-shadow: none; outline: 1px solid #b8902f; }
-  body { background: #fff; }
-}

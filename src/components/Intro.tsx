@@ -1,18 +1,19 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { pickIntroVerse, type IntroVerse } from "@/lib/introVerses";
 
-// Sheikh Yasser Al-Dosari — verse 54:17 "وَلَقَدْ يَسَّرْنَا الْقُرْآنَ لِلذِّكْرِ فَهَلْ مِنْ مُدَّكِرٍ"
-const RECITATION = "https://everyayah.com/data/Yasser_Ad-Dussary_128kbps/054017.mp3";
-const SESSION_KEY = "hafiz_intro_seen_v4";
-const TRANSITION_AT = 15000; // begin النور transition after recitation (ms)
-const MAX_DURATION = 22000; // hard safety fallback (ms)
+const SESSION_KEY = "hafiz_intro_seen_v7";
+const CONTINUE_AT = 9000; // fallback: reveal "continue" even if audio can't autoplay (ms)
 
 type Phase = "hidden" | "running" | "noor" | "fadeout";
 
 export function Intro() {
   const [mounted, setMounted] = useState(false);
   const [phase, setPhase] = useState<Phase>("hidden");
+  const [glow, setGlow] = useState(false);
+  const [showContinue, setShowContinue] = useState(false);
+  const [verse, setVerse] = useState<IntroVerse | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const transitionedRef = useRef(false);
@@ -31,17 +32,16 @@ export function Intro() {
       setPhase("hidden");
       return;
     }
+    setVerse(pickIntroVerse());
     setPhase("running");
     document.body.style.overflow = "hidden";
 
-    // Try autoplay immediately; if blocked, start on first user interaction.
     startAudio();
     const onInteract = () => startAudio();
-    const events: (keyof WindowEventMap)[] = ["pointerdown", "pointermove", "touchstart", "keydown", "scroll", "click"];
-    events.forEach((e) => window.addEventListener(e, onInteract, { once: false, passive: true } as AddEventListenerOptions));
+    const events: (keyof WindowEventMap)[] = ["pointerdown", "touchstart", "keydown", "click"];
+    events.forEach((e) => window.addEventListener(e, onInteract, { passive: true } as AddEventListenerOptions));
 
-    timersRef.current.push(window.setTimeout(() => toNoor(), TRANSITION_AT));
-    timersRef.current.push(window.setTimeout(() => toNoor(), MAX_DURATION));
+    timersRef.current.push(window.setTimeout(() => setShowContinue(true), CONTINUE_AT));
 
     return () => {
       timersRef.current.forEach((t) => window.clearTimeout(t));
@@ -66,30 +66,30 @@ export function Intro() {
           if (v >= 1) window.clearInterval(fade);
         }, 90);
       },
-      () => {
-        /* blocked — will retry on next interaction */
-      }
+      () => {}
     );
   };
 
-  const toNoor = () => {
+  const proceed = () => {
     if (transitionedRef.current) return;
     transitionedRef.current = true;
     const audio = audioRef.current;
     if (audio && !audio.paused) {
       let v = audio.volume;
       const fade = window.setInterval(() => {
-        v = Math.max(0, v - 0.08);
+        v = Math.max(0, v - 0.1);
         audio.volume = v;
         if (v <= 0) {
           audio.pause();
           window.clearInterval(fade);
         }
-      }, 80);
+      }, 60);
     }
-    setPhase("noor");
+    // soft radiant glow (no lightning), then dissolve into the platform
+    setGlow(true);
+    window.setTimeout(() => setPhase("noor"), 500);
     window.setTimeout(() => setPhase("fadeout"), 2600);
-    window.setTimeout(() => finish(), 3600);
+    window.setTimeout(() => finish(), 3500);
   };
 
   const finish = () => {
@@ -102,11 +102,16 @@ export function Intro() {
     setPhase("hidden");
   };
 
-  if (!mounted || phase === "hidden") return null;
+  if (!mounted || phase === "hidden" || !verse) return null;
 
   return (
-    <div className={`intro-root ${phase === "noor" ? "noor" : ""} ${phase === "fadeout" ? "fade-out" : ""}`} role="presentation">
-      <audio ref={audioRef} src={RECITATION} preload="auto" />
+    <div className={`intro-root ${phase === "noor" ? "noor" : ""} ${phase === "fadeout" ? "fade-out" : ""} ${glow ? "glow-burst" : ""}`} role="presentation">
+      <audio
+        ref={audioRef}
+        src={`https://everyayah.com/data/Yasser_Ad-Dussary_128kbps/${verse.audio}.mp3`}
+        preload="auto"
+        onEnded={() => setShowContinue(true)}
+      />
 
       <svg className="intro-pattern" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" aria-hidden>
         <defs>
@@ -120,22 +125,34 @@ export function Intro() {
 
       <div className="intro-glow" />
       <div className="intro-noor" />
+      <div className="intro-burst" />
 
       <div className="intro-stage relative z-10 px-6">
-        <p className="intro-basmala text-[7vw] sm:text-[3.4rem]" style={{ fontFamily: "var(--font-quran)" }}>
+        <p className="intro-basmala text-[6vw] sm:text-[2.8rem]" style={{ fontFamily: "var(--font-quran)" }}>
           بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
         </p>
-        <p className="intro-verse mt-12 text-[8vw] leading-[1.8] sm:text-[3.9rem]" style={{ fontFamily: "var(--font-quran)" }}>
-          وَلَقَدْ يَسَّرْنَا الْقُرْآنَ لِلذِّكْرِ فَهَلْ مِن مُّدَّكِرٍ
-        </p>
-        <p className="intro-attribution mt-10 text-sm tracking-[0.25em] text-[#9a8f74]">
-          سورة القمر · بصوت الشيخ ياسر الدوسري
-        </p>
-      </div>
 
-      {phase === "running" && (
-        <button className="intro-skip" onClick={toNoor}>الدخول إلى المنصة ›</button>
-      )}
+        <div className="intro-frame mx-auto mt-10 max-w-3xl">
+          <span className="intro-frame-corner right-3 top-3 border-r-2 border-t-2" style={{ borderTopRightRadius: 12 }} />
+          <span className="intro-frame-corner left-3 top-3 border-l-2 border-t-2" style={{ borderTopLeftRadius: 12 }} />
+          <span className="intro-frame-corner right-3 bottom-3 border-r-2 border-b-2" style={{ borderBottomRightRadius: 12 }} />
+          <span className="intro-frame-corner left-3 bottom-3 border-l-2 border-b-2" style={{ borderBottomLeftRadius: 12 }} />
+          <p key={verse.audio} className="intro-verse text-[7vw] leading-[1.9] sm:text-[3.4rem]" style={{ fontFamily: "var(--font-quran)" }}>
+            {verse.text}
+          </p>
+        </div>
+
+        <p className="intro-attribution mt-8 text-sm tracking-[0.25em] text-[#4a6664]">
+          {verse.source} · بصوت الشيخ ياسر الدوسري
+        </p>
+
+        <div className={`intro-continue-wrap ${showContinue ? "show" : ""}`}>
+          <button onClick={proceed} className="intro-continue" disabled={!showContinue}>
+            متابعة
+            <span className="intro-continue-arrow">‹</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

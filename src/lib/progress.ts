@@ -42,6 +42,42 @@ export async function getUniverseData(userId: number | null): Promise<UniverseSu
   });
 }
 
+// Spaced-repetition interval (days) based on retention strength.
+function reviewIntervalDays(retention: number): number {
+  if (retention >= 90) return 14;
+  if (retention >= 75) return 7;
+  if (retention >= 60) return 3;
+  return 1;
+}
+
+export type ReviewItem = {
+  surahNumber: number;
+  nameAr: string;
+  retention: number;
+  daysSince: number;
+  dueIn: number; // negative = overdue
+  priority: number; // higher = more urgent
+};
+
+export async function getReviewQueue(userId: number): Promise<ReviewItem[]> {
+  const map = await getUserProgress(userId);
+  const now = Date.now();
+  const items: ReviewItem[] = [];
+  for (const p of map.values()) {
+    if (p.status !== "memorized" && p.status !== "mastered") continue;
+    const meta = getSurah(p.surahNumber);
+    if (!meta) continue;
+    const last = p.lastReviewedAt ? new Date(p.lastReviewedAt).getTime() : now;
+    const daysSince = Math.floor((now - last) / 86400000);
+    const interval = reviewIntervalDays(p.retention);
+    const dueIn = interval - daysSince;
+    // priority: overdue + weak retention
+    const priority = Math.max(0, -dueIn) * 10 + (100 - p.retention);
+    items.push({ surahNumber: p.surahNumber, nameAr: meta.nameAr, retention: p.retention, daysSince, dueIn, priority });
+  }
+  return items.sort((a, b) => b.priority - a.priority);
+}
+
 export async function getProgressStats(userId: number | null) {
   const map = userId ? await getUserProgress(userId) : new Map<number, Progress>();
   let memorizedAyahs = 0;

@@ -1,12 +1,13 @@
 function toArabicDigits(n: number): string {
-  return n.toLocaleString("ar-EG");
+  // Clear Western numerals (e.g. 123) for maximum readability.
+  return String(n);
 }
 
 // A gold ornamental rosette used as the end-of-ayah marker, with the
 // ayah number rendered in Eastern Arabic numerals at its center.
 export function AyahMarker({ n, active = false }: { n: number; active?: boolean }) {
-  const gold = active ? "#1f6f5c" : "#b8902f";
-  const goldLight = active ? "#3aa384" : "#e3c878";
+  const gold = active ? "#2563eb" : "#0a7468";
+  const goldLight = active ? "#54bbe8" : "#3fd0b6";
   const points = 12;
   const outer = 48;
   const inner = 38;

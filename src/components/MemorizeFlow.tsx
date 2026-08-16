@@ -3,21 +3,27 @@
 import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { SurahContent, QuranAyah } from "@/lib/quran";
-import { diffAyah, type DiffResult } from "@/lib/arabicText";
+import { diffAyah, normalizeWord, type DiffResult } from "@/lib/arabicText";
 import { ENCOURAGEMENTS } from "@/lib/virtues";
 import { DEFAULT_RECITER, ayahUrl, perAyahFallback, hasPerAyah } from "@/lib/reciters";
+import { createRecognizer, recognitionSupported } from "@/lib/speak";
 
 type Phase = "setup" | "method" | "done";
-type Method = "listen" | "repeat" | "hide" | "write" | "arrange" | "complete";
+type Method = "listen" | "repeat" | "voice" | "liverecite" | "hide" | "dictation" | "write" | "arrange" | "complete";
 
 const METHODS: { id: Method; label: string; icon: string; desc: string; scored: boolean }[] = [
   { id: "listen", label: "استماع", icon: "🔊", desc: "استمع للمقطع بصوت الشيخ", scored: false },
   { id: "repeat", label: "تكرار", icon: "🔁", desc: "كرّر معي كل آية حتى ترسخ", scored: false },
+  { id: "voice", label: "اقرأ بصوتك", icon: "🎙️", desc: "اقرأ الآية بصوتك فنقارنها بنطق الشيخ ونصحّح لك", scored: true },
+  { id: "liverecite", label: "تلاوة حيّة", icon: "📿", desc: "انطق الآية فتُكتب أمامك، وننبّهك عند الخطأ", scored: true },
+  { id: "dictation", label: "استمع وصحّح", icon: "🎧", desc: "استمع للآية ثم اكتبها ويُصحّح لك", scored: true },
   { id: "hide", label: "إخفاء", icon: "🙈", desc: "استرجع الآية من حفظك ثم اكشفها", scored: true },
   { id: "write", label: "كتابة", icon: "✍️", desc: "اكتب الآية مع تصحيح كلمة بكلمة", scored: true },
   { id: "arrange", label: "ترتيب", icon: "🧩", desc: "رتّب كلمات الآية بالشكل الصحيح", scored: true },
-  { id: "complete", label: "إكمال", icon: "⬚", desc: "أكمل الكلمات الناقصة", scored: true },
+  { id: "complete", label: "إكمال", icon: "⬚", desc: "اختر الكلمة الصحيحة من الخيارات", scored: true },
 ];
+
+type Opt = { t: string; correct: boolean; key: string };
 
 const REQUIRED_REPS = 3;
 const PASS = 0.8;
@@ -33,7 +39,7 @@ function shuffle<T>(arr: T[]): T[] {
 
 type Word = { t: string; i: number };
 
-export function MemorizeFlow({ surah, isLoggedIn }: { surah: SurahContent; isLoggedIn: boolean }) {
+export function MemorizeFlow({ surah, isLoggedIn, userName }: { surah: SurahContent; isLoggedIn: boolean; userName?: string | null }) {
   const router = useRouter();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const surahNum = surah.meta.number;
@@ -60,17 +66,51 @@ export function MemorizeFlow({ surah, isLoggedIn }: { surah: SurahContent; isLog
   // write
   const [written, setWritten] = useState("");
   const [writeDiff, setWriteDiff] = useState<DiffResult | null>(null);
+  // voice (speech recognition)
+  const [listening, setListening] = useState(false);
+  const [heard, setHeard] = useState("");
+  const [voiceDiff, setVoiceDiff] = useState<DiffResult | null>(null);
+  const recRef = useRef<ReturnType<typeof createRecognizer>>(null);
+  // live recite (transcribe into mushaf + warn on error)
+  const [liveWords, setLiveWords] = useState<{ t: string; ok: boolean }[]>([]);
+  const [liveWarn, setLiveWarn] = useState(false);
+  const [liveDone, setLiveDone] = useState(false);
+  const name = userName || "أخي الكريم";
   // arrange
   const [pool, setPool] = useState<Word[]>([]);
   const [built, setBuilt] = useState<Word[]>([]);
   const [arrangeChecked, setArrangeChecked] = useState<null | { ok: boolean; accuracy: number; firstWrong: number }>(null);
-  // complete
+  // complete (multiple-choice)
   const [blankIdx, setBlankIdx] = useState<number[]>([]);
-  const [bank, setBank] = useState<Word[]>([]);
-  const [fills, setFills] = useState<(Word | null)[]>([]);
+  const [blankCursor, setBlankCursor] = useState(0);
+  const [blankAnswers, setBlankAnswers] = useState<(Opt | null)[]>([]);
+  const [optionsBySlot, setOptionsBySlot] = useState<Opt[][]>([]);
   const [blanksChecked, setBlanksChecked] = useState<null | { accuracy: number }>(null);
 
   const cur = sessionAyahs[idx];
+
+  // pool of unique surah words used to generate wrong (distractor) options
+  const surahWordPool = useMemo(() => {
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const ay of surah.ayahs) {
+      for (const w of ay.words) {
+        const n = normalizeWord(w.t);
+        if (n.length >= 2 && !seen.has(n)) { seen.add(n); out.push(w.t); }
+      }
+    }
+    return out;
+  }, [surah.ayahs]);
+
+  const buildOptions = (correctText: string): Opt[] => {
+    const correctNorm = normalizeWord(correctText);
+    const distractors = shuffle(surahWordPool.filter((t) => normalizeWord(t) !== correctNorm)).slice(0, 3);
+    const opts: Opt[] = [
+      { t: correctText, correct: true, key: "c" },
+      ...distractors.map((t, i) => ({ t, correct: false, key: `d${i}` })),
+    ];
+    return shuffle(opts);
+  };
 
   const play = (a: QuranAyah | undefined) => {
     if (!a || !audioRef.current) return;
@@ -92,6 +132,12 @@ export function MemorizeFlow({ surah, isLoggedIn }: { surah: SurahContent; isLog
     setHintWords(0);
     setWritten("");
     setWriteDiff(null);
+    setHeard("");
+    setVoiceDiff(null);
+    setListening(false);
+    setLiveWords([]);
+    setLiveWarn(false);
+    setLiveDone(false);
     setArrangeChecked(null);
     setBuilt([]);
     setBlanksChecked(null);
@@ -100,10 +146,11 @@ export function MemorizeFlow({ surah, isLoggedIn }: { surah: SurahContent; isLog
       const count = Math.max(1, Math.round(a.words.length * 0.4));
       const idxs = shuffle(a.words.map((w) => w.i)).slice(0, count).sort((x, y) => x - y);
       setBlankIdx(idxs);
-      setBank(shuffle(idxs.map((i) => a.words[i])));
-      setFills(new Array(idxs.length).fill(null));
+      setBlankCursor(0);
+      setBlankAnswers(new Array(idxs.length).fill(null));
+      setOptionsBySlot(idxs.map((wi) => buildOptions(a.words[wi].t)));
     } else {
-      setBlankIdx([]); setBank([]); setFills([]);
+      setBlankIdx([]); setBlankCursor(0); setBlankAnswers([]); setOptionsBySlot([]);
     }
   };
 
@@ -112,7 +159,7 @@ export function MemorizeFlow({ surah, isLoggedIn }: { surah: SurahContent; isLog
     setPhase("method");
     setIdx(0);
     resetMethodState(m, sessionAyahs[0]);
-    if (m === "listen" || m === "repeat") setTimeout(() => play(sessionAyahs[0]), 250);
+    if (m === "listen" || m === "repeat" || m === "dictation") setTimeout(() => play(sessionAyahs[0]), 250);
   };
 
   // advance to next ayah inside a method; if finished, complete the method
@@ -125,7 +172,7 @@ export function MemorizeFlow({ surah, isLoggedIn }: { surah: SurahContent; isLog
     if (ni < sessionAyahs.length) {
       setIdx(ni);
       resetMethodState(method!, sessionAyahs[ni]);
-      if (method === "listen" || method === "repeat") setTimeout(() => play(sessionAyahs[ni]), 250);
+      if (method === "listen" || method === "repeat" || method === "dictation") setTimeout(() => play(sessionAyahs[ni]), 250);
     } else {
       completeMethod();
     }
@@ -162,6 +209,64 @@ export function MemorizeFlow({ surah, isLoggedIn }: { surah: SurahContent; isLog
   };
   // ---- write ----
   const checkWrite = () => setWriteDiff(diffAyah(cur.text, written));
+  // ---- voice (read aloud, we listen then correct) ----
+  const startListening = () => {
+    const rec = createRecognizer(
+      (transcript) => {
+        setHeard(transcript);
+        setVoiceDiff(diffAyah(cur.text, transcript));
+      },
+      () => setListening(false),
+      () => setListening(false)
+    );
+    if (!rec) return;
+    recRef.current = rec;
+    setHeard("");
+    setVoiceDiff(null);
+    setListening(true);
+    try { rec.start(); } catch { setListening(false); }
+  };
+  const stopListening = () => {
+    try { recRef.current?.stop(); } catch { /* ignore */ }
+    setListening(false);
+  };
+  // ---- live recite: word-by-word into the mushaf, warns on mistake ----
+  const startLiveRecite = () => {
+    const rec = createRecognizer(
+      (transcript) => {
+        const said = transcript.trim().split(/\s+/).map(normalizeWord).filter(Boolean);
+        const expected = cur.words.map((w) => ({ raw: w.t, norm: normalizeWord(w.t) }));
+        const rendered: { t: string; ok: boolean }[] = [];
+        let anyWrong = false;
+        for (let k = 0; k < expected.length; k++) {
+          if (k < said.length) {
+            const ok = said[k] === expected[k].norm;
+            if (!ok) anyWrong = true;
+            rendered.push({ t: expected[k].raw, ok });
+          }
+        }
+        setLiveWords(rendered);
+        setLiveDone(said.length >= expected.length);
+        if (anyWrong) {
+          setLiveWarn(true);
+          window.setTimeout(() => setLiveWarn(false), 2600);
+        }
+      },
+      () => setListening(false),
+      () => setListening(false)
+    );
+    if (!rec) return;
+    recRef.current = rec;
+    setLiveWords([]);
+    setLiveWarn(false);
+    setLiveDone(false);
+    setListening(true);
+    try { rec.start(); } catch { setListening(false); }
+  };
+  const liveAccuracy = () => {
+    if (liveWords.length === 0) return 0;
+    return liveWords.filter((w) => w.ok).length / cur.words.length;
+  };
   // ---- arrange ----
   const pick = (w: Word) => { setBuilt((b) => [...b, w]); setPool((p) => p.filter((x) => x.i !== w.i)); };
   const unpick = (w: Word) => { setPool((p) => [...p, w]); setBuilt((b) => b.filter((x) => x.i !== w.i)); };
@@ -173,23 +278,26 @@ export function MemorizeFlow({ surah, isLoggedIn }: { surah: SurahContent; isLog
     }
     setArrangeChecked({ ok: correct === exp.length, accuracy: correct / exp.length, firstWrong });
   };
-  // ---- complete ----
-  const fillBlank = (w: Word) => {
-    const slot = fills.findIndex((f) => f === null);
-    if (slot === -1) return;
-    setFills((p) => p.map((f, i) => (i === slot ? w : f)));
-    setBank((p) => p.filter((x) => x.i !== w.i));
+  // ---- complete (multiple-choice) ----
+  // Pick an option for the active blank; advance to the next empty blank.
+  // Does NOT auto-check — the user presses "تصحيح" to reveal mistakes.
+  const chooseOption = (slot: number, opt: Opt) => {
+    if (blanksChecked) return;
+    const updated = blankAnswers.map((a, i) => (i === slot ? opt : a));
+    setBlankAnswers(updated);
+    const nextEmpty = updated.findIndex((a) => a === null);
+    if (nextEmpty !== -1) setBlankCursor(nextEmpty);
   };
-  const clearBlank = (slot: number) => {
-    const w = fills[slot]; if (!w) return;
-    setFills((p) => p.map((f, i) => (i === slot ? null : f)));
-    setBank((p) => [...p, w]);
+  // Click a chosen blank to re-select it before correcting.
+  const focusBlank = (slot: number) => {
+    if (blanksChecked) return;
+    setBlankCursor(slot);
   };
   const checkBlanks = () => {
-    let correct = 0;
-    blankIdx.forEach((expIdx, slot) => { if (fills[slot] && fills[slot]!.i === expIdx) correct++; });
+    const correct = blankAnswers.filter((x) => x?.correct).length;
     setBlanksChecked({ accuracy: blankIdx.length ? correct / blankIdx.length : 0 });
   };
+  const allBlanksAnswered = blankIdx.length > 0 && blankAnswers.every((a) => a !== null);
 
   const scoredCount = scores.filter((s) => s >= PASS).length;
 
@@ -208,14 +316,38 @@ export function MemorizeFlow({ surah, isLoggedIn }: { surah: SurahContent; isLog
         <div className="text-center">
           <div className="text-4xl text-ink-900" style={{ fontFamily: "var(--font-quran)" }}>{surah.meta.nameAr}</div>
           <p className="mt-2 text-sm text-ink-500">اختر مقطع الحفظ لهذه الجلسة</p>
-          <div className="mx-auto mt-6 max-w-sm space-y-5 text-start">
+          <div className="mx-auto mt-6 max-w-md space-y-6 text-start">
             <div>
-              <div className="mb-2 flex justify-between text-sm text-ink-700"><span>عدد الآيات</span><span className="text-gold-600">{chunk.toLocaleString("ar-EG")}</span></div>
-              <input type="range" min={1} max={Math.min(10, totalAyahs)} value={chunk} onChange={(e) => setChunk(Number(e.target.value))} className="w-full accent-amber-600" />
+              <div className="mb-2 flex justify-between text-sm text-ink-700">
+                <span>عدد الآيات في الجلسة</span>
+                <span className="font-bold text-emerald-700">{chunk.toLocaleString("ar-EG")} آية</span>
+              </div>
+              {/* quick presets */}
+              <div className="flex flex-wrap gap-2">
+                {[5, 10, 20, 50].filter((n) => n < totalAyahs).map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => setChunk(Math.min(n, totalAyahs - startIdx))}
+                    className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${chunk === n ? "btn-primary" : "btn-ghost"}`}
+                  >
+                    {n.toLocaleString("ar-EG")}
+                  </button>
+                ))}
+                <button
+                  onClick={() => { setStartIdx(0); setChunk(totalAyahs); }}
+                  className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${chunk >= totalAyahs ? "btn-primary" : "btn-ghost"}`}
+                >
+                  السورة كاملة ({totalAyahs.toLocaleString("ar-EG")})
+                </button>
+              </div>
+              <input type="range" min={1} max={Math.max(1, totalAyahs - startIdx)} value={chunk} onChange={(e) => setChunk(Number(e.target.value))} className="mt-3 w-full accent-teal-600" />
             </div>
             <div>
-              <div className="mb-2 flex justify-between text-sm text-ink-700"><span>ابدأ من الآية</span><span className="text-gold-600">{(startIdx + 1).toLocaleString("ar-EG")}</span></div>
-              <input type="range" min={0} max={Math.max(0, totalAyahs - 1)} value={startIdx} onChange={(e) => setStartIdx(Math.min(Number(e.target.value), totalAyahs - 1))} className="w-full accent-amber-600" />
+              <div className="mb-2 flex justify-between text-sm text-ink-700"><span>ابدأ من الآية</span><span className="font-bold text-emerald-700">{(startIdx + 1).toLocaleString("ar-EG")}</span></div>
+              <input type="range" min={0} max={Math.max(0, totalAyahs - 1)} value={startIdx} onChange={(e) => { const v = Math.min(Number(e.target.value), totalAyahs - 1); setStartIdx(v); setChunk((c) => Math.min(c, totalAyahs - v)); }} className="w-full accent-teal-600" />
+            </div>
+            <div className="rounded-xl bg-cream-100 px-4 py-3 text-center text-sm text-ink-700">
+              ستحفظ من الآية <span className="font-bold text-emerald-700">{(startIdx + 1).toLocaleString("ar-EG")}</span> إلى الآية <span className="font-bold text-emerald-700">{Math.min(startIdx + chunk, totalAyahs).toLocaleString("ar-EG")}</span>
             </div>
           </div>
           <div className="mx-auto mt-6 max-w-md rounded-2xl bg-cream-100 p-4 text-start">
@@ -336,6 +468,167 @@ export function MemorizeFlow({ surah, isLoggedIn }: { surah: SurahContent; isLog
             </div>
           )}
 
+          {/* LIVE RECITE — speak, words appear in the mushaf, warns on error */}
+          {method === "liverecite" && (
+            <div>
+              <p className="text-center text-sm text-ink-500">انطق الآية وستظهر كلماتك أمامك — ننبّهك فوراً عند أي خطأ</p>
+
+              {liveWarn && (
+                <div className="warn-toast mx-auto mt-4 max-w-md rounded-2xl bg-red-50 p-4 text-center">
+                  <p className="text-lg font-bold text-red-600">⚠️ احذر يا {name}، هذا خاطئ!</p>
+                  <p className="mt-1 text-sm text-red-500">راجع الكلمة المظللّة بالأحمر وأعد النطق</p>
+                </div>
+              )}
+
+              <div className="mt-4 min-h-[120px] rounded-2xl bg-white p-6 text-center shadow-sm">
+                <p dir="rtl" className="text-3xl leading-loose" style={{ fontFamily: "var(--font-quran)" }}>
+                  {cur.words.map((w, k) => {
+                    const said = liveWords[k];
+                    if (!said) return <span key={k} className="mx-1 text-ink-300" style={{ opacity: 0.28 }}>{w.t}</span>;
+                    return (
+                      <span key={k} className="mx-1 rounded px-1" style={said.ok
+                        ? { color: "#047857", background: "rgba(4,120,87,0.10)" }
+                        : { color: "#c0392b", background: "rgba(192,57,43,0.12)", textDecoration: "underline", textDecorationStyle: "wavy" }}>
+                        {w.t}
+                      </span>
+                    );
+                  })}
+                </p>
+                <span className="ayah-marker">{cur.numberInSurah.toLocaleString("ar-EG")}</span>
+              </div>
+
+              {!recognitionSupported() ? (
+                <p className="mt-4 rounded-xl bg-amber-50 p-4 text-center text-sm text-amber-700">متصفّحك لا يدعم التعرّف على الصوت. جرّب Chrome.</p>
+              ) : (
+                <div className="mt-5 text-center">
+                  {!listening ? (
+                    <button onClick={startLiveRecite} className="mic-btn mx-auto grid h-20 w-20 place-items-center rounded-full text-3xl text-white shadow-lg" style={{ background: "linear-gradient(135deg,#10b981,#3b82f6)" }}>🎙️</button>
+                  ) : (
+                    <button onClick={stopListening} className="mic-btn speaking mx-auto grid h-20 w-20 place-items-center rounded-full text-3xl text-white shadow-lg" style={{ background: "linear-gradient(135deg,#c0392b,#e1306c)" }}>■</button>
+                  )}
+                  <p className="mt-3 text-sm text-ink-500">{listening ? "أستمع إليك…" : "اضغط الميكروفون وابدأ التلاوة"}</p>
+                </div>
+              )}
+
+              {liveDone && liveWords.length > 0 && (
+                <div className="mt-4">
+                  <p className="text-center text-sm font-bold" style={{ color: liveAccuracy() >= PASS ? "#047857" : "#c0392b" }}>
+                    الدقة {Math.round(liveAccuracy() * 100)}٪
+                  </p>
+                  <div className="mt-3 flex gap-2">
+                    <button onClick={startLiveRecite} className="flex-1 rounded-2xl btn-ghost py-3 font-semibold">أعد التلاوة</button>
+                    <button onClick={() => nextAyah(liveAccuracy())} className="flex-1 rounded-2xl btn-primary py-3 font-semibold">{idx + 1 < sessionAyahs.length ? "التالية ←" : "إنهاء الطريقة ✓"}</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* VOICE — read aloud, we listen then correct */}
+          {method === "voice" && (
+            <div>
+              <div className="rounded-2xl bg-white p-6 text-center shadow-sm">
+                <p className="text-3xl leading-loose text-ink-900" style={{ fontFamily: "var(--font-quran)" }}>
+                  {cur.text}<span className="ayah-marker">{cur.numberInSurah.toLocaleString("ar-EG")}</span>
+                </p>
+              </div>
+
+              {!recognitionSupported() ? (
+                <p className="mt-4 rounded-xl bg-amber-50 p-4 text-center text-sm text-amber-700">
+                  متصفّحك لا يدعم التعرّف على الصوت. جرّب متصفّح Chrome على الحاسوب أو الأندرويد.
+                </p>
+              ) : (
+                <>
+                  <div className="mt-5 text-center">
+                    {!listening ? (
+                      <button onClick={startListening} className="mic-btn mx-auto grid h-20 w-20 place-items-center rounded-full text-3xl text-white shadow-lg" style={{ background: "linear-gradient(135deg,#10b981,#3b82f6)" }}>🎙️</button>
+                    ) : (
+                      <button onClick={stopListening} className="mic-btn speaking mx-auto grid h-20 w-20 place-items-center rounded-full text-3xl text-white shadow-lg" style={{ background: "linear-gradient(135deg,#c0392b,#e1306c)" }}>■</button>
+                    )}
+                    <p className="mt-3 text-sm text-ink-500">{listening ? "أستمع إليك… اقرأ الآية بصوتك لنقارنها بنطق الشيخ" : "اضغط الميكروفون واقرأ الآية بصوتك، فنقارن تلاوتك بنطق الشيخ"}</p>
+                  </div>
+
+                  {heard && (
+                    <div className="mt-5">
+                      <div className="rounded-2xl bg-cream-100 p-4">
+                        <p className="text-xs text-ink-500">ما سمعتُه منك:</p>
+                        <p className="mt-1 text-xl leading-loose text-ink-900" style={{ fontFamily: "var(--font-quran)" }}>{heard}</p>
+                      </div>
+                      {voiceDiff && (
+                        <div className="mt-3 rounded-2xl bg-white p-5 shadow-sm">
+                          <div className="mb-3 flex items-center justify-between">
+                            <span className="text-sm font-semibold text-ink-700">التصحيح كلمة بكلمة</span>
+                            <span className="text-sm font-bold" style={{ color: voiceDiff.accuracy >= PASS ? "#047857" : "#2563eb" }}>الدقة {Math.round(voiceDiff.accuracy * 100)}٪</span>
+                          </div>
+                          <p dir="rtl" className="text-2xl leading-loose" style={{ fontFamily: "var(--font-quran)" }}>
+                            {voiceDiff.expected.map((w, i) => (
+                              <span
+                                key={i}
+                                className="mx-0.5 rounded px-1"
+                                style={w.status === "ok" ? { color: "#047857", background: "rgba(4,120,87,0.08)" } : { color: "#c0392b", background: "rgba(192,57,43,0.1)", textDecoration: "underline", textDecorationStyle: "wavy" }}
+                              >
+                                {w.word}
+                              </span>
+                            ))}
+                          </p>
+                          {voiceDiff.expected.some((w) => w.status !== "ok") ? (
+                            <p className="mt-3 rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-600">راجع الكلمات المظللّة بالأحمر، واستمع للآية بصوت الشيخ لتصحيح نطقك.</p>
+                          ) : (
+                            <p className="mt-3 rounded-xl bg-emerald-50 p-3 text-sm font-semibold text-emerald-700">ما شاء الله! تلاوة صحيحة كاملة 🌿</p>
+                          )}
+                          <button onClick={() => play(cur)} className="mt-3 w-full rounded-xl btn-primary py-2.5 text-sm font-semibold">🔊 استمع للتصحيح بصوت الشيخ</button>
+                          <p className="mt-2 text-[11px] text-ink-500">💡 التصحيح على النطق لا التشكيل.</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {voiceDiff && (
+                    <div className="mt-4 flex gap-2">
+                      <button onClick={startListening} className="flex-1 rounded-2xl btn-ghost py-3 font-semibold">أعد المحاولة</button>
+                      <button onClick={() => nextAyah(voiceDiff.accuracy)} className="flex-1 rounded-2xl btn-primary py-3 font-semibold">{idx + 1 < sessionAyahs.length ? "التالية ←" : "إنهاء الطريقة ✓"}</button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
+          {/* DICTATION — listen then write then correct */}
+          {method === "dictation" && (
+            <div>
+              <div className="rounded-2xl bg-cream-100 p-5 text-center">
+                <div className="text-4xl">🎧</div>
+                <p className="mt-2 text-sm text-ink-700">استمع جيداً للآية ثم اكتب ما سمعت</p>
+                <button onClick={() => play(cur)} className="mt-3 rounded-2xl btn-ghost px-6 py-2.5 text-sm font-semibold">🔊 استمع مرة أخرى</button>
+              </div>
+              <textarea value={written} onChange={(e) => { setWritten(e.target.value); setWriteDiff(null); }} placeholder="اكتب ما سمعته هنا…" dir="rtl" rows={3} disabled={!!writeDiff}
+                className="mt-4 w-full rounded-2xl border border-sand-300 bg-white p-4 text-2xl leading-loose text-ink-900 outline-none focus:border-emerald-500 disabled:opacity-70" style={{ fontFamily: "var(--font-quran)" }} />
+              {!writeDiff ? (
+                <button onClick={checkWrite} disabled={!written.trim()} className="mt-4 w-full rounded-2xl btn-primary py-3 font-semibold disabled:opacity-50">تحقق وصحّح</button>
+              ) : (
+                <div className="mt-4">
+                  <div className="rounded-2xl bg-white p-5 shadow-sm">
+                    <div className="mb-3 flex items-center justify-between">
+                      <span className="text-sm font-semibold text-ink-700">التصحيح كلمة بكلمة</span>
+                      <span className="text-sm font-bold" style={{ color: writeDiff.accuracy >= PASS ? "#047857" : "#2563eb" }}>الدقة {Math.round(writeDiff.accuracy * 100)}٪</span>
+                    </div>
+                    <p dir="rtl" className="text-2xl leading-loose" style={{ fontFamily: "var(--font-quran)" }}>
+                      {writeDiff.expected.map((w, i) => (
+                        <span key={i} className="mx-0.5 rounded px-1" style={w.status === "ok" ? { color: "#047857", background: "rgba(4,120,87,0.08)" } : { color: "#c0392b", background: "rgba(192,57,43,0.08)", textDecoration: "underline", textDecorationStyle: "wavy" }}>{w.word}</span>
+                      ))}
+                    </p>
+                    {writeDiff.extras.length > 0 && <p className="mt-3 text-xs text-ink-500">كلمات زائدة: <span className="text-red-600" style={{ fontFamily: "var(--font-quran)" }}>{writeDiff.extras.join("، ")}</span></p>}
+                  </div>
+                  <div className="mt-3 flex gap-2">
+                    <button onClick={() => { setWriteDiff(null); play(cur); }} className="flex-1 rounded-2xl btn-ghost py-3 font-semibold">أعد الاستماع</button>
+                    <button onClick={() => nextAyah(writeDiff.accuracy)} className="flex-1 rounded-2xl btn-primary py-3 font-semibold">{idx + 1 < sessionAyahs.length ? "التالية ←" : "إنهاء الطريقة ✓"}</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* WRITE */}
           {method === "write" && (
             <div>
@@ -349,7 +642,7 @@ export function MemorizeFlow({ surah, isLoggedIn }: { surah: SurahContent; isLog
                   <div className="rounded-2xl bg-white p-5 shadow-sm">
                     <div className="mb-3 flex items-center justify-between">
                       <span className="text-sm font-semibold text-ink-700">التصحيح كلمة بكلمة</span>
-                      <span className="text-sm font-bold" style={{ color: writeDiff.accuracy >= PASS ? "#1f6f5c" : "#b8902f" }}>الدقة {Math.round(writeDiff.accuracy * 100)}٪</span>
+                      <span className="text-sm font-bold" style={{ color: writeDiff.accuracy >= PASS ? "#1f6f5c" : "#2563eb" }}>الدقة {Math.round(writeDiff.accuracy * 100)}٪</span>
                     </div>
                     <p dir="rtl" className="text-2xl leading-loose" style={{ fontFamily: "var(--font-quran)" }}>
                       {writeDiff.expected.map((w, i) => (
@@ -389,7 +682,7 @@ export function MemorizeFlow({ surah, isLoggedIn }: { surah: SurahContent; isLog
               ) : (
                 <div className="mt-5">
                   <div className={`rounded-2xl p-4 ${arrangeChecked.ok ? "bg-emerald-50" : "bg-amber-50"}`}>
-                    <p className="text-sm font-semibold" style={{ color: arrangeChecked.ok ? "#1f6f5c" : "#b8902f" }}>{arrangeChecked.ok ? "ترتيب صحيح، ما شاء الله! ✓" : `الدقة ${Math.round(arrangeChecked.accuracy * 100)}٪ — الصحيح:`}</p>
+                    <p className="text-sm font-semibold" style={{ color: arrangeChecked.ok ? "#1f6f5c" : "#2563eb" }}>{arrangeChecked.ok ? "ترتيب صحيح، ما شاء الله! ✓" : `الدقة ${Math.round(arrangeChecked.accuracy * 100)}٪ — الصحيح:`}</p>
                     {!arrangeChecked.ok && <p dir="rtl" className="mt-2 text-xl leading-loose text-ink-900" style={{ fontFamily: "var(--font-quran)" }}>{cur.text}</p>}
                   </div>
                   <div className="mt-3 flex gap-2">
@@ -401,30 +694,91 @@ export function MemorizeFlow({ surah, isLoggedIn }: { surah: SurahContent; isLog
             </div>
           )}
 
-          {/* COMPLETE */}
+          {/* COMPLETE — multiple choice with a "تصحيح" button */}
           {method === "complete" && (
             <div>
-              <p className="text-center text-sm text-ink-500">أكمل الكلمات الناقصة في الآية</p>
+              <p className="text-center text-sm text-ink-500">اختر الكلمة الصحيحة لكل فراغ، ثم اضغط «تصحيح»</p>
               <div className="mt-4 rounded-2xl bg-white p-6 shadow-sm">
                 <p dir="rtl" className="text-2xl leading-loose text-ink-900" style={{ fontFamily: "var(--font-quran)" }}>
                   {cur.words.map((w) => {
                     const slot = blankIdx.indexOf(w.i);
                     if (slot === -1) return <span key={w.i} className="mx-0.5">{w.t} </span>;
-                    const filled = fills[slot];
-                    const correct = blanksChecked && filled && filled.i === w.i;
-                    const wrong = blanksChecked && (!filled || filled.i !== w.i);
-                    return <button key={w.i} onClick={() => !blanksChecked && clearBlank(slot)} className="mx-1 inline-block min-w-[3.5rem] rounded-md border-b-2 px-2 align-middle text-xl" style={{ fontFamily: "var(--font-quran)", borderColor: correct ? "#1f6f5c" : wrong ? "#c0392b" : "#b8902f", color: correct ? "#1f6f5c" : wrong ? "#c0392b" : "#111", background: filled ? "rgba(184,144,47,0.08)" : "transparent" }}>{filled ? filled.t : "____"}</button>;
+                    const ans = blankAnswers[slot];
+
+                    // After correction: show the user's chosen word, colored right/wrong.
+                    if (blanksChecked) {
+                      const ok = ans?.correct;
+                      return (
+                        <span key={w.i} className="mx-1 inline-flex flex-col items-center align-middle">
+                          <span
+                            className="rounded-md border-b-2 px-2"
+                            style={{ fontFamily: "var(--font-quran)", borderColor: ok ? "#047857" : "#c0392b", color: ok ? "#047857" : "#c0392b", background: ok ? "rgba(4,120,87,0.08)" : "rgba(192,57,43,0.08)" }}
+                          >
+                            {ans ? ans.t : "—"}
+                          </span>
+                          {/* show the correct word under a wrong answer */}
+                          {!ok && <span className="mt-0.5 text-xs text-emerald-700" style={{ fontFamily: "var(--font-quran)" }}>✓ {w.t}</span>}
+                        </span>
+                      );
+                    }
+
+                    // Before correction: neutral. Chosen blanks are clickable to re-select.
+                    const isCurrent = slot === blankCursor;
+                    return (
+                      <button
+                        key={w.i}
+                        onClick={() => focusBlank(slot)}
+                        className="mx-1 inline-block min-w-[4rem] rounded-md border-b-2 px-2 text-center align-middle"
+                        style={{
+                          fontFamily: "var(--font-quran)",
+                          borderColor: isCurrent ? "#059669" : ans ? "#10b981" : "#2563eb",
+                          background: isCurrent ? "rgba(16,185,129,0.14)" : ans ? "rgba(16,185,129,0.06)" : "transparent",
+                          color: ans ? "#0f2a2c" : "#2563eb",
+                        }}
+                      >
+                        {ans ? ans.t : isCurrent ? "؟" : "____"}
+                      </button>
+                    );
                   })}
                 </p>
-                {blanksChecked && <p className="mt-3 text-sm font-bold" style={{ color: blanksChecked.accuracy >= PASS ? "#1f6f5c" : "#b8902f" }}>الدقة {Math.round(blanksChecked.accuracy * 100)}٪</p>}
+                {blanksChecked && (
+                  <p className="mt-3 text-sm font-bold" style={{ color: blanksChecked.accuracy >= PASS ? "#047857" : "#2563eb" }}>
+                    الدقة {Math.round(blanksChecked.accuracy * 100)}٪ — {blankAnswers.filter((a) => a?.correct).length.toLocaleString("ar-EG")} من {blankIdx.length.toLocaleString("ar-EG")} صحيحة
+                  </p>
+                )}
               </div>
-              {!blanksChecked && bank.length > 0 && (
-                <div className="mt-4 flex flex-wrap justify-center gap-2" dir="rtl">
-                  {bank.map((w) => <button key={w.i} onClick={() => fillBlank(w)} className="rounded-lg card px-3 py-2 text-xl text-ink-900 hover:bg-cream-100" style={{ fontFamily: "var(--font-quran)" }}>{w.t}</button>)}
+
+              {/* options for the active blank */}
+              {!blanksChecked && optionsBySlot[blankCursor] && (
+                <div className="mt-5">
+                  <p className="text-center text-xs text-ink-500">الفراغ {(blankCursor + 1).toLocaleString("ar-EG")} من {blankIdx.length.toLocaleString("ar-EG")} — اختر الكلمة الصحيحة</p>
+                  <div className="mt-3 grid grid-cols-2 gap-3">
+                    {optionsBySlot[blankCursor].map((opt) => {
+                      const chosen = blankAnswers[blankCursor]?.key === opt.key;
+                      return (
+                        <button
+                          key={opt.key}
+                          onClick={() => chooseOption(blankCursor, opt)}
+                          className={`rounded-xl border px-4 py-3.5 text-2xl shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-400 hover:bg-emerald-50 ${chosen ? "border-emerald-500 bg-emerald-50 text-emerald-800" : "border-sand-300 bg-white text-ink-900"}`}
+                          style={{ fontFamily: "var(--font-quran)" }}
+                        >
+                          {opt.t}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
+
+              {/* تصحيح / next */}
               {!blanksChecked ? (
-                <button onClick={checkBlanks} disabled={fills.some((f) => f === null)} className="mt-5 w-full rounded-2xl btn-primary py-3 font-semibold disabled:opacity-50">تحقق</button>
+                <button
+                  onClick={checkBlanks}
+                  disabled={!allBlanksAnswered}
+                  className="mt-6 w-full rounded-2xl btn-primary py-3.5 font-semibold disabled:opacity-50"
+                >
+                  {allBlanksAnswered ? "تصحيح" : `اختر باقي الفراغات (${blankAnswers.filter((a) => a === null).length.toLocaleString("ar-EG")} متبقّ)`}
+                </button>
               ) : (
                 <div className="mt-5 flex gap-2">
                   <button onClick={() => resetMethodState("complete", cur)} className="flex-1 rounded-2xl btn-ghost py-3 font-semibold">أعد</button>

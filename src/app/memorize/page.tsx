@@ -29,7 +29,7 @@ export default async function MemorizePage({ searchParams }: { searchParams: Pro
             <p className="text-xs tracking-[0.3em] text-gold-600">جلسة حفظ</p>
             <h1 className="mt-2 font-arabic text-4xl text-ink-900">{meta.nameAr}</h1>
           </header>
-          <MemorizeFlow surah={content} isLoggedIn={!!user} />
+          <MemorizeFlow surah={content} isLoggedIn={!!user} userName={user?.name ?? null} />
         </div>
       );
     }
@@ -98,12 +98,16 @@ export default async function MemorizePage({ searchParams }: { searchParams: Pro
       </section>
 
       <section>
-        <h2 className="font-display text-lg font-bold text-ink-900">أو اختر أي سورة</h2>
-        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+        <h2 className="font-display text-lg font-bold text-ink-900">أو اختر أي سورة من المصحف كاملاً</h2>
+        <p className="mt-1 text-sm text-ink-500">جميع السور الـ ١١٤ متاحة للحفظ بالطرق الستّ</p>
+        <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
           {SURAHS.map((s) => (
-            <Link key={s.number} href={`/memorize?surah=${s.number}`} className="flex items-center justify-between rounded-xl card px-3 py-2.5 text-sm transition hover:bg-cream-100">
-              <span className="font-arabic text-base text-ink-900">{s.nameAr}</span>
-              <span className="text-[10px] text-ink-500">{s.number}</span>
+            <Link key={s.number} href={`/memorize?surah=${s.number}`} className="lift group flex items-center gap-3 rounded-xl card px-3 py-2.5">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-xs font-bold text-white transition group-hover:scale-110" style={{ background: "linear-gradient(135deg,#10b981,#3b82f6)" }}>{s.number.toLocaleString("ar-EG")}</span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-lg text-ink-900" style={{ fontFamily: "var(--font-quran)" }}>{s.nameAr}</span>
+                <span className="block text-[10px] text-ink-500">{s.ayahCount.toLocaleString("ar-EG")} آية</span>
+              </span>
             </Link>
           ))}
         </div>

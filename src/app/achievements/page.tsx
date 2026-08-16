@@ -21,7 +21,7 @@ export default async function AchievementsPage() {
           {user ? `فتحت ${unlocked.toLocaleString("ar-EG")} من ${achievements.length.toLocaleString("ar-EG")} إنجازاً.` : "سجّل الدخول لتتبّع إنجازاتك وحفظ تقدّمك."}
         </p>
         <div className="mx-auto mt-6 h-2 max-w-md overflow-hidden rounded-full bg-cream-200">
-          <div className="h-full rounded-full shimmer" style={{ width: `${(unlocked / achievements.length) * 100}%`, background: "linear-gradient(90deg,#3aa384,#b8902f)" }} />
+          <div className="h-full rounded-full shimmer" style={{ width: `${(unlocked / achievements.length) * 100}%`, background: "linear-gradient(90deg,#10b981,#3b82f6)" }} />
         </div>
       </header>
 

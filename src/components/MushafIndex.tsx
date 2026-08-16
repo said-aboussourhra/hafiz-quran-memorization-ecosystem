@@ -5,10 +5,10 @@ import { useMemo, useState } from "react";
 import { SURAHS } from "@/lib/surahs";
 
 const STATUS_DOT: Record<string, string> = {
-  mastered: "#1f6f5c",
-  memorized: "#3aa384",
-  learning: "#d4ae54",
-  not_started: "#cbbf9f",
+  mastered: "#047857",
+  memorized: "#10b981",
+  learning: "#3b82f6",
+  not_started: "#b5c9cc",
 };
 const STATUS_LABEL: Record<string, string> = {
   mastered: "متقَن",

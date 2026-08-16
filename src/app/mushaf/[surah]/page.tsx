@@ -4,7 +4,21 @@ import { MushafReader } from "@/components/MushafReader";
 import { fetchSurah } from "@/lib/quran";
 import { getSurah } from "@/lib/surahs";
 
-export const dynamic = "force-dynamic";
+// ISR: cache each surah page; revalidate daily for top performance.
+export const revalidate = 86400;
+export const dynamicParams = true;
+
+export function generateStaticParams() {
+  // Pre-render the most-visited short surahs for instant loads.
+  return [1, 36, 55, 67, 112, 113, 114].map((n) => ({ surah: String(n) }));
+}
+
+export function generateMetadata({ params }: { params: Promise<{ surah: string }> }) {
+  return params.then(({ surah }) => {
+    const meta = getSurah(Number(surah));
+    return { title: meta ? `سورة ${meta.nameAr} — حافظ` : "المصحف — حافظ" };
+  });
+}
 
 export default async function SurahPage({ params }: { params: Promise<{ surah: string }> }) {
   const { surah } = await params;
