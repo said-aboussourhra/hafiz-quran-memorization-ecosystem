@@ -4,21 +4,25 @@ import { Pool } from "pg";
 const databaseUrl = process.env.DATABASE_URL;
 
 if (!databaseUrl) {
-  throw new Error("DATABASE_URL is required");
+  console.warn("⚠️ DATABASE_URL is not set. Database features will not work.");
 }
 
 const globalForDb = globalThis as typeof globalThis & {
-  __arenaNextJsPostgresqlPool?: Pool;
+  __hafizPostgresqlPool?: Pool;
 };
 
-export const pool =
-  globalForDb.__arenaNextJsPostgresqlPool ??
-  new Pool({
-    connectionString: databaseUrl,
-  });
+export const pool = databaseUrl
+  ? (globalForDb.__hafizPostgresqlPool ??
+      new Pool({ 
+        connectionString: databaseUrl,
+        max: 10,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 10000,
+      }))
+  : null;
 
-if (process.env.NODE_ENV !== "production") {
-  globalForDb.__arenaNextJsPostgresqlPool = pool;
+if (process.env.NODE_ENV !== "production" && pool) {
+  globalForDb.__hafizPostgresqlPool = pool;
 }
 
-export const db = drizzle(pool);
+export const db = pool ? drizzle(pool) : null;
