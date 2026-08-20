@@ -1203,4 +1203,310 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .mushaf-text {
     font-size: clamp(1.2rem, 1.8vw, 1.8rem) !important;
   }
+}/* ============================================================
+   MUSHAF READER STYLES
+   ============================================================ */
+
+/* شريط الأدوات الثابت */
+.mushaf-toolbar {
+  position: sticky;
+  top: 64px;
+  z-index: 30;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(184, 144, 47, 0.15);
+  border-radius: 16px;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+/* أزرار التحكم */
+.mushaf-control-btn {
+  min-width: 36px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(241, 234, 216, 0.5);
+  transition: all 0.2s ease;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #4a463e;
+  border: none;
+  cursor: pointer;
+}
+
+.mushaf-control-btn:hover {
+  background: rgba(184, 144, 47, 0.15);
+}
+
+.mushaf-control-btn:active {
+  transform: scale(0.95);
+}
+
+.mushaf-font-size {
+  min-width: 2.2rem;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #2a2723;
+}
+
+/* محتوى المصحف */
+.mushaf-content {
+  position: relative;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.mushaf-page {
+  position: relative;
+  background: radial-gradient(120% 90% at 50% 0%, #fffefb 0%, #fcf8ee 55%, #f7f0e0 100%);
+  border-radius: clamp(16px, 2.5vw, 28px);
+  box-shadow: 
+    0 1px 0 rgba(255,255,255,0.8),
+    0 30px 70px -24px rgba(42,39,35,0.28),
+    0 10px 30px -18px rgba(184,144,47,0.25);
+  outline: 2px solid rgba(184,144,47,0.55);
+  outline-offset: -2px;
+}
+
+.mushaf-page::before {
+  content: "";
+  position: absolute;
+  inset: clamp(8px, 1.6vw, 16px);
+  border: 1.5px solid rgba(184,144,47,0.40);
+  border-radius: clamp(12px, 1.8vw, 20px);
+  pointer-events: none;
+}
+
+.mushaf-page::after {
+  content: "";
+  position: absolute;
+  inset: clamp(12px, 2vw, 20px);
+  border: 1px solid rgba(184,144,47,0.18);
+  border-radius: clamp(8px, 1.4vw, 16px);
+  pointer-events: none;
+}
+
+.mushaf-text {
+  font-family: var(--font-quran);
+  color: #1a1408;
+  text-align: justify;
+  text-align-last: center;
+  line-height: 2.2;
+}
+
+/* أيقونات المصحف */
+.mushaf-corner {
+  position: absolute;
+  width: clamp(16px, 4vw, 26px);
+  height: clamp(16px, 4vw, 26px);
+  border-color: rgba(184,144,47,0.7);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.mushaf-watermark {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 20% 30%, rgba(184,144,47,0.02) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 480px) {
+  .mushaf-toolbar {
+    top: 56px;
+    padding: 6px 8px;
+    border-radius: 12px;
+    gap: 4px;
+  }
+  .mushaf-control-btn {
+    min-width: 32px;
+    min-height: 32px;
+    font-size: 0.9rem;
+  }
+  .mushaf-font-size {
+    min-width: 1.8rem;
+    font-size: 0.75rem;
+  }
+  .mushaf-page {
+    padding: 0.75rem !important;
+    border-radius: 16px;
+  }
+  .mushaf-page::before {
+    inset: 6px;
+    border-radius: 10px;
+  }
+  .mushaf-page::after {
+    inset: 8px;
+    border-radius: 8px;
+  }
+  .mushaf-text {
+    font-size: clamp(0.85rem, 4vw, 1.1rem) !important;
+    line-height: 2;
+  }
+  .ayah-chip {
+    font-size: 0.6rem !important;
+    padding: 2px 6px !important;
+  }
+  .ayah-inline-actions {
+    gap: 2px !important;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .mushaf-page {
+    padding: 1rem !important;
+  }
+  .mushaf-text {
+    font-size: clamp(1rem, 2.5vw, 1.3rem) !important;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .mushaf-page {
+    padding: 1.5rem !important;
+  }
+  .mushaf-text {
+    font-size: clamp(1.1rem, 2vw, 1.5rem) !important;
+  }
+}
+
+@media (min-width: 1025px) {
+  .mushaf-page {
+    padding: 2rem !important;
+  }
+  .mushaf-text {
+    font-size: clamp(1.2rem, 1.8vw, 1.8rem) !important;
+  }
+} /* ============================================================
+   ACHIEVEMENT CARD - متجاوب بالكامل
+   ============================================================ */
+
+.achievement-card {
+  position: relative;
+  background: linear-gradient(180deg, #fffefb, #fcf8ee);
+  border-radius: clamp(16px, 3vw, 28px);
+  box-shadow: 
+    0 1px 0 rgba(255,255,255,0.8),
+    0 20px 50px -20px rgba(42,39,35,0.25),
+    0 8px 20px -12px rgba(184,144,47,0.2);
+  outline: 2px solid rgba(184,144,47,0.45);
+  outline-offset: -2px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  width: 100%;
+  max-width: 100%;
+}
+
+.achievement-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 1px 0 rgba(255,255,255,0.8),
+    0 30px 60px -20px rgba(42,39,35,0.3),
+    0 12px 30px -14px rgba(184,144,47,0.25);
+}
+
+.achievement-card::before {
+  content: "";
+  position: absolute;
+  inset: clamp(6px, 1.2vw, 12px);
+  border: 1.5px solid rgba(184,144,47,0.35);
+  border-radius: clamp(10px, 2vw, 18px);
+  pointer-events: none;
+}
+
+.achievement-card::after {
+  content: "";
+  position: absolute;
+  inset: clamp(9px, 1.6vw, 16px);
+  border: 1px solid rgba(184,144,47,0.15);
+  border-radius: clamp(7px, 1.4vw, 14px);
+  pointer-events: none;
+}
+
+.achievement-card .divider-ornament {
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgba(184,144,47,0.4), transparent);
+  margin: 0 auto;
+  width: 80%;
+}
+
+/* تحسينات للهواتف الصغيرة */
+@media (max-width: 380px) {
+  .achievement-card {
+    border-radius: 14px;
+    padding: 0.75rem !important;
+    min-height: 280px !important;
+  }
+  .achievement-card::before {
+    inset: 5px;
+    border-radius: 8px;
+  }
+  .achievement-card::after {
+    inset: 7px;
+    border-radius: 6px;
+  }
+}
+
+/* تحسينات للهواتف المتوسطة */
+@media (min-width: 381px) and (max-width: 480px) {
+  .achievement-card {
+    border-radius: 18px;
+    padding: 1rem !important;
+    min-height: 320px !important;
+  }
+  .achievement-card::before {
+    inset: 6px;
+    border-radius: 10px;
+  }
+  .achievement-card::after {
+    inset: 8px;
+    border-radius: 8px;
+  }
+}
+
+/* تحسينات للأجهزة اللوحية */
+@media (min-width: 481px) and (max-width: 768px) {
+  .achievement-card {
+    border-radius: 22px;
+    padding: 1.25rem !important;
+    min-height: 360px !important;
+  }
+}
+
+/* تحسينات للشاشات الكبيرة */
+@media (min-width: 769px) {
+  .achievement-card {
+    border-radius: 28px;
+    padding: 1.5rem !important;
+    min-height: 420px !important;
+  }
+}
+
+/* شبكة البطاقات - متجاوبة */
+.achievement-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+  padding: 0 clamp(0.5rem, 2vw, 1rem);
+}
+
+@media (min-width: 640px) {
+  .achievement-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .achievement-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
