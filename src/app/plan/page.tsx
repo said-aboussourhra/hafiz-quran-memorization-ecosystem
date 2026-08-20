@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
-import { getProgressStats } from "@/lib/progress";
-import { PACES, planForRemaining } from "@/lib/plan";
-import { TOTAL_AYAHS } from "@/lib/surahs";
+import { getProgressStats, getJuzProgress } from "@/lib/progress";
+import { PACES, planForRemaining, JUZ_INFO } from "@/lib/plan";
+import { TOTAL_AYAHS, getSurah } from "@/lib/surahs";
+import { ReminderSettings } from "@/components/ReminderSettings";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +11,8 @@ export default async function PlanPage() {
   const user = await getCurrentUser();
   const stats = await getProgressStats(user?.id ?? null);
   const remaining = TOTAL_AYAHS - stats.memorizedAyahs;
+  const juz = await getJuzProgress(user?.id ?? null);
+  const completedJuz = juz.filter((j) => j.pct >= 100).length;
 
   return (
     <div className="space-y-8">
@@ -50,6 +53,66 @@ export default async function PlanPage() {
           );
         })}
       </div>
+
+      {/* Juz challenges — 30 juz split into visual challenge cards */}
+      <section>
+        <div className="text-center">
+          <p className="text-xs tracking-[0.3em] text-gold-600">تحدّي الأجزاء</p>
+          <h2 className="mt-3 font-display text-2xl font-bold text-ink-900 sm:text-3xl">اختم القرآن جزءاً جزءاً</h2>
+          <p className="mx-auto mt-3 max-w-xl text-ink-500">
+            القرآن ٣٠ جزءاً — كل جزء تحدٍّ. {user ? `أتممت ${completedJuz.toLocaleString("ar-EG")} جزءاً من ٣٠.` : "سجّل الدخول لتتبّع تقدّمك في كل جزء."}
+          </p>
+        </div>
+
+        {/* overall bar */}
+        <div className="mx-auto mt-6 max-w-2xl">
+          <div className="flex items-center justify-between text-xs text-ink-500">
+            <span>التقدّم الكلي</span>
+            <span className="font-bold text-emerald-700">{completedJuz.toLocaleString("ar-EG")} / ٣٠ جزءاً</span>
+          </div>
+          <div className="mt-2 h-3 overflow-hidden rounded-full bg-cream-200">
+            <div className="h-full rounded-full transition-all" style={{ width: `${(completedJuz / 30) * 100}%`, background: "linear-gradient(90deg,#10b981,#3b82f6)" }} />
+          </div>
+        </div>
+
+        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {JUZ_INFO.map((info) => {
+            const jp = juz[info.juz - 1];
+            const done = jp.pct >= 100;
+            const started = jp.pct > 0;
+            const startSurah = getSurah(info.startSurah);
+            return (
+              <Link
+                key={info.juz}
+                href={`/memorize?surah=${info.startSurah}`}
+                className="lift group relative overflow-hidden rounded-2xl border p-5"
+                style={done
+                  ? { borderColor: "rgba(16,185,129,0.5)", background: "linear-gradient(135deg,#ecfdf5,#eff6ff)" }
+                  : started
+                    ? { borderColor: "rgba(59,130,246,0.35)", background: "#fff" }
+                    : { borderColor: "rgba(184,144,47,0.2)", background: "#fff" }}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="grid h-12 w-12 place-items-center rounded-2xl text-lg font-black text-white shadow-md" style={{ background: done ? "linear-gradient(135deg,#047857,#059669)" : "linear-gradient(135deg,#10b981,#3b82f6)" }}>
+                    {info.juz.toLocaleString("ar-EG")}
+                  </span>
+                  {done ? <span className="text-2xl">🏅</span> : <span className="text-sm font-bold text-emerald-700">{jp.pct}٪</span>}
+                </div>
+                <h3 className="mt-3 text-xl text-ink-900" style={{ fontFamily: "var(--font-quran)" }}>جزء {info.name}</h3>
+                <p className="mt-1 text-[11px] text-ink-500">يبدأ بسورة {startSurah?.nameAr}</p>
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-cream-200">
+                  <div className="h-full rounded-full" style={{ width: `${jp.pct}%`, background: done ? "#059669" : "linear-gradient(90deg,#10b981,#3b82f6)" }} />
+                </div>
+                <span className="mt-3 inline-block text-xs font-semibold text-emerald-700 opacity-0 transition group-hover:opacity-100">
+                  {done ? "أتقنته — راجعه ←" : started ? "أكمل هذا الجزء ←" : "ابدأ هذا التحدّي ←"}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      <ReminderSettings />
 
       <div className="rounded-3xl card p-7">
         <h2 className="font-display text-lg font-bold text-ink-900">نصائح لحفظ متقن</h2>

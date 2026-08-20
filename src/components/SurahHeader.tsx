@@ -46,11 +46,11 @@ export function SurahHeader({
       {/* Text overlay */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <div className="flex items-center gap-3">
-          <span className="text-lg text-emerald-600">۞</span>
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
           <span className="text-3xl sm:text-4xl" style={{ fontFamily: "var(--font-quran)", color: "#0f2a2c" }}>
             سورة {nameAr}
           </span>
-          <span className="text-lg text-ocean-600">۞</span>
+          <span className="h-1.5 w-1.5 rounded-full bg-ocean-600" />
         </div>
         <div className="mt-1 text-[11px] tracking-wide text-ink-500">
           {revelation === "meccan" ? "مكية" : "مدنية"} · {ayahCount.toLocaleString("ar-EG")} آية · الجزء {juz.toLocaleString("ar-EG")}

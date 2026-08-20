@@ -132,11 +132,12 @@ export function Intro() {
           بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
         </p>
 
-        <div className="intro-frame mx-auto mt-10 max-w-3xl">
-          <span className="intro-frame-corner right-3 top-3 border-r-2 border-t-2" style={{ borderTopRightRadius: 12 }} />
-          <span className="intro-frame-corner left-3 top-3 border-l-2 border-t-2" style={{ borderTopLeftRadius: 12 }} />
-          <span className="intro-frame-corner right-3 bottom-3 border-r-2 border-b-2" style={{ borderBottomRightRadius: 12 }} />
-          <span className="intro-frame-corner left-3 bottom-3 border-l-2 border-b-2" style={{ borderBottomLeftRadius: 12 }} />
+        <div className="intro-frame mx-auto mt-12 max-w-3xl">
+          <span className="intro-frame-aura" />
+          <span className="intro-frame-corner right-4 top-4 border-r-2 border-t-2" style={{ borderTopRightRadius: 12 }} />
+          <span className="intro-frame-corner left-4 top-4 border-l-2 border-t-2" style={{ borderTopLeftRadius: 12 }} />
+          <span className="intro-frame-corner right-4 bottom-4 border-r-2 border-b-2" style={{ borderBottomRightRadius: 12 }} />
+          <span className="intro-frame-corner left-4 bottom-4 border-l-2 border-b-2" style={{ borderBottomLeftRadius: 12 }} />
           <p key={verse.audio} className="intro-verse text-[7vw] leading-[1.9] sm:text-[3.4rem]" style={{ fontFamily: "var(--font-quran)" }}>
             {verse.text}
           </p>

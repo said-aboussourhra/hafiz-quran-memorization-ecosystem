@@ -2,7 +2,9 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { PWARegister } from "@/components/PWARegister";
 import { IdleDhikr } from "@/components/IdleDhikr";
-import { Amiri, Amiri_Quran, Reem_Kufi, Tajawal } from "next/font/google";
+import { MagneticCards } from "@/components/MagneticCards";
+
+import { Amiri, Amiri_Quran, Reem_Kufi, Tajawal, Scheherazade_New, Noto_Naskh_Arabic, Markazi_Text } from "next/font/google";
 import "./globals.css";
 import { SiteChrome } from "@/components/SiteChrome";
 import { Intro } from "@/components/Intro";
@@ -19,6 +21,27 @@ const amiriQuran = Amiri_Quran({
   subsets: ["arabic"],
   weight: ["400"],
   variable: "--font-quran",
+  display: "swap",
+});
+
+const scheherazade = Scheherazade_New({
+  subsets: ["arabic"],
+  weight: ["400", "700"],
+  variable: "--font-quran-kfgqpc",
+  display: "swap",
+});
+
+const notoNaskh = Noto_Naskh_Arabic({
+  subsets: ["arabic"],
+  weight: ["400", "700"],
+  variable: "--font-quran-naskh",
+  display: "swap",
+});
+
+const markazi = Markazi_Text({
+  subsets: ["arabic"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-quran-markazi",
   display: "swap",
 });
 
@@ -62,9 +85,10 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const user = await getCurrentUser();
   return (
-    <html lang="ar" dir="rtl" className={`${amiri.variable} ${amiriQuran.variable} ${reem.variable} ${tajawal.variable}`}>
+    <html lang="ar" dir="rtl" className={`${amiri.variable} ${amiriQuran.variable} ${scheherazade.variable} ${notoNaskh.variable} ${markazi.variable} ${reem.variable} ${tajawal.variable}`}>
       <body className="min-h-screen antialiased">
         <PWARegister />
+        <MagneticCards />
         <Intro />
         <SiteChrome userName={user?.name ?? null}>{children}</SiteChrome>
         <IdleDhikr name={user?.name ?? null} />

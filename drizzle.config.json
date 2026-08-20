@@ -1,8 +1,7 @@
 {
   "dialect": "postgresql",
   "schema": "./src/db/schema.ts",
-  "out": "./drizzle/migrations",
   "dbCredentials": {
-    "url": "postgresql://neondb_owner:HH188218@ep-proud-hall-aw8fu6h9-pooler.c-12.us-east-1.aws.neon.tech/neondb?sslmode=require"
+    "url": "postgresql://postgres:postgres@127.0.0.1:5432/app_db"
   }
 }

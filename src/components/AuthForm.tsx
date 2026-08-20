@@ -55,8 +55,16 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
         <div className="absolute inset-x-0 top-0 h-1.5" style={{ background: "linear-gradient(90deg,#10b981,#3b82f6)" }} />
 
         <div className="text-center">
-          <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl text-3xl text-white shadow-lg" style={{ background: "linear-gradient(135deg,#10b981,#3b82f6)" }}>
-            <span style={{ fontFamily: "var(--font-quran)" }}>ح</span>
+          <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl text-white shadow-lg" style={{ background: "linear-gradient(135deg,#10b981,#3b82f6)" }}>
+            {mode === "signup" ? (
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="8" r="4" /><path d="M4 21c1.5-4 5-6 8-6s6.5 2 8 6" /><path d="M18 4l1.2 2.4L21.6 7.6 19.2 8.8 18 11.2 16.8 8.8 14.4 7.6 16.8 6.4z" />
+              </svg>
+            ) : (
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="4" y="10" width="16" height="11" rx="2.5" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /><circle cx="12" cy="15.5" r="1.4" fill="currentColor" stroke="none" />
+              </svg>
+            )}
           </span>
           <h1 className="mt-5 font-display text-2xl font-bold text-ink-900">
             {mode === "signup" ? "إنشاء حساب جديد" : "تسجيل الدخول"}

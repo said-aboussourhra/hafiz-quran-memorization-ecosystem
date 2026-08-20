@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { ScrollTop } from "@/components/ScrollTop";
+import { ReportProblem } from "@/components/ReportProblem";
 
 const NAV = [
   { href: "/", label: "الرئيسية" },
@@ -21,15 +22,15 @@ const NAV = [
 
 const MOBILE = [
   { href: "/", label: "الرئيسية", icon: "home" },
-  { href: "/mushaf", label: "المصحف", icon: "quran" },
   { href: "/memorize", label: "الحفظ", icon: "book" },
+  { href: "/mushaf", label: "المصحف", icon: "quran" },
   { href: "/review", label: "المراجعة", icon: "search" },
   { href: "/dashboard", label: "حسابي", icon: "trophy" },
 ];
 
-function Icon({ name, active }: { name: string; active: boolean }) {
-  const c = active ? "#059669" : "#7c9b9880";
-  const stroke = active ? "#059669" : "#7c9b98";
+function Icon({ name, active, inverted }: { name: string; active: boolean; inverted?: boolean }) {
+  const c = inverted ? "#ffffff" : active ? "#059669" : "#7c9b9880";
+  const stroke = inverted ? "#ffffff" : active ? "#059669" : "#7c9b98";
   const common = { width: 22, height: 22, fill: "none", stroke, strokeWidth: 1.7, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
   switch (name) {
     case "home":
@@ -67,9 +68,9 @@ export function SiteChrome({ children, userName }: { children: ReactNode; userNa
             <span className="grid h-11 w-11 place-items-center rounded-2xl text-white shadow-md transition group-hover:scale-105" style={{ background: "linear-gradient(135deg,#10b981,#3b82f6)" }}>
               <span className="text-xl" style={{ fontFamily: "var(--font-quran)" }}>ح</span>
             </span>
-            <span className="flex flex-col leading-none">
-              <span className="font-display text-2xl font-black shine-text">حافظ</span>
-              <span className="mt-0.5 text-[10px] font-semibold tracking-[0.2em] text-ink-500">رحلتك مع القرآن</span>
+            <span className="flex flex-col leading-tight">
+              <span className="block font-display text-2xl font-black leading-none shine-text">حافظ</span>
+              <span className="mt-1 block text-[10px] font-semibold leading-none tracking-[0.15em] text-ink-500">رحلتك مع القرآن</span>
             </span>
           </Link>
 
@@ -80,13 +81,14 @@ export function SiteChrome({ children, userName }: { children: ReactNode; userNa
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`relative rounded-xl px-3.5 py-2 text-sm font-semibold transition ${
-                    active ? "text-emerald-700" : "text-ink-700 hover:bg-emerald-50 hover:text-emerald-700"
+                  className={`relative rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 ${
+                    active ? "text-emerald-700" : "text-ink-700 hover:bg-emerald-50/70 hover:text-emerald-700"
                   }`}
+                  style={active ? { background: "var(--grad-brand-soft)", boxShadow: "inset 0 0 0 1px rgba(16,185,129,.25)" } : undefined}
                 >
                   {item.label}
                   {active && (
-                    <span className="absolute inset-x-2 -bottom-0.5 h-[3px] rounded-full" style={{ background: "linear-gradient(90deg,#10b981,#3b82f6)" }} />
+                    <span className="absolute inset-x-4 -bottom-1 h-[3px] rounded-full" style={{ background: "linear-gradient(90deg,#10b981,#3b82f6)" }} />
                   )}
                 </Link>
               );
@@ -94,15 +96,6 @@ export function SiteChrome({ children, userName }: { children: ReactNode; userNa
           </nav>
 
           <div className="flex items-center gap-2">
-            <Link
-              href="/developer"
-              aria-label="المطوّر"
-              title="عن المطوّر"
-              className="grid h-10 w-10 place-items-center rounded-full text-sm font-black text-white shadow-md transition hover:scale-105"
-              style={{ background: "linear-gradient(135deg,#10b981,#3b82f6)" }}
-            >
-              S
-            </Link>
             {userName ? (
               <div className="hidden items-center gap-2 sm:flex">
                 <Link href="/dashboard" className="flex items-center gap-2 rounded-xl card px-3 py-2 text-sm text-ink-700 transition hover:bg-cream-100">
@@ -209,7 +202,10 @@ export function SiteChrome({ children, userName }: { children: ReactNode; userNa
 
         <div className="mx-auto mt-10 max-w-7xl px-5">
           <div className="divider-ornament" />
-          <p className="mt-5 text-center text-xs text-ink-500">
+          <p className="mt-5 text-center text-[11px] leading-relaxed text-ink-500">
+            القرآن الكريم برواية حفص عن عاصم · الرسم العثماني وفق مصحف المدينة (مجمع الملك فهد) · التفسير الميسّر (مجمع الملك فهد)
+          </p>
+          <p className="mt-2 text-center text-xs text-ink-500">
             حافظ © {new Date().getFullYear().toLocaleString("ar-EG", { useGrouping: false })} — طوّره بحبٍّ <span className="font-bold shine-text">SAID</span> · لخدمة كتاب الله
           </p>
         </div>
@@ -217,21 +213,33 @@ export function SiteChrome({ children, userName }: { children: ReactNode; userNa
 
       <ScrollTop />
 
-      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-emerald-500/15 bg-white/90 shadow-[0_-4px_20px_-12px_rgba(37,99,235,0.3)] backdrop-blur-xl lg:hidden">
-        <div className="mx-auto flex max-w-md items-stretch justify-between px-2 py-1.5">
-          {MOBILE.map((item) => {
+      {/* Floating bottom nav — white pill with raised center button (like iOS) */}
+      <nav className="fixed inset-x-0 bottom-0 z-50 px-4 pb-[calc(env(safe-area-inset-bottom,0)+0.7rem)] lg:hidden">
+        <div className="relative mx-auto flex max-w-md items-end justify-between rounded-[1.6rem] bg-white px-3 pb-2 pt-2.5" style={{ boxShadow: "0 -4px 24px -8px rgba(16,42,46,.18), 0 16px 40px -18px rgba(16,42,46,.25), 0 0 0 1px rgba(16,185,129,.08)" }}>
+          {MOBILE.map((item, idx) => {
             const active = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
+            const isCenter = idx === 2;
+            if (isCenter) {
+              return (
+                <Link key={item.href} href={item.href} className="relative -top-6 flex flex-col items-center" aria-label={item.label}>
+                  <span className="grid h-14 w-14 place-items-center rounded-full text-white transition active:scale-95" style={{ background: "var(--grad-brand)", boxShadow: "0 10px 24px -6px rgba(5,150,105,.55), 0 0 0 5px #ffffff" }}>
+                    <Icon name={item.icon} active inverted />
+                  </span>
+                  <span className={`mt-1 text-[10px] font-bold ${active ? "text-emerald-700" : "text-ink-500"}`}>{item.label}</span>
+                </Link>
+              );
+            }
             return (
-              <Link key={item.href} href={item.href} className="flex flex-1 flex-col items-center gap-1 rounded-xl py-1.5 transition">
-                <span className={`grid h-9 w-14 place-items-center rounded-full transition ${active ? "" : ""}`} style={active ? { background: "linear-gradient(135deg,rgba(16,185,129,0.15),rgba(59,130,246,0.15))" } : undefined}>
-                  <Icon name={item.icon} active={active} />
-                </span>
-                <span className={`text-[10px] font-semibold ${active ? "text-emerald-700" : "text-ink-500"}`}>{item.label}</span>
+              <Link key={item.href} href={item.href} className="flex min-w-[52px] flex-col items-center gap-0.5 rounded-xl px-1 py-1 transition active:scale-95" aria-label={item.label}>
+                <Icon name={item.icon} active={active} />
+                <span className={`text-[10px] font-bold ${active ? "text-emerald-700" : "text-ink-500"}`}>{item.label}</span>
               </Link>
             );
           })}
         </div>
       </nav>
+
+      <ReportProblem />
     </>
   );
 }

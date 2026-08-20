@@ -25,16 +25,14 @@ export function NamesGrid() {
     <div>
       {supported && (
         <p className="mb-6 text-center text-sm text-emerald-700">
-          🔊 مرّر المؤشّر على أي اسم فيُنطق بصوتٍ واضح ثم يُشرح لك معناه
+          🔊 انقر على أي اسم فيُنطق بصوتٍ واضح ثم يُشرح لك معناه
         </p>
       )}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {ALLAH_NAMES.map((n, i) => (
           <button
             key={i}
-            onMouseEnter={() => say(i, n.ar, n.meaning)}
-            onClick={() => say(i, n.ar, n.meaning)}
-            onMouseLeave={() => stopSpeaking()}
+            onClick={() => (speaking === i ? stopSpeaking() : say(i, n.ar, n.meaning))}
             className={`name-card group rounded-2xl border border-sand-300/70 bg-white p-5 text-center ${speaking === i ? "speaking" : ""}`}
           >
             <span className="absolute right-3 top-3 grid h-7 w-7 place-items-center rounded-full text-[11px] font-bold text-white" style={{ background: "linear-gradient(135deg,#10b981,#3b82f6)" }}>

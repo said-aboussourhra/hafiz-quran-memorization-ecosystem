@@ -1,14 +1,5 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  serverExternalPackages: ['drizzle-orm', 'pg'],
-  env: {
-    DATABASE_URL: process.env.DATABASE_URL || '',
-  },
-  staticPageGenerationTimeout: 120,
-};
+const nextConfig: NextConfig = {};
 
 export default nextConfig;

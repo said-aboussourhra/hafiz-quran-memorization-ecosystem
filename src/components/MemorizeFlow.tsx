@@ -7,6 +7,7 @@ import { diffAyah, normalizeWord, type DiffResult } from "@/lib/arabicText";
 import { ENCOURAGEMENTS } from "@/lib/virtues";
 import { DEFAULT_RECITER, ayahUrl, perAyahFallback, hasPerAyah } from "@/lib/reciters";
 import { createRecognizer, recognitionSupported } from "@/lib/speak";
+import { Certificate } from "@/components/Certificate";
 
 type Phase = "setup" | "method" | "done";
 type Method = "listen" | "repeat" | "voice" | "liverecite" | "hide" | "dictation" | "write" | "arrange" | "complete";
@@ -270,6 +271,16 @@ export function MemorizeFlow({ surah, isLoggedIn, userName }: { surah: SurahCont
   // ---- arrange ----
   const pick = (w: Word) => { setBuilt((b) => [...b, w]); setPool((p) => p.filter((x) => x.i !== w.i)); };
   const unpick = (w: Word) => { setPool((p) => [...p, w]); setBuilt((b) => b.filter((x) => x.i !== w.i)); };
+  // drag & drop reorder within the built row
+  const moveBuilt = (from: number, to: number) => {
+    if (from === to || from < 0 || to < 0) return;
+    setBuilt((b) => {
+      const next = [...b];
+      const [item] = next.splice(from, 1);
+      next.splice(to, 0, item);
+      return next;
+    });
+  };
   const checkArrange = () => {
     const exp = cur.words; let correct = 0; let firstWrong = -1;
     for (let k = 0; k < exp.length; k++) {
@@ -660,22 +671,35 @@ export function MemorizeFlow({ surah, isLoggedIn, userName }: { surah: SurahCont
             </div>
           )}
 
-          {/* ARRANGE */}
+          {/* ARRANGE — click or drag to reorder */}
           {method === "arrange" && (
             <div>
-              <p className="text-center text-sm text-ink-500">رتّب الكلمات لتكوين الآية الصحيحة</p>
-              <div className="mt-4 min-h-[80px] rounded-2xl border border-dashed border-sand-300 bg-white p-4">
+              <p className="text-center text-sm text-ink-500">انقر الكلمات بالترتيب، أو اسحبها لإعادة ترتيبها</p>
+              <div className="mt-4 min-h-[80px] rounded-2xl border-2 border-dashed border-emerald-300 bg-white p-4">
                 <div className="flex flex-wrap gap-2" dir="rtl">
                   {built.map((w, k) => {
                     const wrong = arrangeChecked && arrangeChecked.firstWrong !== -1 && k >= arrangeChecked.firstWrong && !(cur.words[k] && cur.words[k].i === w.i);
                     const ok = arrangeChecked && cur.words[k] && cur.words[k].i === w.i;
-                    return <button key={w.i} onClick={() => !arrangeChecked && unpick(w)} className="rounded-lg px-3 py-2 text-xl text-white" style={{ fontFamily: "var(--font-quran)", background: ok ? "#1f6f5c" : wrong ? "#c0392b" : "#2e8b6f" }}>{w.t}</button>;
+                    return (
+                      <button
+                        key={w.i}
+                        draggable={!arrangeChecked}
+                        onDragStart={(e) => e.dataTransfer.setData("text/plain", String(k))}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => { e.preventDefault(); moveBuilt(Number(e.dataTransfer.getData("text/plain")), k); }}
+                        onClick={() => !arrangeChecked && unpick(w)}
+                        className="cursor-grab rounded-lg px-3 py-2 text-xl text-white shadow-sm transition active:cursor-grabbing"
+                        style={{ fontFamily: "var(--font-quran)", background: ok ? "#059669" : wrong ? "#c0392b" : "linear-gradient(135deg,#10b981,#2563eb)" }}
+                      >
+                        {w.t}
+                      </button>
+                    );
                   })}
                   {built.length === 0 && <span className="text-sm text-ink-500">انقر الكلمات بالأسفل بالترتيب…</span>}
                 </div>
               </div>
               <div className="mt-4 flex flex-wrap gap-2" dir="rtl">
-                {pool.map((w) => <button key={w.i} onClick={() => pick(w)} className="rounded-lg card px-3 py-2 text-xl text-ink-900 hover:bg-cream-100" style={{ fontFamily: "var(--font-quran)" }}>{w.t}</button>)}
+                {pool.map((w) => <button key={w.i} onClick={() => pick(w)} className="rounded-lg card px-3 py-2 text-xl text-ink-900 transition hover:-translate-y-0.5 hover:bg-cream-100" style={{ fontFamily: "var(--font-quran)" }}>{w.t}</button>)}
               </div>
               {!arrangeChecked ? (
                 <button onClick={checkArrange} disabled={built.length !== cur.words.length} className="mt-5 w-full rounded-2xl btn-primary py-3 font-semibold disabled:opacity-50">تحقق</button>
@@ -797,6 +821,20 @@ export function MemorizeFlow({ surah, isLoggedIn, userName }: { surah: SurahCont
           <h3 className="mt-6 font-display text-2xl font-bold gold-text">أتممت الجلسة!</h3>
           <p className="mt-3 text-ink-700">حفظت {sessionAyahs.length.toLocaleString("ar-EG")} آية · أكملت {done.size.toLocaleString("ar-EG")} طرق{scores.length ? ` · أتقنت ${scoredCount.toLocaleString("ar-EG")} من ${scores.length.toLocaleString("ar-EG")} في الاختبارات` : ""}</p>
           <p className="mt-2 text-sm text-ink-500">{isLoggedIn ? (saving ? "جارٍ حفظ تقدّمك…" : "تم حفظ تقدّمك بنجاح.") : "سجّل الدخول لحفظ تقدّمك."}</p>
+
+          {/* Certificate when the whole surah is completed */}
+          {startIdx + sessionAyahs.length >= totalAyahs && (
+            <div className="mt-8">
+              <div className="mb-4 inline-block rounded-full bg-emerald-50 px-5 py-2 text-sm font-bold text-emerald-700">🎓 أتممت السورة كاملة — استلم شهادتك</div>
+              <Certificate
+                name={userName || "عبد الله"}
+                surahName={surah.meta.nameAr}
+                ayahCount={totalAyahs}
+                accuracy={scores.length ? (scores.reduce((s, v) => s + v, 0) / scores.length) * 100 : 90}
+              />
+            </div>
+          )}
+
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <button onClick={() => { const ns = Math.min(startIdx + chunk, totalAyahs - 1); setStartIdx(ns); setScores([]); setDone(new Set()); setPhase("setup"); }} className="rounded-2xl btn-primary px-6 py-3 font-semibold">المقطع التالي</button>
             <a href={`/mushaf/${surahNum}`} className="rounded-2xl btn-ghost px-6 py-3 font-semibold">اقرأ في المصحف</a>

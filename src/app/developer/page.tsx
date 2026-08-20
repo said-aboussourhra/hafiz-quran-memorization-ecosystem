@@ -54,11 +54,35 @@ export default function DeveloperPage() {
         <div className="shimmer absolute inset-x-0 top-0 h-px" />
 
         <div className="relative">
-          <div className="relative mx-auto grid h-36 w-36 place-items-center">
+          <div className="relative mx-auto grid h-40 w-40 place-items-center">
             <span className="orbit absolute inset-0 rounded-full border-2 border-dashed border-emerald-500/30" />
-            <span className="absolute -inset-3 rounded-full breathe" style={{ background: "radial-gradient(circle, rgba(16,185,129,0.25), transparent 70%)" }} />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/developer.jpg" alt="SAID" className="h-28 w-28 rounded-full object-cover shadow-2xl ring-4 ring-white" />
+            <span className="absolute -inset-3 rounded-full breathe" style={{ background: "radial-gradient(circle, rgba(16,185,129,0.28), transparent 70%)" }} />
+            {/* Artistic SVG emblem — Islamic geometric rosette with an "S" monogram */}
+            <svg viewBox="0 0 200 200" className="relative h-36 w-36 drop-shadow-xl" aria-label="شعار سعيد">
+              <defs>
+                <linearGradient id="devg" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#10b981" />
+                  <stop offset="55%" stopColor="#059669" />
+                  <stop offset="100%" stopColor="#2563eb" />
+                </linearGradient>
+                <linearGradient id="devgold" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#e8c874" />
+                  <stop offset="100%" stopColor="#b8902f" />
+                </linearGradient>
+              </defs>
+              {/* 8-point star rosette */}
+              <g transform="translate(100 100)">
+                <g fill="url(#devg)" opacity="0.16">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <rect key={i} x="-70" y="-70" width="140" height="140" rx="26" transform={`rotate(${i * 22.5})`} />
+                  ))}
+                </g>
+              </g>
+              <circle cx="100" cy="100" r="66" fill="url(#devg)" />
+              <circle cx="100" cy="100" r="66" fill="none" stroke="url(#devgold)" strokeWidth="3" />
+              <circle cx="100" cy="100" r="58" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeOpacity="0.55" />
+              <text x="100" y="128" textAnchor="middle" fontSize="82" fontWeight="900" fill="#ffffff" style={{ fontFamily: "var(--font-display), serif" }}>S</text>
+            </svg>
           </div>
           <p className="mt-7 text-xs tracking-[0.4em] text-gold-600">مطوّر المنصة</p>
           <h1 className="mt-2 font-display text-5xl font-black sm:text-7xl">

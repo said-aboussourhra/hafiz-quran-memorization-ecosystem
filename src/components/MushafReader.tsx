@@ -5,6 +5,7 @@ import type { SurahContent } from "@/lib/quran";
 import { AyahMarker } from "@/components/AyahMarker";
 import { SurahHeader } from "@/components/SurahHeader";
 import { saveLastRead } from "@/components/LastRead";
+import { isSajda, SAJDA_DUA, SAJDA_DUA_SOURCE } from "@/lib/sajda";
 import {
   RECITERS,
   DEFAULT_RECITER,
@@ -22,19 +23,37 @@ function toDigits(n: number): string {
   return String(n);
 }
 
+const FONTS = [
+  { id: "qf-kfgqpc", label: "عثماني · مصحف المدينة" },
+  { id: "qf-amiri", label: "أميري قرآن" },
+  { id: "qf-naskh", label: "نسخ واضح" },
+  { id: "qf-markazi", label: "مركزي عصري" },
+];
+
 export function MushafReader({ surah }: { surah: SurahContent }) {
   const [fontSize, setFontSize] = useState(34);
+  const [font, setFont] = useState("qf-kfgqpc");
+  const [showFonts, setShowFonts] = useState(false);
   const [view, setView] = useState<ViewMode>("mushaf");
   const [selected, setSelected] = useState<number | null>(null);
   const [tafsirAyah, setTafsirAyah] = useState<number | null>(null);
+  const [sajdaOpen, setSajdaOpen] = useState(false);
   const [playingAyah, setPlayingAyah] = useState<number | null>(null);
   const [surahPlaying, setSurahPlaying] = useState(false);
   const [continuous, setContinuous] = useState(false);
   const [reciter, setReciter] = useState<Reciter>(DEFAULT_RECITER);
   const [showReciters, setShowReciters] = useState(false);
   const [progress, setProgress] = useState(0);
+  // word-by-word karaoke highlight
+  const [highlight, setHighlight] = useState(true);
+  const [hlColor, setHlColor] = useState("#10b981");
+  const [paper, setPaper] = useState("ivory");
+  const [showSettings, setShowSettings] = useState(false);
+  const [activeWord, setActiveWord] = useState<number>(-1);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const pageRef = useRef<HTMLDivElement | null>(null);
+  const ayahRefs = useRef<Map<number, HTMLSpanElement>>(new Map());
+  const [autoScroll, setAutoScroll] = useState(true);
 
   const surahNum = surah.meta.number;
   const tafsir = tafsirAyah != null ? surah.ayahs.find((a) => a.numberInSurah === tafsirAyah) ?? null : null;
@@ -45,25 +64,19 @@ export function MushafReader({ surah }: { surah: SurahContent }) {
     const r = hasPerAyah(reciter) ? reciter : perAyahFallback();
     const url = ayahUrl(r, surahNum, ayah.numberInSurah, ayah.globalNumber);
     if (!url) return;
-    setSurahPlaying(false);
+    if (!chain) setSurahPlaying(false);
     setContinuous(chain);
     setPlayingAyah(n);
+    setActiveWord(-1);
     audioRef.current.src = url;
     audioRef.current.play().catch(() => {});
   };
 
   const playFullSurah = () => {
-    if (!audioRef.current) return;
-    const full = surahUrl(reciter, surahNum);
-    if (full) {
-      setPlayingAyah(null);
-      setContinuous(false);
-      setSurahPlaying(true);
-      audioRef.current.src = full;
-      audioRef.current.play().catch(() => {});
-    } else {
-      playAyah(surah.ayahs[0].numberInSurah, true);
-    }
+    // Chain per-ayah playback so word-by-word highlighting stays accurate
+    // for the whole recitation, for every reciter.
+    setSurahPlaying(true);
+    playAyah(surah.ayahs[0].numberInSurah, true);
   };
 
   const stopAudio = () => {
@@ -71,9 +84,47 @@ export function MushafReader({ surah }: { surah: SurahContent }) {
     setPlayingAyah(null);
     setSurahPlaying(false);
     setContinuous(false);
+    setActiveWord(-1);
+  };
+
+  // Karaoke highlight: map the current audio time to the recited word,
+  // weighted by each word's length (longer words take longer to recite).
+  const onTimeUpdate = () => {
+    const a = audioRef.current;
+    if (!a || !highlight || playingAyah == null || !a.duration || isNaN(a.duration)) return;
+    const ayah = surah.ayahs.find((x) => x.numberInSurah === playingAyah);
+    if (!ayah || ayah.words.length === 0) return;
+    // slight lead-in/tail padding so highlight feels natural
+    const dur = a.duration;
+    const t = Math.max(0, a.currentTime - dur * 0.02);
+    const weights = ayah.words.map((w) => Math.max(2, w.t.replace(/[^\u0600-\u06FF]/g, "").length));
+    const total = weights.reduce((s, x) => s + x, 0);
+    const target = (t / (dur * 0.96)) * total;
+    let acc = 0;
+    let idx = 0;
+    for (let i = 0; i < weights.length; i++) {
+      acc += weights[i];
+      if (target <= acc) { idx = i; break; }
+      idx = i;
+    }
+    setActiveWord(Math.min(ayah.words.length - 1, idx));
+  };
+
+  // Click a word to seek the audio to that word's approximate position.
+  const seekToWord = (ayah: typeof surah.ayahs[number], wordIdx: number) => {
+    const a = audioRef.current;
+    if (!a || playingAyah !== ayah.numberInSurah || !a.duration || isNaN(a.duration)) return;
+    const weights = ayah.words.map((w) => Math.max(2, w.t.replace(/[^\u0600-\u06FF]/g, "").length));
+    const total = weights.reduce((s, x) => s + x, 0);
+    let before = 0;
+    for (let i = 0; i < wordIdx; i++) before += weights[i];
+    a.currentTime = (before / total) * a.duration * 0.96;
+    setActiveWord(wordIdx);
+    if (a.paused) a.play().catch(() => {});
   };
 
   const onEnded = () => {
+    setActiveWord(-1);
     if (continuous && playingAyah != null) {
       const next = playingAyah + 1;
       if (surah.ayahs.some((a) => a.numberInSurah === next)) {
@@ -89,6 +140,53 @@ export function MushafReader({ surah }: { surah: SurahContent }) {
   useEffect(() => {
     saveLastRead(surah.meta.number, surah.meta.nameAr);
   }, [surah.meta.number, surah.meta.nameAr]);
+
+  // auto-scroll the recited ayah into view during recitation
+  useEffect(() => {
+    if (!autoScroll || playingAyah == null) return;
+    const el = ayahRefs.current.get(playingAyah);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [playingAyah, autoScroll]);
+
+  // restore favorite reciter, font & size
+  useEffect(() => {
+    try {
+      const fav = localStorage.getItem("hafiz_reciter");
+      if (fav) {
+        const r = RECITERS.find((x) => x.id === fav);
+        if (r) setReciter(r);
+      }
+      const f = localStorage.getItem("hafiz_font");
+      if (f && FONTS.some((x) => x.id === f)) setFont(f);
+      const s = localStorage.getItem("hafiz_fontsize");
+      if (s) setFontSize(Math.max(26, Math.min(60, Number(s) || 34)));
+      const as = localStorage.getItem("hafiz_autoscroll");
+      if (as != null) setAutoScroll(as === "1");
+      const hl = localStorage.getItem("hafiz_highlight");
+      if (hl != null) setHighlight(hl === "1");
+      const hc = localStorage.getItem("hafiz_hlcolor");
+      if (hc) setHlColor(hc);
+      const pp = localStorage.getItem("hafiz_paper");
+      if (pp) setPaper(pp);
+    } catch { /* ignore */ }
+  }, []);
+
+  const chooseFont = (id: string) => {
+    setFont(id);
+    setShowFonts(false);
+    try { localStorage.setItem("hafiz_font", id); } catch { /* ignore */ }
+  };
+  const changeSize = (v: number) => {
+    setFontSize(v);
+    try { localStorage.setItem("hafiz_fontsize", String(v)); } catch { /* ignore */ }
+  };
+
+  const chooseReciter = (r: Reciter) => {
+    setReciter(r);
+    setShowReciters(false);
+    stopAudio();
+    try { localStorage.setItem("hafiz_reciter", r.id); } catch { /* ignore */ }
+  };
 
   // reading progress bar
   useEffect(() => {
@@ -131,8 +229,8 @@ export function MushafReader({ surah }: { surah: SurahContent }) {
   const isPlaying = playingAyah != null || surahPlaying;
 
   return (
-    <div onClick={() => { setSelected(null); setShowReciters(false); setTafsirAyah(null); }}>
-      <audio ref={audioRef} onEnded={onEnded} />
+    <div onClick={() => { setSelected(null); setShowReciters(false); setShowFonts(false); setShowSettings(false); setTafsirAyah(null); }}>
+      <audio ref={audioRef} onEnded={onEnded} onTimeUpdate={onTimeUpdate} />
 
       {/* reading progress bar */}
       <div className="fixed inset-x-0 top-0 z-[60] h-1">
@@ -148,8 +246,62 @@ export function MushafReader({ surah }: { surah: SurahContent }) {
         </div>
 
         <div className="flex items-center gap-2">
-          <button onClick={() => setFontSize((s) => Math.max(26, s - 4))} className="grid h-9 w-9 place-items-center rounded-lg btn-ghost text-lg">−</button>
-          <button onClick={() => setFontSize((s) => Math.min(60, s + 4))} className="grid h-9 w-9 place-items-center rounded-lg btn-ghost text-lg">+</button>
+          <button onClick={() => changeSize(Math.max(26, fontSize - 4))} className="grid h-9 w-9 place-items-center rounded-lg btn-ghost text-lg">−</button>
+          <button onClick={() => changeSize(Math.min(60, fontSize + 4))} className="grid h-9 w-9 place-items-center rounded-lg btn-ghost text-lg">+</button>
+
+          {/* Font picker */}
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            <button onClick={() => { setShowFonts((v) => !v); setShowReciters(false); }} className="flex items-center gap-2 rounded-lg btn-ghost px-3 py-2 text-sm">
+              <span>خط</span>
+              <span className="text-ink-500">▾</span>
+            </button>
+            {showFonts && (
+              <div className="ayah-pop absolute left-0 top-full z-50 mt-2 w-52 overflow-hidden rounded-2xl border border-sand-300 bg-white shadow-xl">
+                {FONTS.map((f) => (
+                  <button key={f.id} onClick={() => chooseFont(f.id)} className={`flex w-full items-center justify-between px-4 py-2.5 text-right transition hover:bg-cream-100 ${font === f.id ? "bg-cream-100" : ""}`}>
+                    <span className={`text-xl ${f.id}`} style={{ color: "#071a1c" }}>بِسْمِ اللَّه</span>
+                    <span className="text-[11px] text-ink-500">{f.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Settings: highlight + colors */}
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            <button onClick={() => { setShowSettings((v) => !v); setShowFonts(false); setShowReciters(false); }} className="flex items-center gap-2 rounded-lg btn-ghost px-3 py-2 text-sm">
+              <span>⚙️</span>
+              <span className="text-ink-500">▾</span>
+            </button>
+            {showSettings && (
+              <div className="ayah-pop absolute left-0 top-full z-50 mt-2 w-64 rounded-2xl border border-sand-300 bg-white p-4 shadow-xl">
+                <label className="flex items-center justify-between text-sm font-semibold text-ink-900">
+                  <span>تظليل الكلمات مع التلاوة</span>
+                  <input type="checkbox" checked={highlight} onChange={(e) => { setHighlight(e.target.checked); try { localStorage.setItem("hafiz_highlight", e.target.checked ? "1" : "0"); } catch {} }} className="h-5 w-9 accent-emerald-600" />
+                </label>
+                <label className="mt-3 flex items-center justify-between text-sm font-semibold text-ink-900">
+                  <span>تمرير تلقائي مع التلاوة</span>
+                  <input type="checkbox" checked={autoScroll} onChange={(e) => { setAutoScroll(e.target.checked); try { localStorage.setItem("hafiz_autoscroll", e.target.checked ? "1" : "0"); } catch {} }} className="h-5 w-9 accent-emerald-600" />
+                </label>
+                <div className="mt-4">
+                  <p className="mb-2 text-xs text-ink-500">لون التظليل</p>
+                  <div className="flex gap-2">
+                    {["#10b981", "#3b82f6", "#b8902f", "#e11d48", "#8b5cf6"].map((c) => (
+                      <button key={c} onClick={() => { setHlColor(c); try { localStorage.setItem("hafiz_hlcolor", c); } catch {} }} className={`h-7 w-7 rounded-full transition ${hlColor === c ? "ring-2 ring-offset-2 ring-ink-500" : ""}`} style={{ background: c }} />
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <p className="mb-2 text-xs text-ink-500">لون صفحة المصحف</p>
+                  <div className="flex gap-2">
+                    {[["ivory", "عاجي"], ["green", "أخضر"], ["blue", "أزرق"], ["plain", "أبيض"]].map(([id, lbl]) => (
+                      <button key={id} onClick={() => { setPaper(id); try { localStorage.setItem("hafiz_paper", id); } catch {} }} className={`rounded-lg border px-2.5 py-1.5 text-[11px] transition ${paper === id ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-sand-300 text-ink-500"}`}>{lbl}</button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className="relative" onClick={(e) => e.stopPropagation()}>
             <button onClick={() => setShowReciters((v) => !v)} className="flex items-center gap-2 rounded-lg btn-ghost px-3 py-2 text-sm">
@@ -158,13 +310,14 @@ export function MushafReader({ surah }: { surah: SurahContent }) {
               <span className="text-ink-500">▾</span>
             </button>
             {showReciters && (
-              <div className="ayah-pop absolute left-0 top-full z-50 mt-2 w-60 overflow-hidden rounded-2xl border border-sand-300 bg-white shadow-xl">
+              <div className="ayah-pop absolute left-0 top-full z-[60] mt-2 max-h-[60vh] w-64 overflow-y-auto rounded-2xl border border-sand-300 bg-white shadow-xl">
+                <div className="sticky top-0 border-b border-sand-300 bg-white px-4 py-2 text-xs font-bold text-emerald-700">اختر القارئ</div>
                 {RECITERS.map((r) => {
                   const coversSurah = !!surahUrl(r, surahNum) || hasPerAyah(r);
                   return (
                     <button
                       key={r.id}
-                      onClick={() => { setReciter(r); setShowReciters(false); stopAudio(); }}
+                      onClick={() => chooseReciter(r)}
                       className={`flex w-full items-center justify-between gap-2 px-4 py-2.5 text-right text-sm transition hover:bg-cream-100 ${r.id === reciter.id ? "bg-cream-100" : ""}`}
                     >
                       <span>
@@ -188,7 +341,7 @@ export function MushafReader({ surah }: { surah: SurahContent }) {
       </div>
 
       {/* Mushaf page */}
-      <div ref={pageRef} className={`mushaf-page px-5 py-9 sm:px-14 sm:py-14 ${surahPlaying ? "ring-2 ring-emerald-500/30" : ""}`}>
+      <div ref={pageRef} className={`mushaf-page paper-${paper} px-5 py-9 sm:px-14 sm:py-14 ${surahPlaying ? "ring-2 ring-emerald-500/30" : ""}`}>
         <span className="mushaf-watermark" />
         <span className="mushaf-corner left-3 top-3 border-l-2 border-t-2 rounded-tl-lg" />
         <span className="mushaf-corner right-3 top-3 border-r-2 border-t-2 rounded-tr-lg" />
@@ -208,19 +361,42 @@ export function MushafReader({ surah }: { surah: SurahContent }) {
 
         {/* ===== Continuous Mushaf view ===== */}
         {view === "mushaf" && (
-          <p className="mushaf-text" dir="rtl" style={{ fontSize, lineHeight: 2.5 }}>
+          <p className={`mushaf-text ${font}`} dir="rtl" style={{ fontSize, lineHeight: 2.5 }}>
             {surah.ayahs.map((a) => (
               <span key={a.numberInSurah}>
                 <span
+                  ref={(el) => { if (el) ayahRefs.current.set(a.numberInSurah, el); }}
                   role="button"
                   tabIndex={0}
                   onClick={(e) => onAyahClick(e, a.numberInSurah)}
                   onKeyDown={(e) => { if (e.key === "Enter") onAyahClick(e as unknown as React.MouseEvent, a.numberInSurah); }}
                   className={`cursor-pointer rounded-md transition ${playingAyah === a.numberInSurah ? "ayah-playing" : selected === a.numberInSurah ? "bg-[rgba(59,130,246,0.12)]" : "hover:bg-[rgba(16,185,129,0.10)]"}`}
                 >
-                  {a.text}
+                  {highlight && playingAyah === a.numberInSurah ? (
+                    a.words.map((w, wi) => (
+                      <span
+                        key={wi}
+                        onClick={(e) => { e.stopPropagation(); seekToWord(a, wi); }}
+                        className="cursor-pointer"
+                        style={wi === activeWord ? { color: hlColor, background: `${hlColor}22`, borderRadius: "6px", padding: "0 2px", transition: "color .15s, background .15s" } : undefined}
+                      >
+                        {w.t}{" "}
+                      </span>
+                    ))
+                  ) : (
+                    a.text
+                  )}
                   <AyahMarker n={a.numberInSurah} active={playingAyah === a.numberInSurah} />
                 </span>
+                {isSajda(surah.meta.number, a.numberInSurah) && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setSajdaOpen(true); }}
+                    title="موضع سجدة"
+                    className="mx-1 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 align-middle text-[11px] font-bold text-amber-700"
+                  >
+                    ۩ سجدة
+                  </button>
+                )}
                 {/* Inline action chip — always appears right beside the selected ayah */}
                 {selected === a.numberInSurah && tafsirAyah !== a.numberInSurah && (
                   <span className="ayah-inline-actions" contentEditable={false} onClick={(e) => e.stopPropagation()}>
@@ -264,7 +440,7 @@ export function MushafReader({ surah }: { surah: SurahContent }) {
                     <button onClick={() => openTafsir(a.numberInSurah)} className="rounded-lg btn-ghost px-3 py-1.5 text-xs">📖 تفسير</button>
                   </div>
                 </div>
-                <p className="text-ink-900" style={{ fontFamily: "var(--font-quran)", fontSize, lineHeight: 2.2 }}>{a.text}</p>
+                <p className={`text-ink-900 ${font}`} style={{ fontSize, lineHeight: 2.2 }}>{a.text}</p>
               </div>
             ))}
           </div>
@@ -272,8 +448,24 @@ export function MushafReader({ surah }: { surah: SurahContent }) {
       </div>
 
       <p className="mt-4 text-center text-xs text-ink-500">
-        {view === "mushaf" ? "انقر على أي آية ليظهر بجانبها: تفسير أو استماع" : "وضع القراءة آية بآية — لكل آية أزرار التفسير والاستماع"}
+        {view === "mushaf" ? "انقر على أي آية ليظهر بجانبها: تفسير أو استماع · أثناء التلاوة انقر أي كلمة للقفز إليها" : "وضع القراءة آية بآية — لكل آية أزرار التفسير والاستماع"}
       </p>
+
+      {/* Sajda card */}
+      {sajdaOpen && (
+        <div className="sheet-backdrop fixed inset-0 z-[80] flex items-end justify-center bg-ink-900/40 p-0 backdrop-blur-sm sm:items-center sm:p-6" onClick={() => setSajdaOpen(false)}>
+          <div className="sheet-panel w-full max-w-lg rounded-t-3xl border-2 border-amber-300 bg-white p-6 text-center shadow-2xl sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
+            <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl text-3xl" style={{ background: "linear-gradient(135deg,#fef3c7,#fde68a)" }}>۩</div>
+            <h3 className="mt-4 font-display text-xl font-black text-ink-900">موضع سجدة تلاوة</h3>
+            <p className="mt-1 text-sm text-ink-500">يُستحبّ السجود عند تلاوة هذه الآية، ويُقال في السجود:</p>
+            <div className="mt-5 rounded-2xl bg-cream-100 p-5">
+              <p className="text-2xl leading-loose text-ink-900" style={{ fontFamily: "var(--font-quran)" }}>{SAJDA_DUA}</p>
+            </div>
+            <p className="mt-3 text-xs text-ink-500">{SAJDA_DUA_SOURCE}</p>
+            <button onClick={() => setSajdaOpen(false)} className="mt-5 w-full rounded-xl btn-primary py-3 text-sm font-semibold">تمّ</button>
+          </div>
+        </div>
+      )}
 
       {/* Tafsir modal — used only in ayah-by-ayah view (mushaf view shows it inline) */}
       {tafsir && view === "ayah" && (

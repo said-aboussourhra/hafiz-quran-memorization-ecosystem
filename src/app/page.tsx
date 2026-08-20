@@ -4,6 +4,8 @@ import { getCurrentUser } from "@/lib/auth";
 import { getUniverseData, getProgressStats } from "@/lib/progress";
 import { TOTAL_AYAHS } from "@/lib/surahs";
 import { VIRTUES } from "@/lib/virtues";
+import { AyahOfDayCard } from "@/components/AyahOfDayCard";
+import { ayahOfToday } from "@/lib/ayahOfDay";
 
 export const dynamic = "force-dynamic";
 
@@ -38,9 +40,9 @@ export default async function HomePage() {
             <span className="pointer-events-none absolute -inset-4 -z-10 rounded-full breathe" style={{ background: "radial-gradient(circle, rgba(16,185,129,0.22), transparent 70%)" }} />
             <span className="font-arabic text-4xl shine-text">﷽</span>
           </div>
-          <div className="rise mx-auto mt-6 flex max-w-xs items-center justify-center gap-3 text-emerald-500" style={{ animationDelay: "40ms" }}>
+          <div className="rise mx-auto mt-6 flex max-w-xs items-center justify-center gap-3" style={{ animationDelay: "40ms" }}>
             <span className="h-px flex-1 bg-gradient-to-l from-emerald-500/50 to-transparent" />
-            <span className="text-sm">۞</span>
+            <span className="h-2 w-2 rounded-full" style={{ background: "linear-gradient(135deg,#10b981,#2563eb)" }} />
             <span className="h-px flex-1 bg-gradient-to-r from-ocean-500/50 to-transparent" />
           </div>
           <h1 className="rise mt-6 font-display text-4xl font-bold leading-[1.4] text-ink-900 sm:text-6xl" style={{ animationDelay: "80ms" }}>
@@ -60,6 +62,16 @@ export default async function HomePage() {
               <Link href="/signup" className="font-semibold text-emerald-600">أنشئ حساباً</Link> لحفظ تقدّمك ومتابعة إنجازاتك.
             </p>
           )}
+          <div className="rise mt-7 flex flex-wrap items-center justify-center gap-2.5" style={{ animationDelay: "360ms" }}>
+            {[
+              { i: "📖", t: "المصحف كاملاً" },
+              { i: "🎙️", t: "١٧ قارئاً" },
+              { i: "🧠", t: "مراجعة ذكية" },
+              { i: "📴", t: "بدون إنترنت" },
+            ].map((f) => (
+              <span key={f.t} className="chip"><span className="text-sm">{f.i}</span>{f.t}</span>
+            ))}
+          </div>
         </div>
 
         <div className="rise mx-auto mt-12 max-w-5xl" style={{ animationDelay: "320ms" }}>
@@ -84,20 +96,15 @@ export default async function HomePage() {
         ))}
       </section>
 
-      {/* INSPIRATION */}
-      <section className="relative overflow-hidden rounded-3xl card-warm p-8 text-center sm:p-12">
-        <div className="shimmer absolute inset-x-0 top-0 h-px" />
-        <p className="text-xs tracking-[0.3em] text-gold-600">آية وتدبّر</p>
-        <p className="mx-auto mt-6 max-w-2xl font-arabic text-2xl leading-[2] text-ink-900 sm:text-3xl">
-          وَلَقَدْ يَسَّرْنَا الْقُرْآنَ لِلذِّكْرِ فَهَلْ مِن مُّدَّكِرٍ
-        </p>
-        <p className="mt-4 text-sm text-ink-500">سورة القمر · الآية ١٧</p>
+      {/* AYAH OF THE DAY — shareable */}
+      <section>
+        <AyahOfDayCard ayah={ayahOfToday()} />
       </section>
 
       {/* VIRTUES OF READING QURAN */}
       <section>
         <div className="text-center">
-          <p className="text-xs tracking-[0.3em] text-gold-600">فضل قراءة القرآن</p>
+          <p className="eyebrow justify-center">فضل قراءة القرآن</p>
           <h2 className="mt-3 font-display text-2xl font-bold text-ink-900 sm:text-3xl">ثمارٌ لا تنقطع لحامل القرآن</h2>
           <p className="mx-auto mt-3 max-w-xl text-ink-500">آيات وأحاديث صحيحة تذكّرك بعظيم الأجر في كل حرف تقرؤه.</p>
         </div>
@@ -118,7 +125,7 @@ export default async function HomePage() {
       {/* FEATURES */}
       <section>
         <div className="text-center">
-          <p className="text-xs tracking-[0.3em] text-gold-600">لماذا حافظ</p>
+          <p className="eyebrow justify-center">لماذا حافظ</p>
           <h2 className="mt-3 font-display text-2xl font-bold text-ink-900 sm:text-3xl">كل ما تحتاجه لحفظ القرآن في مكان واحد</h2>
         </div>
         <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -136,7 +143,7 @@ export default async function HomePage() {
       {/* QUICK ACCESS */}
       <section>
         <div className="text-center">
-          <p className="text-xs tracking-[0.3em] text-gold-600">أدوات إضافية</p>
+          <p className="eyebrow justify-center">أدوات إضافية</p>
           <h2 className="mt-3 font-display text-2xl font-bold text-ink-900 sm:text-3xl">المزيد في رحلتك القرآنية</h2>
         </div>
         <div className="mt-8 grid gap-4 sm:grid-cols-3">

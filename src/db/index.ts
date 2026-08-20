@@ -8,20 +8,17 @@ if (!databaseUrl) {
 }
 
 const globalForDb = globalThis as typeof globalThis & {
-  __hafizPostgresqlPool?: Pool;
+  __arenaNextJsPostgresqlPool?: Pool;
 };
 
-const pool = globalForDb.__hafizPostgresqlPool ?? new Pool({
-  connectionString: databaseUrl,
-  max: 10,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000,
-});
+export const pool =
+  globalForDb.__arenaNextJsPostgresqlPool ??
+  new Pool({
+    connectionString: databaseUrl,
+  });
 
 if (process.env.NODE_ENV !== "production") {
-  globalForDb.__hafizPostgresqlPool = pool;
+  globalForDb.__arenaNextJsPostgresqlPool = pool;
 }
 
-const db = drizzle(pool);
-
-export { pool, db };
+export const db = drizzle(pool);

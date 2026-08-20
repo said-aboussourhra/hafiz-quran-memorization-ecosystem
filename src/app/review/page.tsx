@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { getReviewQueue } from "@/lib/progress";
+import { ReviewGrader } from "@/components/ReviewGrader";
 
 export const dynamic = "force-dynamic";
 
@@ -36,25 +37,8 @@ export default async function ReviewPage() {
             {due.length === 0 ? (
               <div className="mt-4 rounded-2xl card p-6 text-center text-ink-500">لا مراجعات مستحقّة — ممتاز! راجعت كل شيء في وقته 🌿</div>
             ) : (
-              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {due.map((r) => (
-                  <div key={r.surahNumber} className="lift card rounded-2xl p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="grid h-10 w-10 place-items-center rounded-xl text-xs font-bold text-white" style={{ background: "linear-gradient(135deg,#10b981,#3b82f6)" }}>{r.surahNumber.toLocaleString("ar-EG")}</span>
-                        <div>
-                          <div className="text-lg text-ink-900" style={{ fontFamily: "var(--font-quran)" }}>{r.nameAr}</div>
-                          <div className="text-[11px] text-ink-500">قوة الحفظ {r.retention}٪</div>
-                        </div>
-                      </div>
-                      <span className="rounded-full bg-red-50 px-2 py-1 text-[11px] font-semibold text-red-600">مستحقّة</span>
-                    </div>
-                    <div className="mt-3 flex gap-2">
-                      <Link href={`/mushaf/${r.surahNumber}`} className="flex-1 rounded-xl btn-ghost py-2 text-center text-xs font-semibold">قراءة</Link>
-                      <Link href={`/memorize?surah=${r.surahNumber}`} className="flex-1 rounded-xl btn-primary py-2 text-center text-xs font-semibold">مراجعة واختبار</Link>
-                    </div>
-                  </div>
-                ))}
+              <div className="mt-4">
+                <ReviewGrader items={due.map((r) => ({ surahNumber: r.surahNumber, nameAr: r.nameAr, retention: r.retention }))} />
               </div>
             )}
           </section>
