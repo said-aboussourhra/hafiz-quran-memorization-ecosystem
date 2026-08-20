@@ -965,5 +965,145 @@ body::before {
 
 /* prevent horizontal overflow on any screen */
 html, body { max-width: 100%; overflow-x: hidden; }
+/* ============================================================
+   ACHIEVEMENT CARD
+   ============================================================ */
+.achievement-card {
+  position: relative;
+  background: linear-gradient(180deg, #fffefb, #fcf8ee);
+  border-radius: 28px;
+  box-shadow: 
+    0 1px 0 rgba(255,255,255,0.8),
+    0 30px 70px -24px rgba(42,39,35,0.28),
+    0 10px 30px -18px rgba(184,144,47,0.25);
+  outline: 2px solid rgba(184,144,47,0.55);
+  outline-offset: -2px;
+}
 
+.achievement-card::before {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border: 1.5px solid rgba(184,144,47,0.40);
+  border-radius: 18px;
+  pointer-events: none;
+}
+
+.achievement-card::after {
+  content: "";
+  position: absolute;
+  inset: 16px;
+  border: 1px solid rgba(184,144,47,0.18);
+  border-radius: 14px;
+  pointer-events: none;
+}
+
+/* ============================================================
+   MUSHAF PAGE RESPONSIVE
+   ============================================================ */
+.mushaf-page {
+  position: relative;
+  background: radial-gradient(120% 90% at 50% 0%, #fffefb 0%, #fcf8ee 55%, #f7f0e0 100%);
+  border-radius: clamp(16px, 2.5vw, 28px);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.8), 0 30px 70px -24px rgba(42,39,35,0.28), 0 10px 30px -18px rgba(184,144,47,0.25);
+  outline: 2px solid rgba(184,144,47,0.55);
+  outline-offset: -2px;
+}
+
+.mushaf-page::before {
+  content: "";
+  position: absolute;
+  inset: clamp(8px, 1.6vw, 16px);
+  border: 1.5px solid rgba(184,144,47,0.40);
+  border-radius: clamp(12px, 1.8vw, 20px);
+  pointer-events: none;
+}
+
+.mushaf-page::after {
+  content: "";
+  position: absolute;
+  inset: clamp(12px, 2vw, 20px);
+  border: 1px solid rgba(184,144,47,0.18);
+  border-radius: clamp(8px, 1.4vw, 16px);
+  pointer-events: none;
+}
+
+.mushaf-text {
+  font-family: var(--font-quran);
+  color: #1a1408;
+  text-align: justify;
+  text-align-last: center;
+  line-height: 2;
+  font-size: clamp(0.9rem, 1.8vw, 1.4rem);
+}
+
+/* ============================================================
+   RESPONSIVE FOR ALL DEVICES
+   ============================================================ */
+@media (max-width: 480px) {
+  .achievement-card {
+    padding: 1rem !important;
+    border-radius: 20px;
+  }
+  .achievement-card::before {
+    inset: 8px;
+    border-radius: 12px;
+  }
+  .achievement-card::after {
+    inset: 10px;
+    border-radius: 10px;
+  }
+  .mushaf-page {
+    padding: 0.75rem !important;
+    border-radius: 16px;
+  }
+  .mushaf-page::before {
+    inset: 6px;
+    border-radius: 10px;
+  }
+  .mushaf-page::after {
+    inset: 8px;
+    border-radius: 8px;
+  }
+  .mushaf-text {
+    font-size: 0.85rem;
+    line-height: 1.8;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .achievement-card {
+    padding: 1.5rem !important;
+  }
+  .mushaf-page {
+    padding: 1rem !important;
+  }
+  .mushaf-text {
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .achievement-card {
+    padding: 2rem !important;
+  }
+  .mushaf-page {
+    padding: 1.5rem !important;
+  }
+  .mushaf-text {
+    font-size: 1.1rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .achievement-card {
+    padding: 2.5rem !important;
+  }
+  .mushaf-page {
+    padding: 2rem !important;
+  }
+  .mushaf-text {
+    font-size: 1.2rem;
+  }
+}
 

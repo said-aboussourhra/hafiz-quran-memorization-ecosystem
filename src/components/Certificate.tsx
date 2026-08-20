@@ -1,121 +1,454 @@
 "use client";
 
-import { useRef, useState } from "react";
+import Image from "next/image";
+import { type ReactNode } from "react";
 
+interface CertificateProps {
+  /** اسم المكرم */
+  name: string;
+  /** السورة المحفوظة */
+  surahName: string;
+  /** عدد الآيات المتقنة */
+  ayahCount: number;
+  /** نسبة الإتقان */
+  perfection: string;
+  /** أيقونة إضافية أو أي عنصر */
+  extra?: ReactNode;
+}
+
+/**
+ * شهادة تقدير فاخرة على طراز منصة حافظ
+ * تعتمد على هوية بصرية موحدة: أزرق داكن + ذهبي + زمردي
+ * مع خلفية فاتحة وإطار أنيق مزدوج
+ */
 export function Certificate({
   name,
   surahName,
   ayahCount,
-  accuracy,
-}: {
-  name: string;
-  surahName: string;
-  ayahCount: number;
-  accuracy: number;
-}) {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const [busy, setBusy] = useState(false);
-  const today = new Date().toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" });
-
-  const download = async () => {
-    setBusy(true);
-    try {
-      const node = ref.current;
-      if (!node) return;
-      // Render the certificate DOM to an SVG->canvas image (no external libs).
-      const w = 1000, h = 700;
-      const data = certificateSVG({ name, surahName, ayahCount, accuracy, today, w, h });
-      const blob = new Blob([data], { type: "image/svg+xml;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      await new Promise<void>((res, rej) => { img.onload = () => res(); img.onerror = () => rej(); img.src = url; });
-      const canvas = document.createElement("canvas");
-      canvas.width = w; canvas.height = h;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-      ctx.drawImage(img, 0, 0, w, h);
-      URL.revokeObjectURL(url);
-      canvas.toBlob((b) => {
-        if (!b) return;
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(b);
-        a.download = `شهادة-حفظ-${surahName}.png`;
-        a.click();
-      }, "image/png");
-    } finally {
-      setBusy(false);
-    }
-  };
+  perfection,
+  extra,
+}: CertificateProps) {
+  const year = new Date().getFullYear().toLocaleString("ar-EG", { useGrouping: false });
 
   return (
-    <div className="space-y-4">
-      <div ref={ref} className="cert-frame relative mx-auto max-w-2xl overflow-hidden rounded-3xl p-8 text-center sm:p-10">
-        <div className="cert-corner right-4 top-4" />
-        <div className="cert-corner left-4 top-4" />
-        <div className="cert-corner right-4 bottom-4" />
-        <div className="cert-corner left-4 bottom-4" />
-        <p className="text-2xl text-emerald-700" style={{ fontFamily: "var(--font-quran)" }}>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
-        <div className="basmala-ornament mx-auto mt-4 max-w-[200px]" />
-        <p className="mt-6 text-xs tracking-[0.3em] text-gold-600">شهادة تقدير · إتمام حفظ</p>
-        <h2 className="mt-3 font-display text-3xl font-black" style={{ background: "linear-gradient(120deg,#047857,#059669,#2563eb)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>
-          تهانينا
-        </h2>
-        <p className="mt-5 text-lg text-ink-700">نشهد أن الأخ/الأخت</p>
-        <p className="mt-2 text-3xl font-black text-ink-900">{name}</p>
-        <p className="mt-4 text-lg leading-loose text-ink-700">
-          قد أتمّ بفضل الله حفظ <span className="font-bold text-emerald-700" style={{ fontFamily: "var(--font-quran)" }}>سورة {surahName}</span>
-          <br />
-          ({ayahCount.toLocaleString("ar-EG")} آية) بنسبة إتقان <span className="font-bold text-emerald-700">{Math.round(accuracy)}٪</span>
-        </p>
-        <p className="mx-auto mt-5 max-w-md text-sm leading-loose text-ink-500" style={{ fontFamily: "var(--font-quran)" }}>
-          «خيركم من تعلّم القرآن وعلّمه»
-        </p>
-        <div className="mt-6 flex items-center justify-between px-4 text-xs text-ink-500">
-          <span>{today}</span>
-          <span className="flex items-center gap-1.5">
-            <span className="grid h-6 w-6 place-items-center rounded-full text-[10px] font-black text-white" style={{ background: "linear-gradient(135deg,#10b981,#3b82f6)" }}>ح</span>
-            منصة حافظ
-          </span>
+    <div className="certificate-wrapper">
+      <div className="certificate-card">
+        {/* الإطار الخارجي */}
+        <div className="certificate-outer-frame">
+          {/* الإطار الداخلي */}
+          <div className="certificate-inner-frame">
+            {/* خلفية مزخرفة شفافة */}
+            <div className="certificate-bg-pattern" />
+
+            {/* المحتوى */}
+            <div className="certificate-content">
+              {/* الزاوية العلوية اليمنى */}
+              <div className="certificate-corner top-right" />
+              {/* الزاوية العلوية اليسرى */}
+              <div className="certificate-corner top-left" />
+              {/* الزاوية السفلية اليمنى */}
+              <div className="certificate-corner bottom-right" />
+              {/* الزاوية السفلية اليسرى */}
+              <div className="certificate-corner bottom-left" />
+
+              {/* الشعار */}
+              <div className="certificate-logo">
+                <Image
+                  src="/HAFIZ.jpg"
+                  alt="شعار حافظ"
+                  width={60}
+                  height={60}
+                  className="rounded-full shadow-md"
+                />
+              </div>
+
+              {/* النص العلوي */}
+              <div className="certificate-header">
+                <p className="certificate-bismillah">بسم الله الرحمن الرحيم</p>
+                <div className="certificate-divider" />
+                <p className="certificate-title-arabic">شهادة تقدير</p>
+                <p className="certificate-title-heart">❤️ إتمام حفظ</p>
+                <p className="certificate-congrats">تهانينا</p>
+              </div>
+
+              {/* اسم المكرم */}
+              <div className="certificate-name-section">
+                <p className="certificate-label">نشهد أن الأخ/الأخت</p>
+                <p className="certificate-name">{name}</p>
+              </div>
+
+              {/* الإنجاز */}
+              <div className="certificate-achievement">
+                <p className="certificate-achievement-text">
+                  قد أتمّ بفضل الله حفظ سورة {surahName}
+                </p>
+                <p className="certificate-perfection">
+                  بنسبة إتقان {perfection} (آية {ayahCount})
+                </p>
+              </div>
+
+              {/* الفاصل */}
+              <div className="certificate-divider gold" />
+
+              {/* الحديث */}
+              <div className="certificate-hadith">
+                <p className="certificate-hadith-text">
+                  "خيركم من تعلم القرآن وعلمه"
+                </p>
+                <p className="certificate-hadith-source">رواه البخاري</p>
+              </div>
+
+              {/* التذييل */}
+              <div className="certificate-footer">
+                <p className="certificate-date">
+                  صدرت هذه الشهادة في {new Date().toLocaleDateString("ar-EG", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </p>
+                <div className="certificate-divider small" />
+                <p className="certificate-brand">
+                  حافظ © {year} — رفيقك في حفظ القرآن الكريم
+                </p>
+              </div>
+
+              {extra && <div className="certificate-extra">{extra}</div>}
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="flex justify-center">
-        <button onClick={download} disabled={busy} className="rounded-2xl btn-primary px-7 py-3 font-semibold disabled:opacity-60">
-          {busy ? "جارٍ التحضير…" : "⬇ تنزيل الشهادة"}
-        </button>
-      </div>
+      <style jsx>{`
+        /* ============================================================
+           شهادة تقدير — حافظ
+           الهوية البصرية: أزرق داكن + ذهبي + زمردي
+           خلفية فاتحة، إطار مزدوج، زخارف شفافة
+           ============================================================ */
+
+        .certificate-wrapper {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 1.5rem;
+          min-height: 100vh;
+          background: linear-gradient(145deg, #f5f0e8 0%, #ede8dd 100%);
+          font-family: var(--font-ui);
+        }
+
+        .certificate-card {
+          max-width: 720px;
+          width: 100%;
+          padding: 1.5rem;
+          background: #fffcf7;
+          border-radius: 32px;
+          box-shadow:
+            0 2px 4px rgba(26, 35, 53, 0.04),
+            0 12px 40px rgba(26, 35, 53, 0.10),
+            0 0 0 1px rgba(184, 144, 47, 0.12);
+        }
+
+        .certificate-outer-frame {
+          position: relative;
+          padding: 16px;
+          border-radius: 20px;
+          background: linear-gradient(135deg, #1a2a4a, #2c3e6b);
+        }
+
+        .certificate-inner-frame {
+          position: relative;
+          padding: 28px 24px;
+          border-radius: 14px;
+          background: #fefcf7;
+          border: 2px solid rgba(184, 144, 47, 0.35);
+          overflow: hidden;
+        }
+
+        /* ===== خلفية زخرفية شفافة ===== */
+        .certificate-bg-pattern {
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          opacity: 0.04;
+          background-image:
+            repeating-linear-gradient(
+              45deg,
+              #b8902f 0px,
+              #b8902f 2px,
+              transparent 2px,
+              transparent 12px
+            ),
+            repeating-linear-gradient(
+              -45deg,
+              #b8902f 0px,
+              #b8902f 2px,
+              transparent 2px,
+              transparent 12px
+            );
+          background-size: 24px 24px;
+        }
+
+        /* ===== الزوايا المزخرفة ===== */
+        .certificate-corner {
+          position: absolute;
+          width: 28px;
+          height: 28px;
+          border-color: rgba(184, 144, 47, 0.35);
+          border-style: solid;
+          border-width: 0;
+          pointer-events: none;
+          z-index: 2;
+        }
+        .certificate-corner.top-left {
+          top: 12px;
+          left: 12px;
+          border-top-width: 2px;
+          border-left-width: 2px;
+        }
+        .certificate-corner.top-right {
+          top: 12px;
+          right: 12px;
+          border-top-width: 2px;
+          border-right-width: 2px;
+        }
+        .certificate-corner.bottom-left {
+          bottom: 12px;
+          left: 12px;
+          border-bottom-width: 2px;
+          border-left-width: 2px;
+        }
+        .certificate-corner.bottom-right {
+          bottom: 12px;
+          right: 12px;
+          border-bottom-width: 2px;
+          border-right-width: 2px;
+        }
+
+        /* ===== المحتوى ===== */
+        .certificate-content {
+          position: relative;
+          z-index: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+
+        /* ===== الشعار ===== */
+        .certificate-logo {
+          margin-bottom: 0.75rem;
+        }
+        .certificate-logo :global(img) {
+          box-shadow: 0 4px 12px rgba(26, 35, 53, 0.08);
+        }
+
+        /* ===== النص العلوي ===== */
+        .certificate-header {
+          margin-bottom: 1.25rem;
+        }
+        .certificate-bismillah {
+          font-family: var(--font-arabic);
+          font-size: 1.2rem;
+          color: #1a2a4a;
+          margin-bottom: 0.25rem;
+        }
+        .certificate-divider {
+          width: 60px;
+          height: 2px;
+          margin: 0.5rem auto;
+          background: linear-gradient(90deg, transparent, #b8902f, transparent);
+        }
+        .certificate-divider.gold {
+          background: linear-gradient(90deg, transparent, #b8902f, #d4ae54, #b8902f, transparent);
+          height: 2px;
+          width: 80px;
+        }
+        .certificate-divider.small {
+          width: 40px;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, #b8902f, transparent);
+        }
+        .certificate-title-arabic {
+          font-family: var(--font-display);
+          font-size: 1.8rem;
+          font-weight: 700;
+          color: #1a2a4a;
+          letter-spacing: 0.02em;
+        }
+        .certificate-title-heart {
+          font-size: 1.1rem;
+          color: #b8902f;
+          font-weight: 500;
+          margin-top: 0.1rem;
+        }
+        .certificate-congrats {
+          font-family: var(--font-arabic);
+          font-size: 1.6rem;
+          color: #1a2a4a;
+          font-weight: 700;
+          margin-top: 0.2rem;
+        }
+
+        /* ===== اسم المكرم ===== */
+        .certificate-name-section {
+          margin: 1rem 0 1.25rem;
+        }
+        .certificate-label {
+          font-size: 0.9rem;
+          color: #4a5a6a;
+          font-weight: 400;
+        }
+        .certificate-name {
+          font-family: var(--font-display);
+          font-size: 2.6rem;
+          font-weight: 700;
+          color: #1a2a4a;
+          background: linear-gradient(135deg, #1a2a4a, #2c3e6b);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          margin-top: 0.2rem;
+          letter-spacing: 0.02em;
+        }
+
+        /* ===== الإنجاز ===== */
+        .certificate-achievement {
+          margin-bottom: 1.25rem;
+        }
+        .certificate-achievement-text {
+          font-family: var(--font-arabic);
+          font-size: 1.1rem;
+          color: #2a3a4a;
+          line-height: 1.6;
+        }
+        .certificate-perfection {
+          font-size: 1.2rem;
+          font-weight: 600;
+          color: #1a7a5a;
+          margin-top: 0.3rem;
+          background: linear-gradient(135deg, #1a7a5a, #2e9b7a);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+
+        /* ===== الحديث ===== */
+        .certificate-hadith {
+          margin: 1rem 0 1.5rem;
+          padding: 0.75rem 1.5rem;
+          background: rgba(184, 144, 47, 0.04);
+          border-radius: 12px;
+          border: 1px solid rgba(184, 144, 47, 0.10);
+          max-width: 90%;
+        }
+        .certificate-hadith-text {
+          font-family: var(--font-arabic);
+          font-size: 1.1rem;
+          color: #1a2a3a;
+          line-height: 1.6;
+        }
+        .certificate-hadith-source {
+          font-size: 0.8rem;
+          color: #6a7a8a;
+          margin-top: 0.2rem;
+        }
+
+        /* ===== التذييل ===== */
+        .certificate-footer {
+          margin-top: 0.75rem;
+        }
+        .certificate-date {
+          font-size: 0.8rem;
+          color: #5a6a7a;
+        }
+        .certificate-brand {
+          font-size: 0.7rem;
+          color: #7a8a9a;
+          margin-top: 0.3rem;
+        }
+
+        .certificate-extra {
+          margin-top: 0.75rem;
+        }
+
+        /* ===== التجاوب ===== */
+        @media (max-width: 480px) {
+          .certificate-card {
+            padding: 0.75rem;
+            border-radius: 20px;
+          }
+          .certificate-outer-frame {
+            padding: 10px;
+            border-radius: 14px;
+          }
+          .certificate-inner-frame {
+            padding: 18px 14px;
+          }
+          .certificate-title-arabic {
+            font-size: 1.4rem;
+          }
+          .certificate-name {
+            font-size: 2rem;
+          }
+          .certificate-achievement-text {
+            font-size: 0.95rem;
+          }
+          .certificate-perfection {
+            font-size: 1rem;
+          }
+          .certificate-hadith-text {
+            font-size: 0.95rem;
+          }
+          .certificate-corner {
+            width: 18px;
+            height: 18px;
+          }
+          .certificate-corner.top-left,
+          .certificate-corner.top-right {
+            top: 8px;
+          }
+          .certificate-corner.top-left,
+          .certificate-corner.bottom-left {
+            left: 8px;
+          }
+          .certificate-corner.top-right,
+          .certificate-corner.bottom-right {
+            right: 8px;
+          }
+          .certificate-corner.bottom-left,
+          .certificate-corner.bottom-right {
+            bottom: 8px;
+          }
+          .certificate-bismillah {
+            font-size: 1rem;
+          }
+          .certificate-congrats {
+            font-size: 1.2rem;
+          }
+          .certificate-label {
+            font-size: 0.75rem;
+          }
+        }
+
+        @media (max-width: 380px) {
+          .certificate-name {
+            font-size: 1.6rem;
+          }
+          .certificate-title-arabic {
+            font-size: 1.2rem;
+          }
+          .certificate-achievement-text {
+            font-size: 0.85rem;
+          }
+          .certificate-hadith-text {
+            font-size: 0.85rem;
+          }
+          .certificate-logo :global(img) {
+            width: 48px;
+            height: 48px;
+          }
+        }
+      `}</style>
     </div>
   );
-}
-
-function esc(s: string): string {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
-function certificateSVG(o: { name: string; surahName: string; ayahCount: number; accuracy: number; today: string; w: number; h: number }): string {
-  const { name, surahName, ayahCount, accuracy, today, w, h } = o;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#fdfaf1"/><stop offset="100%" stop-color="#f3ecd9"/>
-    </linearGradient>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#047857"/><stop offset="50%" stop-color="#059669"/><stop offset="100%" stop-color="#2563eb"/>
-    </linearGradient>
-  </defs>
-  <rect width="${w}" height="${h}" fill="url(#bg)"/>
-  <rect x="24" y="24" width="${w - 48}" height="${h - 48}" fill="none" stroke="url(#g)" stroke-width="4" rx="20"/>
-  <rect x="40" y="40" width="${w - 80}" height="${h - 80}" fill="none" stroke="#b8902f" stroke-width="1.5" rx="14"/>
-  <text x="${w / 2}" y="120" text-anchor="middle" font-family="Amiri, serif" font-size="40" fill="#047857">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</text>
-  <text x="${w / 2}" y="185" text-anchor="middle" font-family="serif" font-size="20" letter-spacing="6" fill="#b8902f">شهادة تقدير · إتمام حفظ</text>
-  <text x="${w / 2}" y="255" text-anchor="middle" font-family="serif" font-size="54" font-weight="bold" fill="#059669">تهانينا</text>
-  <text x="${w / 2}" y="315" text-anchor="middle" font-family="serif" font-size="26" fill="#1e3d40">نشهد أن الأخ/الأخت</text>
-  <text x="${w / 2}" y="375" text-anchor="middle" font-family="serif" font-size="46" font-weight="bold" fill="#071a1c">${esc(name)}</text>
-  <text x="${w / 2}" y="435" text-anchor="middle" font-family="serif" font-size="26" fill="#1e3d40">قد أتمّ بفضل الله حفظ سورة ${esc(surahName)}</text>
-  <text x="${w / 2}" y="478" text-anchor="middle" font-family="serif" font-size="24" fill="#1e3d40">(${ayahCount} آية) بنسبة إتقان ${Math.round(accuracy)}٪</text>
-  <text x="${w / 2}" y="545" text-anchor="middle" font-family="Amiri, serif" font-size="28" fill="#059669">«خيركم من تعلّم القرآن وعلّمه»</text>
-  <text x="80" y="${h - 70}" font-family="serif" font-size="20" fill="#4a6664">${esc(today)}</text>
-  <text x="${w - 80}" y="${h - 70}" text-anchor="end" font-family="serif" font-size="22" font-weight="bold" fill="#047857">منصة حافظ</text>
-</svg>`;
 }
