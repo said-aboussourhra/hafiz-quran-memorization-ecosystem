@@ -6,6 +6,7 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import { ScrollTop } from "@/components/ScrollTop";
 import { ReportProblem } from "@/components/ReportProblem";
+import Image from "next/image";
 
 const NAV = [
   { href: "/", label: "الرئيسية" },
@@ -64,10 +65,15 @@ export function SiteChrome({ children, userName }: { children: ReactNode; userNa
       <header className="sticky top-0 z-50 border-b border-emerald-500/15 bg-white/80 shadow-[0_4px_20px_-12px_rgba(37,99,235,0.25)] backdrop-blur-xl">
         <div className="h-1 w-full" style={{ background: "linear-gradient(90deg, #10b981, #059669, #3b82f6)" }} />
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3">
+          {/* ===== الشعار الجديد مع الصورة ===== */}
           <Link href="/" className="group flex items-center gap-3">
-            <span className="grid h-11 w-11 place-items-center rounded-2xl text-white shadow-md transition group-hover:scale-105" style={{ background: "linear-gradient(135deg,#10b981,#3b82f6)" }}>
-              <span className="text-xl" style={{ fontFamily: "var(--font-quran)" }}>ح</span>
-            </span>
+            <Image 
+              src="/HAFIZ.jpg" 
+              alt="شعار حافظ" 
+              width={44} 
+              height={44} 
+              className="h-11 w-11 rounded-2xl object-cover shadow-md transition group-hover:scale-105"
+            />
             <span className="flex flex-col leading-tight">
               <span className="block font-display text-2xl font-black leading-none shine-text">حافظ</span>
               <span className="mt-1 block text-[10px] font-semibold leading-none tracking-[0.15em] text-ink-500">رحلتك مع القرآن</span>
@@ -147,15 +153,19 @@ export function SiteChrome({ children, userName }: { children: ReactNode; userNa
 
       <main key={pathname} className="page-enter mx-auto w-full max-w-7xl px-5 pb-8 pt-6">{children}</main>
 
-      {/* Luxurious footer */}
+      {/* ===== التذييل مع الشعار ===== */}
       <footer className="relative mt-8 overflow-hidden border-t hairline bg-white/60 pb-28 pt-12 backdrop-blur lg:pb-12">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-1" style={{ background: "linear-gradient(90deg,#10b981,#059669,#3b82f6)" }} />
         <div className="mx-auto grid max-w-7xl gap-8 px-5 sm:grid-cols-2 lg:grid-cols-4">
           <div className="sm:col-span-2 lg:col-span-1">
             <Link href="/" className="flex items-center gap-3">
-              <span className="grid h-11 w-11 place-items-center rounded-xl text-white shadow-md" style={{ background: "linear-gradient(135deg,#10b981,#3b82f6)" }}>
-                <span className="text-lg" style={{ fontFamily: "var(--font-quran)" }}>ح</span>
-              </span>
+              <Image 
+                src="/HAFIZ.jpg" 
+                alt="شعار حافظ" 
+                width={44} 
+                height={44} 
+                className="h-11 w-11 rounded-xl object-cover shadow-md"
+              />
               <span className="font-display text-2xl font-bold shine-text">حافظ</span>
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-500">
@@ -213,7 +223,7 @@ export function SiteChrome({ children, userName }: { children: ReactNode; userNa
 
       <ScrollTop />
 
-      {/* Floating bottom nav — white pill with raised center button (like iOS) */}
+      {/* Floating bottom nav */}
       <nav className="fixed inset-x-0 bottom-0 z-50 px-4 pb-[calc(env(safe-area-inset-bottom,0)+0.7rem)] lg:hidden">
         <div className="relative mx-auto flex max-w-md items-end justify-between rounded-[1.6rem] bg-white px-3 pb-2 pt-2.5" style={{ boxShadow: "0 -4px 24px -8px rgba(16,42,46,.18), 0 16px 40px -18px rgba(16,42,46,.25), 0 0 0 1px rgba(16,185,129,.08)" }}>
           {MOBILE.map((item, idx) => {
