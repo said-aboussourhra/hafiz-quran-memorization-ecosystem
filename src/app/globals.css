@@ -1,1840 +1,452 @@
-/* =========================================================
-   HAFIZ QURAN — PREMIUM MUSHAF UI
-   Complete CSS
-   ========================================================= */
+@import "tailwindcss";
 
-/* =========================================================
-   ROOT
-   ========================================================= */
+@theme {
+  --color-cream-50: #f5fbfa;
+  --color-cream-100: #ebf5f3;
+  --color-cream-200: #dcefec;
+  --color-sand-300: #c4e3df;
+  --color-ink-900: #071a1c;
+  --color-ink-700: #1e3d40;
+  --color-ink-500: #4a6664;
+  --color-gold-500: #059669;
+  --color-gold-600: #047857;
+  --color-gold-400: #10b981;
+  --color-emerald-700: #047857;
+  --color-emerald-600: #059669;
+  --color-emerald-500: #10b981;
+  --color-ocean-700: #1d4ed8;
+  --color-ocean-600: #2563eb;
+  --color-ocean-500: #3b82f6;
+  --color-ocean-400: #60a5fa;
+  --font-arabic: var(--font-arabic), "Amiri", serif;
+  --font-quran: var(--font-quran), "Amiri Quran", "Amiri", serif;
+  --font-display: var(--font-display), serif;
+  --font-ui: var(--font-ui), sans-serif;
+}
 
 :root {
-  --mushaf-green: #079b78;
-  --mushaf-green-dark: #05745d;
-  --mushaf-green-light: #e8f8f3;
+  color-scheme: light;
+  --bg-page: #fbfdfc;
+  --surface: #ffffff;
+  --surface-2: #f4fbf9;
+  --paper: #fbf7ec;
+  --text-strong: #071a1c;
+  --text-soft: #4a6664;
 
-  --mushaf-blue: #2879d8;
-  --mushaf-blue-light: #edf5ff;
+  --radius-sm: 12px;
+  --radius: 18px;
+  --radius-lg: 24px;
+  --radius-xl: 30px;
 
-  --mushaf-gold: #c9a95e;
-  --mushaf-gold-light: #f5ecd0;
+  --shadow-1: 0 1px 2px rgba(16,42,46,.04), 0 4px 12px -6px rgba(20,97,143,.10);
+  --shadow-2: 0 2px 4px rgba(16,42,46,.04), 0 10px 24px -10px rgba(20,97,143,.14);
+  --shadow-3: 0 8px 20px -10px rgba(16,185,129,.18), 0 24px 50px -24px rgba(37,99,235,.24);
 
-  --mushaf-ink: #142a2b;
-  --mushaf-muted: #6d7d7d;
+  --hairline: rgba(16,185,129,.16);
+  --hairline-strong: rgba(16,185,129,.32);
 
-  --mushaf-white: #ffffff;
-  --mushaf-paper: #fffdf5;
-  --mushaf-paper-2: #faf5e7;
+  --ease-premium: cubic-bezier(.22,1,.36,1);
+  --ease-out: cubic-bezier(.16,1,.3,1);
+  --t-fast: 170ms;
+  --t-normal: 300ms;
+  --t-slow: 560ms;
 
-  --mushaf-border: rgba(201, 169, 94, 0.45);
-
-  --mushaf-radius: 22px;
-
-  --mushaf-shadow:
-    0 20px 60px rgba(24, 58, 55, 0.10),
-    0 5px 18px rgba(24, 58, 55, 0.07);
-
-  --mushaf-shadow-soft:
-    0 10px 30px rgba(24, 58, 55, 0.08);
+  --grad-brand: linear-gradient(135deg,#10b981 0%,#059669 45%,#2563eb 100%);
+  --grad-brand-soft: linear-gradient(135deg,rgba(16,185,129,.14),rgba(37,99,235,.14));
 }
 
+/* ============================================================
+   BASE
+   ============================================================ */
+html { scroll-behavior: smooth; }
 
-/* =========================================================
-   GLOBAL
-   ========================================================= */
-
-* {
-  box-sizing: border-box;
-}
-
-button {
-  -webkit-tap-highlight-color: transparent;
-}
-
-button:focus-visible {
-  outline: 3px solid rgba(16, 185, 129, 0.28);
-  outline-offset: 2px;
-}
-
-.mushaf-page {
+body {
   position: relative;
-  isolation: isolate;
-
-  overflow: visible;
-
-  width: 100%;
-  max-width: 1050px;
-
-  margin: 0 auto 100px;
-
-  min-height: 700px;
-
-  border: 1px solid rgba(201, 169, 94, 0.55);
-
-  border-radius: 28px;
-
   background:
-    radial-gradient(
-      circle at 50% 0%,
-      rgba(255, 255, 255, 0.95),
-      transparent 40%
-    ),
-    linear-gradient(
-      145deg,
-      #fffef9,
-      #fffaf0
-    );
-
-  box-shadow:
-    0 30px 80px rgba(26, 62, 59, 0.10),
-    inset 0 0 0 5px rgba(255,255,255,.72),
-    inset 0 0 0 7px rgba(201,169,94,.14);
-
-  color: var(--mushaf-ink);
+    radial-gradient(1100px 720px at 88% -12%, rgba(59,130,246, 0.09), transparent 60%),
+    radial-gradient(950px 700px at 6% -4%, rgba(16,185,129, 0.10), transparent 58%),
+    radial-gradient(800px 800px at 50% 118%, rgba(184,144,47, 0.05), transparent 60%),
+    var(--bg-page);
+  background-attachment: fixed;
+  color: var(--text-strong);
+  font-family: var(--font-ui);
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
 }
 
-
-/* =========================================================
-   PAPER COLORS
-   ========================================================= */
-
-.paper-ivory {
-  background:
-    radial-gradient(
-      circle at 50% 0%,
-      rgba(255,255,255,.96),
-      transparent 42%
-    ),
-    linear-gradient(
-      145deg,
-      #fffef9 0%,
-      #fff9e9 100%
-    );
-}
-
-.paper-white {
-  background:
-    linear-gradient(
-      145deg,
-      #ffffff,
-      #f8fafb
-    );
-}
-
-.paper-green {
-  background:
-    radial-gradient(
-      circle at 50% 0%,
-      rgba(255,255,255,.95),
-      transparent 45%
-    ),
-    linear-gradient(
-      145deg,
-      #f8fffc,
-      #edf9f3
-    );
-}
-
-.paper-blue {
-  background:
-    radial-gradient(
-      circle at 50% 0%,
-      rgba(255,255,255,.95),
-      transparent 45%
-    ),
-    linear-gradient(
-      145deg,
-      #fbfdff,
-      #eef6ff
-    );
-}
-
-.paper-night {
-  background:
-    linear-gradient(
-      145deg,
-      #172525,
-      #10201f
-    );
-
-  color: #f4f5ef;
-}
-
-
-/* =========================================================
-   WATERMARK
-   ========================================================= */
-
-.mushaf-watermark {
-  position: absolute;
-
-  inset: 0;
-
-  z-index: -1;
-
-  pointer-events: none;
-
-  opacity: .32;
-
-  background-image:
-    linear-gradient(
-      45deg,
-      rgba(201,169,94,.055) 25%,
-      transparent 25%
-    ),
-    linear-gradient(
-      -45deg,
-      rgba(201,169,94,.055) 25%,
-      transparent 25%
-    );
-
-  background-size: 34px 34px;
-
-  border-radius: inherit;
-}
-
-
-/* =========================================================
-   CORNERS
-   ========================================================= */
-
-.mushaf-corner {
-  position: absolute;
-
-  width: 55px;
-  height: 55px;
-
-  pointer-events: none;
-
-  border-color: rgba(201,169,94,.65) !important;
-
-  opacity: .9;
-
-  z-index: 2;
-}
-
-.mushaf-page::before,
-.mushaf-page::after {
+body::before {
   content: "";
-
-  position: absolute;
-
+  position: fixed;
+  inset: 0;
+  z-index: -1;
   pointer-events: none;
-
-  inset: 15px;
-
-  border: 1px solid rgba(201,169,94,.25);
-
-  border-radius: 22px;
+  opacity: 0.5;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(16,185,129,.022) 0 1px, transparent 1px 26px),
+    repeating-linear-gradient(-45deg, rgba(37,99,235,.02) 0 1px, transparent 1px 26px);
+  background-size: 52px 52px;
+  mask-image: radial-gradient(circle at 50% 30%, #000, transparent 92%);
 }
 
+::selection { background: rgba(16,185,129, 0.25); color: #102a2e; }
 
-/* =========================================================
-   TOOLBAR
-   ========================================================= */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #e3f1ee; }
+::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #10b981, #3b82f6); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #059669, #2563eb); }
 
-.mushaf-page ~ * {
+.font-arabic { font-family: var(--font-arabic); }
+.font-display { font-family: var(--font-display); }
+
+/* ============================================================
+   SURFACES
+   ============================================================ */
+.card {
   position: relative;
+  background: linear-gradient(180deg, #ffffff, #fbfefe);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-2);
+  transition: transform var(--t-normal) var(--ease-premium), box-shadow var(--t-normal) var(--ease-out);
 }
 
-.sticky {
-  scrollbar-width: none;
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0.6;
+  background-image:
+    linear-gradient(180deg, rgba(255,255,255,.7), transparent 30%),
+    repeating-linear-gradient(45deg, rgba(184,144,47,0.026) 0 1px, transparent 1px 18px),
+    repeating-linear-gradient(-45deg, rgba(16,185,129,0.022) 0 1px, transparent 1px 18px);
 }
 
-.sticky::-webkit-scrollbar {
-  display: none;
+.card:hover {
+  border-color: var(--hairline-strong);
+  box-shadow: var(--shadow-3);
 }
 
-
-/* Main toolbar */
-.sticky.top-16 {
-  position: sticky;
-
-  top: 64px;
-
-  z-index: 40;
-
-  width: 100%;
-
-  margin-bottom: 18px;
-
-  padding: 8px;
-
-  border-radius: 22px !important;
-
-  border: 1px solid rgba(201,169,94,.20) !important;
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255,255,255,.97),
-      rgba(248,253,251,.96)
-    ) !important;
-
-  box-shadow:
-    0 18px 50px rgba(22, 62, 57, .11),
-    0 3px 10px rgba(22, 62, 57, .05);
-
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+.card-warm {
+  background: linear-gradient(180deg, #f4fbf9, #eaf6f4);
+  border: 1px solid rgba(16,185,129, 0.28);
 }
 
-
-/* =========================================================
-   VIEW SWITCH
-   ========================================================= */
-
-.sticky.top-16 > div:first-child {
-  border: 1px solid rgba(16,185,129,.10);
-
-  background:
-    linear-gradient(
-      145deg,
-      #f0faf6,
-      #f7fbfa
-    ) !important;
-
-  padding: 4px;
-
-  border-radius: 15px !important;
+.card-ocean {
+  background: linear-gradient(160deg, #eef8fb, #e4f2f7);
+  border: 1px solid rgba(59,130,246, 0.28);
 }
 
-.sticky.top-16 > div:first-child button {
-  min-height: 38px;
-
-  padding-inline: 14px;
-
-  border-radius: 11px;
-
-  transition:
-    transform .18s ease,
-    background .18s ease,
-    box-shadow .18s ease,
-    color .18s ease;
+.gold-text {
+  background: linear-gradient(120deg, #10b981 0%, #059669 45%, #2563eb 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
-
-.sticky.top-16 > div:first-child button:hover {
-  transform: translateY(-1px);
-}
-
-.sticky.top-16 > div:first-child button[class*="bg-white"] {
-  background:
-    linear-gradient(
-      145deg,
-      #ffffff,
-      #f6fffb
-    ) !important;
-
-  color: var(--mushaf-green-dark) !important;
-
-  box-shadow:
-    0 5px 15px rgba(15,118,110,.10);
-}
-
-
-/* =========================================================
-   FONT SIZE CONTROL
-   ========================================================= */
-
-.mushaf-size-control {
-  min-height: 45px;
-
-  border: 1px solid rgba(201,169,94,.18);
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(250,248,238,.95),
-      rgba(255,255,255,.95)
-    ) !important;
-
-  border-radius: 15px !important;
-
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.9);
-}
-
-.mushaf-control-btn {
-  display: grid;
-
-  place-items: center;
-
-  width: 34px;
-  height: 34px;
-
-  border-radius: 10px;
-
-  border: 1px solid rgba(201,169,94,.10);
-
-  background:
-    linear-gradient(
-      145deg,
-      #ffffff,
-      #f4f1e7
-    );
-
-  color: var(--mushaf-ink);
-
-  font-size: 20px;
-  font-weight: 800;
-
-  cursor: pointer;
-
-  transition:
-    transform .18s ease,
-    box-shadow .18s ease,
-    color .18s ease;
-}
-
-.mushaf-control-btn:hover {
-  transform: translateY(-2px);
-
-  color: var(--mushaf-green-dark);
-
-  box-shadow:
-    0 7px 18px rgba(20,70,60,.10);
-}
-
-.mushaf-control-btn:active {
-  transform: scale(.94);
-}
-
-.mushaf-font-size {
-  color: var(--mushaf-ink) !important;
-
-  font-size: 13px;
-
-  transition: color .18s ease;
-}
-
-.mushaf-font-size:hover {
-  color: var(--mushaf-green-dark) !important;
-}
-
-
-/* =========================================================
-   GHOST BUTTON
-   ========================================================= */
-
-.btn-ghost {
-  border: 1px solid rgba(201,169,94,.20) !important;
-
-  background:
-    linear-gradient(
-      145deg,
-      #ffffff,
-      #f8fbfa
-    ) !important;
-
-  color: var(--mushaf-ink) !important;
-
-  box-shadow:
-    0 4px 12px rgba(20,70,60,.04);
-
-  transition:
-    transform .18s ease,
-    border-color .18s ease,
-    box-shadow .18s ease,
-    color .18s ease;
-}
-
-.btn-ghost:hover {
-  transform: translateY(-1px);
-
-  color: var(--mushaf-green-dark) !important;
-
-  border-color:
-    rgba(16,185,129,.35) !important;
-
-  box-shadow:
-    0 8px 20px rgba(16,185,129,.10);
-}
-
-.btn-ghost:active {
-  transform: scale(.97);
-}
-
-
-/* =========================================================
-   PRIMARY BUTTON
-   ========================================================= */
 
 .btn-primary {
-  border: 0 !important;
-
-  background:
-    linear-gradient(
-      135deg,
-      #08a77f 0%,
-      #078d71 48%,
-      #2879d8 100%
-    ) !important;
-
-  color: white !important;
-
-  box-shadow:
-    0 9px 22px rgba(8,141,113,.20);
-
-  transition:
-    transform .18s ease,
-    box-shadow .18s ease,
-    filter .18s ease;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-
-  filter: brightness(1.03);
-
-  box-shadow:
-    0 13px 28px rgba(8,141,113,.25);
-}
-
-.btn-primary:active {
-  transform: scale(.97);
-}
-
-
-/* =========================================================
-   DROPDOWN
-   ========================================================= */
-
-.ayah-pop {
-  border: 1px solid rgba(201,169,94,.28) !important;
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255,255,255,.98),
-      rgba(250,253,251,.98)
-    ) !important;
-
-  box-shadow:
-    0 22px 55px rgba(18,55,50,.18),
-    0 4px 14px rgba(18,55,50,.08) !important;
-
-  backdrop-filter: blur(18px);
-
-  -webkit-backdrop-filter: blur(18px);
-
-  animation:
-    mushafDropdown .18s ease both;
-
-  transform-origin: top right;
-}
-
-@keyframes mushafDropdown {
-  from {
-    opacity: 0;
-    transform:
-      translateY(-5px)
-      scale(.97);
-  }
-
-  to {
-    opacity: 1;
-    transform:
-      translateY(0)
-      scale(1);
-  }
-}
-
-.ayah-pop button {
-  min-height: 42px;
-
-  border-bottom:
-    1px solid rgba(201,169,94,.08);
-
-  transition:
-    background .15s ease,
-    padding-right .15s ease;
-}
-
-.ayah-pop button:hover {
-  background:
-    linear-gradient(
-      90deg,
-      rgba(16,185,129,.10),
-      rgba(16,185,129,.03)
-    ) !important;
-
-  padding-right: 15px;
-}
-
-.ayah-pop button:last-child {
-  border-bottom: 0;
-}
-
-
-/* =========================================================
-   RECITER
-   ========================================================= */
-
-.ayah-pop .sticky {
-  color: var(--mushaf-green-dark);
-
-  background:
-    rgba(255,255,255,.96) !important;
-}
-
-
-/* =========================================================
-   MUSHAF HEADER
-   ========================================================= */
-
-.mushaf-page > * {
   position: relative;
+  overflow: hidden;
+  background: linear-gradient(120deg, #10b981 0%, #059669 50%, #2563eb 100%);
+  color: #fff;
+  box-shadow: 0 8px 22px -6px rgba(17,160,138,0.5), inset 0 1px 0 rgba(255,255,255,0.25);
+  transition: transform var(--t-fast) var(--ease-premium), box-shadow var(--t-fast) ease;
 }
 
-.mushaf-page .surah-header,
-.mushaf-page [class*="surah-header"] {
-  position: relative;
-
-  z-index: 4;
-}
-
-
-/* =========================================================
-   BASMALA
-   ========================================================= */
-
-.basmala-ornament {
-  height: 3px;
-
-  border-radius: 999px;
-
-  background:
-    linear-gradient(
-      90deg,
-      transparent,
-      rgba(201,169,94,.35),
-      #c9a95e,
-      rgba(201,169,94,.35),
-      transparent
-    );
-
-  position: relative;
-}
-
-.basmala-ornament::before,
-.basmala-ornament::after {
-  content: "✦";
-
+.btn-primary::after {
+  content: "";
   position: absolute;
-
-  top: 50%;
-
-  transform: translateY(-50%);
-
-  color: #c9a95e;
-
-  font-size: 11px;
+  top: 0; left: -60%;
+  width: 40%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.5), transparent);
+  transform: skewX(-20deg);
+  transition: left .6s ease;
 }
 
-.basmala-ornament::before {
-  left: 23%;
+.btn-primary:hover::after { left: 130%; }
+.btn-primary:hover { transform: translateY(-1px); filter: brightness(1.05); }
+
+.btn-ghost {
+  background: rgba(255,255,255,0.8);
+  border: 1px solid var(--hairline-strong);
+  color: #2b4a4d;
+  backdrop-filter: blur(6px);
+  transition: background var(--t-fast) ease, border-color var(--t-fast) ease;
 }
 
-.basmala-ornament::after {
-  right: 23%;
+.btn-ghost:hover { background: #eef7f5; border-color: rgba(37,99,235,0.4); }
+
+.divider-ornament {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(16,185,129,0.45), rgba(59,130,246,0.45), transparent);
 }
 
+/* ============================================================
+   MUSHAF - النسخة الثابتة
+   ============================================================ */
+.mushaf-page {
+  position: relative;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  overflow: visible;
+  isolation: isolate;
+  border-radius: 28px;
+  border: 1px solid rgba(184, 144, 47, 0.35);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,255,255,.95), transparent 45%),
+    linear-gradient(180deg, #fffdf7 0%, #faf5e8 100%);
+  box-shadow:
+    0 2px 4px rgba(42,39,35,.05),
+    0 15px 40px rgba(42,39,35,.12),
+    0 30px 80px rgba(184,144,47,.08);
+  min-height: 500px;
+  padding: 60px 70px;
+}
 
-/* =========================================================
-   MUSHAF CONTENT
-   ========================================================= */
+.mushaf-page::before {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  border: 1px solid rgba(184,144,47,.18);
+  border-radius: 20px;
+  pointer-events: none;
+  z-index: 0;
+}
 
 .mushaf-content {
   position: relative;
-
-  z-index: 3;
-
   width: 100%;
-
-  margin-top: 8px;
-
-  padding-inline: 3px;
+  height: auto;
+  max-height: none !important;
+  overflow: visible !important;
+  scroll-behavior: auto !important;
 }
 
 .mushaf-text {
-  margin: 0;
-
-  color: #111f20;
-
+  width: 100%;
+  margin: 0 auto;
+  color: #171512;
   text-align: justify;
-
-  text-justify: inter-word;
-
-  direction: rtl;
-
-  word-spacing: .10em;
-
+  text-align-last: center;
+  font-size: var(--mushaf-font-size, 34px);
+  line-height: 2.45;
+  font-family: var(--font-quran), "Amiri", serif;
+  word-spacing: 0.08em;
   letter-spacing: 0;
-
-  font-feature-settings:
-    "liga" 1,
-    "calt" 1;
-
-  text-rendering: optimizeLegibility;
+  direction: rtl;
+  transition: font-size .18s ease, line-height .18s ease;
 }
 
-
-/* =========================================================
-   QURAN FONT
-   ========================================================= */
-
-.qf-kfgqpc {
-  font-family:
-    var(--font-quran),
-    "Amiri Quran",
-    "Amiri",
-    serif;
+.mushaf-text .ayah-playing {
+  border-radius: 10px;
+  background: linear-gradient(90deg, rgba(16,185,129,.04), rgba(16,185,129,.13), rgba(16,185,129,.04));
+  box-shadow: 0 0 0 1px rgba(16,185,129,.08);
+  transition: background .2s ease, box-shadow .2s ease;
 }
 
-.qf-amiri {
-  font-family:
-    "Amiri Quran",
-    "Amiri",
-    serif;
+.mushaf-text .ayah-playing,
+.mushaf-text .ayah-playing * {
+  scroll-margin: 0 !important;
 }
 
-.qf-naskh {
-  font-family:
-    "Noto Naskh Arabic",
-    "Amiri",
-    serif;
-}
-
-.qf-markazi {
-  font-family:
-    "Noto Naskh Arabic",
-    "Amiri",
-    serif;
-}
-
-
-/* =========================================================
-   AYAH
-   ========================================================= */
-
-.mushaf-text > span > span {
-  position: relative;
-
-  display: inline;
-
-  border-radius: 8px;
-
-  -webkit-box-decoration-break: clone;
-  box-decoration-break: clone;
-
-  transition:
-    background .18s ease,
-    box-shadow .18s ease;
-}
-
-.mushaf-text > span > span:hover {
-  background:
-    rgba(16,185,129,.075);
-}
-
-
-/* Playing ayah */
-.ayah-playing {
-  background:
-    linear-gradient(
-      90deg,
-      rgba(16,185,129,.09),
-      rgba(59,130,246,.07)
-    ) !important;
-
-  box-shadow:
-    0 0 0 1px rgba(16,185,129,.10);
-
-  border-radius: 9px;
-}
-
-
-/* =========================================================
-   AYAH MARKER
-   ========================================================= */
-
-.ayah-marker {
-  display: inline-flex !important;
-
-  align-items: center;
-  justify-content: center;
-
-  vertical-align: middle;
-
-  margin-inline: 7px;
-
-  width: 34px;
-  height: 34px;
-
-  flex: 0 0 34px;
-
-  border-radius: 50%;
-
-  border:
-    1px solid rgba(201,169,94,.75);
-
-  background:
-    radial-gradient(
-      circle,
-      #fffdf2 25%,
-      #f4e6b8 100%
-    );
-
-  color: #087c65;
-
-  font-family:
-    "Amiri",
-    serif;
-
-  font-size: 13px;
-
-  font-weight: 700;
-
-  box-shadow:
-    0 3px 10px rgba(107,86,30,.10);
-
-  position: relative;
-
-  z-index: 12;
-
-  transition:
-    transform .18s ease,
-    box-shadow .18s ease;
-}
-
-.ayah-marker:hover {
-  transform: scale(1.08);
-
-  box-shadow:
-    0 6px 15px rgba(107,86,30,.16);
-}
-
-
-/* =========================================================
-   WORD HIGHLIGHT
-   ========================================================= */
-
-.mushaf-text span span span {
-  transition:
-    color .12s ease,
-    background .12s ease,
-    transform .12s ease;
-}
-
-.mushaf-text span span span[style] {
-  display: inline;
-
-  box-decoration-break: clone;
-
-  -webkit-box-decoration-break: clone;
-
-  box-shadow:
-    0 2px 8px rgba(16,185,129,.07);
-}
-
-
-/* =========================================================
-   AYAH ACTIONS
-   ========================================================= */
-
-.ayah-inline-actions {
-  display: inline-flex;
-
-  align-items: center;
-
-  gap: 5px;
-
-  margin-inline: 7px;
-
-  padding: 5px;
-
-  vertical-align: middle;
-
-  border:
-    1px solid rgba(201,169,94,.22);
-
-  border-radius: 14px;
-
-  background:
-    rgba(255,255,255,.96);
-
-  box-shadow:
-    0 9px 25px rgba(20,70,60,.12);
-
-  animation:
-    actionPop .16s ease both;
-
-  white-space: nowrap;
-
-  position: relative;
-
-  z-index: 20;
-}
-
-@keyframes actionPop {
-  from {
-    opacity: 0;
-    transform:
-      translateY(3px)
-      scale(.96);
-  }
-
-  to {
-    opacity: 1;
-    transform:
-      translateY(0)
-      scale(1);
-  }
-}
-
-.ayah-chip {
-  min-height: 32px;
-
-  padding:
-    5px 9px;
-
-  border-radius: 9px;
-
-  border: 1px solid rgba(201,169,94,.15);
-
-  background:
-    #ffffff;
-
-  font-size: 11px;
-
-  font-weight: 700;
-
-  cursor: pointer;
-
-  transition:
-    transform .15s ease,
-    background .15s ease,
-    color .15s ease;
-}
-
-.ayah-chip:hover {
-  transform: translateY(-1px);
-}
-
-.ayah-chip-tafsir:hover {
-  background: #edf8f4;
-
-  color: #087c65;
-}
-
-.ayah-chip-listen:hover {
-  background: #edf5ff;
-
-  color: #2168ba;
-}
-
-.ayah-chip-close {
-  color: #a25a5a;
-}
-
-.ayah-chip-close:hover {
-  background: #fff0f0;
-
-  color: #c03939;
-}
-
-
-/* =========================================================
-   TAFSIR INLINE
-   ========================================================= */
-
-.ayah-tafsir-inline {
-  display: block;
-
-  width: min(100%, 760px);
-
-  margin:
-    18px auto;
-
-  padding: 16px;
-
-  border-radius: 18px;
-
-  border:
-    1px solid rgba(201,169,94,.28);
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255,255,255,.98),
-      rgba(250,253,251,.98)
-    );
-
-  box-shadow:
-    0 18px 45px rgba(20,70,60,.11);
-
-  animation:
-    tafsirOpen .2s ease both;
-}
-
-@keyframes tafsirOpen {
-  from {
-    opacity: 0;
-
-    transform:
-      translateY(-6px);
-  }
-
-  to {
-    opacity: 1;
-
-    transform:
-      translateY(0);
-  }
-}
-
-.ayah-tafsir-head {
-  display: flex;
-
-  align-items: center;
-
-  gap: 9px;
-
-  padding-bottom: 10px;
-
-  border-bottom:
-    1px solid rgba(201,169,94,.18);
-}
-
-.ayah-tafsir-badge {
-  display: grid;
-
-  place-items: center;
-
-  width: 30px;
-  height: 30px;
-
-  border-radius: 50%;
-
-  background:
-    linear-gradient(
-      135deg,
-      #0ba37c,
-      #2679d5
-    );
-
-  color: white;
-
-  font-size: 12px;
-
-  font-weight: 800;
-
-  box-shadow:
-    0 5px 13px rgba(8,141,113,.18);
-}
-
-.ayah-tafsir-close {
-  margin-right: auto;
-
-  display: grid;
-
-  place-items: center;
-
-  width: 30px;
-  height: 30px;
-
-  border-radius: 9px;
-
-  border: 1px solid rgba(190,80,80,.12);
-
-  background: #fff7f7;
-
-  color: #a34b4b;
-
-  cursor: pointer;
-}
-
-.ayah-tafsir-close:hover {
-  background: #ffeaea;
-}
-
-.ayah-tafsir-body {
-  display: block;
-
-  margin-top: 13px;
-
-  color: #405354;
-
-  font-size: 14px;
-
-  line-height: 2;
-
-  text-align: right;
-}
-
-
-/* =========================================================
-   SAJDA
-   ========================================================= */
-
-.mushaf-page button[title="موضع سجدة"] {
-  position: relative;
-
-  z-index: 15;
-
-  border:
-    1px solid rgba(217,154,39,.18);
-
-  box-shadow:
-    0 3px 10px rgba(170,120,20,.08);
-
-  transition:
-    transform .15s ease,
-    box-shadow .15s ease;
-}
-
-.mushaf-page button[title="موضع سجدة"]:hover {
-  transform: translateY(-1px);
-
-  box-shadow:
-    0 6px 15px rgba(170,120,20,.12);
-}
-
-
-/* =========================================================
-   AYAH-BY-AYAH VIEW
-   ========================================================= */
-
-.mushaf-page .space-y-4 > div {
-  position: relative;
-
-  border:
-    1px solid rgba(201,169,94,.20) !important;
-
-  border-radius: 20px !important;
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255,255,255,.90),
-      rgba(250,253,251,.88)
-    ) !important;
-
-  box-shadow:
-    0 8px 25px rgba(20,70,60,.055);
-
-  overflow: hidden;
-
-  transition:
-    transform .2s ease,
-    box-shadow .2s ease,
-    border-color .2s ease;
-}
-
-.mushaf-page .space-y-4 > div::before {
-  content: "";
-
+.mushaf-corner {
   position: absolute;
-
-  right: 0;
-  top: 0;
-  bottom: 0;
-
-  width: 3px;
-
-  background:
-    linear-gradient(
-      180deg,
-      #0aa57d,
-      #2a7bd8
-    );
-
-  opacity: .55;
-}
-
-.mushaf-page .space-y-4 > div:hover {
-  transform: translateY(-2px);
-
-  box-shadow:
-    0 15px 35px rgba(20,70,60,.09);
-
-  border-color:
-    rgba(16,185,129,.28) !important;
-}
-
-
-/* =========================================================
-   NUMBER CIRCLE
-   ========================================================= */
-
-.mushaf-page .space-y-4 > div span.grid {
-  box-shadow:
-    0 7px 16px rgba(8,141,113,.18);
-
-  border:
-    2px solid rgba(255,255,255,.70);
-}
-
-
-/* =========================================================
-   AUDIO BUTTON
-   ========================================================= */
-
-.mushaf-page .space-y-4 button,
-.ayah-tafsir-inline button {
-  transition:
-    transform .16s ease,
-    box-shadow .16s ease;
-}
-
-.mushaf-page .space-y-4 button:hover,
-.ayah-tafsir-inline button:hover {
-  transform: translateY(-1px);
-}
-
-
-/* =========================================================
-   AUDIO STATE
-   ========================================================= */
-
-audio {
-  display: none;
-}
-
-
-/* =========================================================
-   MOBILE TOOLBAR
-   ========================================================= */
-
-@media (max-width: 700px) {
-
-  .sticky.top-16 {
-    top: 57px;
-
-    padding: 7px;
-
-    border-radius: 19px !important;
-
-    display: grid !important;
-
-    grid-template-columns:
-      auto
-      1fr
-      auto;
-
-    gap: 6px;
-
-    align-items: center;
-  }
-
-  .sticky.top-16 > div:first-child {
-    grid-column: 1 / -1;
-
-    justify-self: center;
-  }
-
-  .mushaf-size-control {
-    justify-self: center;
-  }
-
-  .sticky.top-16 .btn-ghost {
-    min-height: 40px;
-  }
-
-  .sticky.top-16 > div:nth-last-child(1) {
-    justify-self: end;
-  }
-
-  .mushaf-page {
-    margin-bottom: 110px;
-
-    border-radius: 21px;
-
-    min-height: 600px;
-
-    padding-left: 12px !important;
-    padding-right: 12px !important;
-  }
-
-  .mushaf-page::before,
-  .mushaf-page::after {
-    inset: 9px;
-
-    border-radius: 16px;
-  }
-
-  .mushaf-corner {
-    width: 38px;
-    height: 38px;
-  }
-
-  .mushaf-content {
-    padding-inline: 1px;
-  }
-
-  .mushaf-text {
-    word-spacing: .05em;
-
-    line-height: 2.25 !important;
-  }
-
-  .ayah-marker {
-    width: 29px;
-
-    height: 29px;
-
-    flex-basis: 29px;
-
-    margin-inline: 4px;
-
-    font-size: 11px;
-  }
-
-  .ayah-inline-actions {
-    gap: 3px;
-
-    margin-top: 7px;
-
-    margin-bottom: 7px;
-
-    padding: 4px;
-
-    border-radius: 12px;
-  }
-
-  .ayah-chip {
-    min-height: 29px;
-
-    padding:
-      4px 7px;
-
-    font-size: 10px;
-  }
-
-  .ayah-tafsir-inline {
-    padding: 12px;
-
-    border-radius: 15px;
-  }
-}
-
-
-/* =========================================================
-   SMALL PHONES
-   ========================================================= */
-
-@media (max-width: 430px) {
-
-  .sticky.top-16 {
-    top: 52px;
-
-    grid-template-columns:
-      1fr
-      auto;
-
-    padding: 6px;
-  }
-
-  .sticky.top-16 > div:first-child {
-    grid-column: 1 / -1;
-
-    width: 100%;
-
-    justify-content: center;
-  }
-
-  .sticky.top-16 > div:first-child button {
-    flex: 1;
-
-    min-height: 36px;
-
-    padding-inline: 10px;
-  }
-
-  .mushaf-size-control {
-    order: 2;
-  }
-
-  .sticky.top-16 .relative {
-    order: 1;
-  }
-
-  .mushaf-page {
-    padding-top: 25px !important;
-  }
-
-  .mushaf-corner {
-    width: 30px;
-    height: 30px;
-  }
-
-  .mushaf-page::before,
-  .mushaf-page::after {
-    inset: 7px;
-  }
-
-  .ayah-marker {
-    width: 27px;
-    height: 27px;
-    flex-basis: 27px;
-  }
-
-  .ayah-inline-actions {
-    display: flex;
-
-    width: fit-content;
-
-    max-width: 100%;
-
-    overflow-x: auto;
-
-    scrollbar-width: none;
-  }
-
-  .ayah-inline-actions::-webkit-scrollbar {
-    display: none;
-  }
-}
-
-
-/* =========================================================
-   TABLET
-   ========================================================= */
-
-@media (min-width: 701px) and (max-width: 1000px) {
-
-  .sticky.top-16 {
-    gap: 6px;
-
-    padding: 8px;
-  }
-
-  .mushaf-page {
-    margin-inline: 10px;
-
-    max-width: calc(100% - 20px);
-  }
-}
-
-
-/* =========================================================
-   DESKTOP
-   ========================================================= */
-
-@media (min-width: 1001px) {
-
-  .mushaf-page {
-    padding-left: 75px !important;
-    padding-right: 75px !important;
-  }
-
-  .mushaf-content {
-    padding-inline: 12px;
-  }
-
-  .mushaf-page:hover {
-    box-shadow:
-      0 35px 90px rgba(26,62,59,.12),
-      inset 0 0 0 5px rgba(255,255,255,.75),
-      inset 0 0 0 7px rgba(201,169,94,.15);
-  }
-}
-
-
-/* =========================================================
-   REDUCED MOTION
-   ========================================================= */
-
-@media (prefers-reduced-motion: reduce) {
-
-  *,
-  *::before,
-  *::after {
-    animation-duration: .01ms !important;
-
-    animation-iteration-count: 1 !important;
-
-    transition-duration: .01ms !important;
-  }
-}
-
-
-/* =========================================================
-   SCROLLBAR
-   ========================================================= */
-
-.ayah-pop,
-.ayah-inline-actions {
-  scrollbar-width: thin;
-
-  scrollbar-color:
-    rgba(16,185,129,.30)
-    transparent;
-}
-
-.ayah-pop::-webkit-scrollbar {
-  width: 5px;
-}
-
-.ayah-pop::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.ayah-pop::-webkit-scrollbar-thumb {
-  background:
-    rgba(16,185,129,.28);
-
-  border-radius: 999px;
-}
-
-
-/* =========================================================
-   SELECTION
-   ========================================================= */
-
-.mushaf-text::selection,
-.mushaf-text *::selection {
-  background:
-    rgba(16,185,129,.20);
-
-  color:
-    #063f35;
-}
-
-
-/* =========================================================
-   SAFE LAYERS
-   ========================================================= */
-
-.mushaf-page,
-.mushaf-content,
-.mushaf-text {
-  overflow: visible;
-}
-
-.mushaf-page button,
-.mushaf-page span {
-  -webkit-tap-highlight-color: transparent;
-}
-
-
-/* =========================================================
-   PREMIUM TOP GLOW
-   ========================================================= */
-
-.mushaf-page {
-  --glow:
-    rgba(16,185,129,.08);
-}
-
-.mushaf-page > .mushaf-watermark::after {
-  content: "";
-
-  position: absolute;
-
-  left: 50%;
-
-  top: 0;
-
-  width: 55%;
-
-  height: 160px;
-
-  transform:
-    translateX(-50%);
-
-  background:
-    radial-gradient(
-      ellipse,
-      var(--glow),
-      transparent 70%
-    );
-
+  width: clamp(16px, 4vw, 26px);
+  height: clamp(16px, 4vw, 26px);
+  border-color: rgba(184,144,47,0.8);
   pointer-events: none;
-}
-
-
-/* =========================================================
-   FIX: MARKERS MUST STAY VISIBLE
-   ========================================================= */
-
-.ayah-marker,
-.mushaf-text .ayah-marker {
-  position: relative !important;
-
-  z-index: 100 !important;
-
-  opacity: 1 !important;
-
-  visibility: visible !important;
-}
-
-
-/* =========================================================
-   FIX: DROPDOWN / ARROW MUST NOT HIDE MUSHAF
-   ========================================================= */
-
-.mushaf-page {
   z-index: 1;
 }
 
-.mushaf-page > .mushaf-content {
-  z-index: 5;
-}
-
-.sticky.top-16 {
-  z-index: 50;
-}
-
-.ayah-pop {
-  z-index: 999 !important;
-}
-
-
-/* =========================================================
-   FIX: MENU CONTENT DOES NOT AFFECT MUSHAF LAYOUT
-   ========================================================= */
-
-.ayah-pop {
-  position: absolute !important;
-
-  max-width: calc(100vw - 20px);
-}
-
-
-/* =========================================================
-   COLOR SELECTOR
-   ========================================================= */
-
-.mushaf-color-option {
-  position: relative;
-
-  width: 34px;
-  height: 34px;
-
-  border-radius: 50%;
-
-  border:
-    2px solid rgba(255,255,255,.9);
-
-  box-shadow:
-    0 0 0 1px rgba(20,60,55,.12),
-    0 4px 10px rgba(20,60,55,.08);
-
-  cursor: pointer;
-
-  transition:
-    transform .18s ease,
-    box-shadow .18s ease;
-}
-
-.mushaf-color-option:hover {
-  transform: scale(1.08);
-
-  box-shadow:
-    0 0 0 2px rgba(16,185,129,.25),
-    0 7px 15px rgba(20,60,55,.12);
-}
-
-.mushaf-color-option.active {
-  box-shadow:
-    0 0 0 3px rgba(16,185,129,.18),
-    0 0 0 5px white,
-    0 8px 18px rgba(20,60,55,.14);
-}
-
-.mushaf-color-option.active::after {
-  content: "✓";
-
+.mushaf-watermark {
   position: absolute;
-
-  inset: 0;
-
-  display: grid;
-
-  place-items: center;
-
-  color: white;
-
-  font-size: 14px;
-
-  font-weight: 900;
-
-  text-shadow:
-    0 1px 3px rgba(0,0,0,.25);
+  inset: 18px;
+  border-radius: 12px;
+  pointer-events: none;
+  opacity: 0.45;
+  z-index: 0;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(184,144,47,0.05) 0 2px, transparent 2px 22px),
+    repeating-linear-gradient(-45deg, rgba(184,144,47,0.05) 0 2px, transparent 2px 22px),
+    radial-gradient(circle at 50% 50%, rgba(184,144,47,0.05) 0, transparent 14px);
+  background-size: 44px 44px, 44px 44px, 44px 44px;
 }
 
-
-/* =========================================================
-   HIGHLIGHT COLORS
-   ========================================================= */
-
-.highlight-color {
-  width: 30px;
-  height: 30px;
-
-  border-radius: 9px;
-
-  border:
-    2px solid white;
-
-  box-shadow:
-    0 0 0 1px rgba(20,60,55,.12);
-
-  cursor: pointer;
-
-  transition:
-    transform .15s ease,
-    box-shadow .15s ease;
-}
-
-.highlight-color:hover {
-  transform: scale(1.08);
-}
-
-.highlight-color.active {
-  box-shadow:
-    0 0 0 2px rgba(16,185,129,.30),
-    0 5px 13px rgba(20,60,55,.10);
-}
-
-
-/* =========================================================
-   SETTINGS CARD
-   ========================================================= */
-
-.mushaf-settings-card {
-  width: min(340px, calc(100vw - 24px));
-
-  padding: 14px;
-
-  border-radius: 18px;
-
-  border:
-    1px solid rgba(201,169,94,.25);
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255,255,255,.98),
-      rgba(248,253,251,.98)
-    );
-
-  box-shadow:
-    0 25px 60px rgba(20,70,60,.17);
-
-  backdrop-filter: blur(18px);
-
-  -webkit-backdrop-filter: blur(18px);
-}
-
-.mushaf-settings-card h3 {
-  margin: 0 0 10px;
-
-  color: var(--mushaf-ink);
-
-  font-size: 14px;
-
-  font-weight: 800;
-}
-
-.mushaf-settings-row {
+/* ============================================================
+   MUSHAF TOOLBAR
+   ============================================================ */
+.mushaf-toolbar {
+  position: sticky;
+  top: 16px;
+  z-index: 40;
   display: flex;
-
   align-items: center;
-
   justify-content: space-between;
-
-  gap: 12px;
-
-  padding: 11px 0;
-
-  border-bottom:
-    1px solid rgba(201,169,94,.10);
+  gap: 8px;
+  margin-bottom: 18px;
+  padding: 8px;
+  border: 1px solid rgba(184,144,47,.22);
+  border-radius: 18px;
+  background: rgba(255,255,255,.92);
+  box-shadow: 0 8px 30px rgba(42,39,35,.10);
+  backdrop-filter: blur(16px);
+  flex-wrap: wrap;
 }
 
-.mushaf-settings-row:last-child {
-  border-bottom: 0;
-}
-
-
-/* =========================================================
-   TOGGLE
-   ========================================================= */
-
-.mushaf-toggle {
-  position: relative;
-
-  width: 48px;
-  height: 27px;
-
-  border-radius: 999px;
-
-  background: #d9e5e2;
-
+.mushaf-control-btn {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(184,144,47,.20);
+  border-radius: 12px;
+  background: rgba(255,255,255,.75);
+  color: #2a2723;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
   cursor: pointer;
-
-  transition:
-    background .2s ease;
+  user-select: none;
+  touch-action: manipulation;
+  transition: transform .15s ease, background .15s ease, box-shadow .15s ease, border-color .15s ease;
 }
 
-.mushaf-toggle::after {
+.mushaf-control-btn:hover {
+  background: #fff;
+  border-color: rgba(184,144,47,.45);
+  box-shadow: 0 5px 15px rgba(42,39,35,.08);
+}
+
+.mushaf-control-btn:active {
+  transform: scale(.90);
+  background: rgba(184,144,47,.12);
+}
+
+.mushaf-font-size {
+  min-width: 52px;
+  text-align: center;
+  color: #2a2723;
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+/* ============================================================
+   ACHIEVEMENT CARD
+   ============================================================ */
+.achievement-card {
+  position: relative;
+  background: linear-gradient(180deg, #fffefb, #fcf8ee);
+  border-radius: clamp(16px, 3vw, 28px);
+  box-shadow: 
+    0 1px 0 rgba(255,255,255,0.8),
+    0 20px 50px -20px rgba(42,39,35,0.25),
+    0 8px 20px -12px rgba(184,144,47,0.2);
+  outline: 2px solid rgba(184,144,47,0.45);
+  outline-offset: -2px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.achievement-card::before {
   content: "";
-
   position: absolute;
-
-  top: 3px;
-  right: 3px;
-
-  width: 21px;
-  height: 21px;
-
-  border-radius: 50%;
-
-  background: white;
-
-  box-shadow:
-    0 2px 6px rgba(0,0,0,.14);
-
-  transition:
-    transform .2s ease;
+  inset: clamp(6px, 1.2vw, 12px);
+  border: 1.5px solid rgba(184,144,47,0.35);
+  border-radius: clamp(10px, 2vw, 18px);
+  pointer-events: none;
 }
 
-.mushaf-toggle.active {
-  background:
-    linear-gradient(
-      135deg,
-      #09a47c,
-      #2879d8
-    );
+.achievement-card::after {
+  content: "";
+  position: absolute;
+  inset: clamp(9px, 1.6vw, 16px);
+  border: 1px solid rgba(184,144,47,0.15);
+  border-radius: clamp(7px, 1.4vw, 14px);
+  pointer-events: none;
 }
 
-.mushaf-toggle.active::after {
-  transform:
-    translateX(-21px);
+.achievement-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 1px 0 rgba(255,255,255,0.8),
+    0 30px 60px -20px rgba(42,39,35,0.3),
+    0 12px 30px -14px rgba(184,144,47,0.25);
 }
 
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes twinkle { 0%,100%{opacity:.5;transform:scale(.92)} 50%{opacity:1;transform:scale(1.08)} }
+@keyframes pulseGlow { 0%,100%{box-shadow:0 0 6px 1px currentColor;opacity:.8} 50%{box-shadow:0 0 16px 4px currentColor;opacity:1} }
+@keyframes floaty { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+@keyframes spinSlow { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+@keyframes riseFade { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+@keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
 
-/* =========================================================
-   PRINT
-   ========================================================= */
+.animate-twinkle { animation: twinkle 4s ease-in-out infinite; }
+.animate-pulse-glow { animation: pulseGlow 3.2s ease-in-out infinite; }
+.animate-floaty { animation: floaty 6s ease-in-out infinite; }
+.animate-spin-slow { animation: spinSlow 80s linear infinite; }
+.rise { animation: riseFade .7s ease-out both; }
 
-@media print {
-
-  .sticky,
-  audio,
-  .ayah-inline-actions,
-  .ayah-tafsir-inline,
-  button {
-    display: none !important;
-  }
-
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 480px) {
   .mushaf-page {
-    box-shadow: none !important;
-
-    border: 0 !important;
-
-    margin: 0 !important;
-
-    max-width: none !important;
+    padding: 18px 14px !important;
+    border-radius: 20px;
   }
+  .mushaf-page::before { inset: 8px; border-radius: 14px; }
+  .mushaf-toolbar { top: 8px; padding: 6px; gap: 4px; border-radius: 14px; }
+  .mushaf-control-btn { width: 32px; height: 32px; min-width: 32px; min-height: 32px; font-size: 18px; }
+  .mushaf-font-size { min-width: 42px; font-size: 12px; }
+  .mushaf-text { line-height: 2.3; word-spacing: 0; }
+  .achievement-card {
+    padding: 1rem !important;
+    border-radius: 18px;
+    min-height: 280px !important;
+  }
+  .achievement-card::before { inset: 6px; border-radius: 10px; }
+  .achievement-card::after { inset: 8px; border-radius: 8px; }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .mushaf-page { padding: 30px 24px !important; }
+  .mushaf-text { line-height: 2.4; }
+  .achievement-card { padding: 1.25rem !important; min-height: 320px !important; }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .mushaf-page { padding: 48px 40px !important; }
+  .mushaf-text { line-height: 2.45; }
+  .achievement-card { padding: 1.5rem !important; min-height: 360px !important; }
+}
+
+@media (min-width: 1025px) {
+  .mushaf-page { padding: 60px 70px !important; }
+  .mushaf-text { line-height: 2.5; }
+  .achievement-card { padding: 1.75rem !important; min-height: 400px !important; }
+  .mushaf-control-btn { width: 40px; height: 40px; min-width: 40px; min-height: 40px; font-size: 24px; }
+  .mushaf-font-size { min-width: 56px; font-size: 16px; }
+}
+
+/* منع التمرير التلقائي */
+.mushaf-page, .mushaf-content, .mushaf-text {
+  scroll-margin: 0 !important;
+}
+.mushaf-page * {
+  scroll-margin-top: 0 !important;
+}
+.mushaf-text .ayah-playing {
+  scroll-behavior: auto !important;
 }
