@@ -64,14 +64,13 @@ export function MushafReader({
 }) {
   /* =========================================================
      STATE
-     ========================================================= */
+  ========================================================= */
 
   const [fontSize, setFontSize] = useState(34);
   const [font, setFont] = useState("qf-kfgqpc");
 
   const [showFonts, setShowFonts] = useState(false);
   const [showReciters, setShowReciters] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
 
   const [view, setView] = useState<ViewMode>("mushaf");
 
@@ -98,45 +97,40 @@ export function MushafReader({
 
   /* =========================================================
      REFS
-     ========================================================= */
+  ========================================================= */
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const pageRef = useRef<HTMLDivElement | null>(null);
 
-  const ayahRefs = useRef<
-    Map<number, HTMLSpanElement>
-  >(new Map());
+  const ayahRefs = useRef<Map<number, HTMLSpanElement>>(
+    new Map()
+  );
 
   /* =========================================================
      DATA
-     ========================================================= */
+  ========================================================= */
 
   const surahNum = surah.meta.number;
-
-  const tafsir =
-    tafsirAyah != null
-      ? surah.ayahs.find(
-          (a) => a.numberInSurah === tafsirAyah
-        ) ?? null
-      : null;
 
   const isPlaying =
     playingAyah !== null || surahPlaying;
 
   /* =========================================================
      AUDIO
-     ========================================================= */
+  ========================================================= */
 
   const playAyah = (
     n: number,
     chain: boolean
   ) => {
     const ayah = surah.ayahs.find(
-      (a) => a.numberInSurah === n
+      (item) => item.numberInSurah === n
     );
 
-    if (!ayah || !audioRef.current) {
+    const audio = audioRef.current;
+
+    if (!ayah || !audio) {
       return;
     }
 
@@ -152,6 +146,9 @@ export function MushafReader({
     );
 
     if (!url) {
+      console.warn(
+        "لم يتم العثور على رابط الصوت لهذه الآية."
+      );
       return;
     }
 
@@ -163,15 +160,21 @@ export function MushafReader({
     setPlayingAyah(n);
     setActiveWord(-1);
 
-    const audio = audioRef.current;
-
     audio.pause();
     audio.src = url;
     audio.currentTime = 0;
 
-    audio.play().catch(() => {
-      setPlayingAyah(null);
-    });
+    const playPromise = audio.play();
+
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        setPlayingAyah(null);
+
+        if (!chain) {
+          setSurahPlaying(false);
+        }
+      });
+    }
   };
 
   const playFullSurah = () => {
@@ -195,6 +198,8 @@ export function MushafReader({
     if (audio) {
       audio.pause();
       audio.currentTime = 0;
+      audio.removeAttribute("src");
+      audio.load();
     }
 
     setPlayingAyah(null);
@@ -205,7 +210,7 @@ export function MushafReader({
 
   /* =========================================================
      WORD HIGHLIGHT
-     ========================================================= */
+  ========================================================= */
 
   const onTimeUpdate = () => {
     const audio = audioRef.current;
@@ -214,17 +219,22 @@ export function MushafReader({
       !audio ||
       !highlight ||
       playingAyah == null ||
-      !audio.duration ||
-      Number.isNaN(audio.duration)
+      !Number.isFinite(audio.duration) ||
+      audio.duration <= 0
     ) {
       return;
     }
 
     const ayah = surah.ayahs.find(
-      (x) => x.numberInSurah === playingAyah
+      (item) =>
+        item.numberInSurah === playingAyah
     );
 
-    if (!ayah || ayah.words.length === 0) {
+    if (
+      !ayah ||
+      !ayah.words ||
+      ayah.words.length === 0
+    ) {
       return;
     }
 
@@ -235,14 +245,14 @@ export function MushafReader({
       audio.currentTime - duration * 0.02
     );
 
-    const weights = ayah.words.map((word) =>
-      Math.max(
-        2,
-        word.t.replace(
-          /[^\u0600-\u06FF]/g,
-          ""
-        ).length
-      )
+    const weights = ayah.words.map(
+      (word) =>
+        Math.max(
+          2,
+          word.t
+            .replace(/[^\u0600-\u06FF]/g, "")
+            .length
+        )
     );
 
     const total = weights.reduce(
@@ -255,7 +265,8 @@ export function MushafReader({
     }
 
     const target =
-      (time / (duration * 0.96)) * total;
+      (time / (duration * 0.96)) *
+      total;
 
     let accumulated = 0;
     let index = 0;
@@ -288,20 +299,20 @@ export function MushafReader({
     if (
       !audio ||
       playingAyah !== ayah.numberInSurah ||
-      !audio.duration ||
-      Number.isNaN(audio.duration)
+      !Number.isFinite(audio.duration) ||
+      audio.duration <= 0
     ) {
       return;
     }
 
-    const weights = ayah.words.map((word) =>
-      Math.max(
-        2,
-        word.t.replace(
-          /[^\u0600-\u06FF]/g,
-          ""
-        ).length
-      )
+    const weights = ayah.words.map(
+      (word) =>
+        Math.max(
+          2,
+          word.t
+            .replace(/[^\u0600-\u06FF]/g, "")
+            .length
+        )
     );
 
     const total = weights.reduce(
@@ -315,7 +326,11 @@ export function MushafReader({
 
     let before = 0;
 
-    for (let i = 0; i < wordIndex; i++) {
+    for (
+      let i = 0;
+      i < wordIndex;
+      i++
+    ) {
       before += weights[i];
     }
 
@@ -327,28 +342,30 @@ export function MushafReader({
     setActiveWord(wordIndex);
 
     if (audio.paused) {
-      audio.play().catch(() => {});
+      audio.play().catch(() => {
+        // تجاهل رفض التشغيل
+      });
     }
   };
 
   /* =========================================================
      AUDIO ENDED
-     ========================================================= */
+  ========================================================= */
 
   const onEnded = () => {
     setActiveWord(-1);
 
     if (
       continuous &&
-      playingAyah != null
+      playingAyah !== null
     ) {
       const next =
         playingAyah + 1;
 
       const exists =
         surah.ayahs.some(
-          (a) =>
-            a.numberInSurah === next
+          (ayah) =>
+            ayah.numberInSurah === next
         );
 
       if (exists) {
@@ -364,7 +381,7 @@ export function MushafReader({
 
   /* =========================================================
      SAVE LAST READ
-     ========================================================= */
+  ========================================================= */
 
   useEffect(() => {
     saveLastRead(
@@ -378,7 +395,7 @@ export function MushafReader({
 
   /* =========================================================
      LOAD SETTINGS
-     ========================================================= */
+  ========================================================= */
 
   useEffect(() => {
     try {
@@ -390,8 +407,8 @@ export function MushafReader({
       if (savedReciter) {
         const found =
           RECITERS.find(
-            (x) =>
-              x.id === savedReciter
+            (item) =>
+              item.id === savedReciter
           );
 
         if (found) {
@@ -407,7 +424,8 @@ export function MushafReader({
       if (
         savedFont &&
         FONTS.some(
-          (x) => x.id === savedFont
+          (item) =>
+            item.id === savedFont
         )
       ) {
         setFont(savedFont);
@@ -422,7 +440,7 @@ export function MushafReader({
         const parsed =
           Number(savedSize);
 
-        if (!Number.isNaN(parsed)) {
+        if (Number.isFinite(parsed)) {
           setFontSize(
             Math.max(
               24,
@@ -467,7 +485,7 @@ export function MushafReader({
 
   /* =========================================================
      FONT
-     ========================================================= */
+  ========================================================= */
 
   const chooseFont = (id: string) => {
     setFont(id);
@@ -484,8 +502,8 @@ export function MushafReader({
   };
 
   /* =========================================================
-     FONT SIZE — FIXED
-     ========================================================= */
+     FONT SIZE
+  ========================================================= */
 
   const changeSize = (delta: number) => {
     setFontSize((current) => {
@@ -525,15 +543,16 @@ export function MushafReader({
 
   /* =========================================================
      RECITER
-     ========================================================= */
+  ========================================================= */
 
   const chooseReciter = (
     nextReciter: Reciter
   ) => {
+    stopAudio();
+
     setReciter(nextReciter);
     setShowReciters(false);
-
-    stopAudio();
+    setShowFonts(false);
 
     try {
       localStorage.setItem(
@@ -547,7 +566,7 @@ export function MushafReader({
 
   /* =========================================================
      PAGE PROGRESS
-     ========================================================= */
+  ========================================================= */
 
   useEffect(() => {
     const onScroll = () => {
@@ -565,9 +584,12 @@ export function MushafReader({
         element.offsetHeight -
         window.innerHeight;
 
+      const maxScroll =
+        Math.max(total, 1);
+
       const scrolled = Math.min(
         Math.max(-rect.top, 0),
-        Math.max(total, 1)
+        maxScroll
       );
 
       setProgress(
@@ -585,6 +607,11 @@ export function MushafReader({
       { passive: true }
     );
 
+    window.addEventListener(
+      "resize",
+      onScroll
+    );
+
     onScroll();
 
     return () => {
@@ -592,12 +619,34 @@ export function MushafReader({
         "scroll",
         onScroll
       );
+
+      window.removeEventListener(
+        "resize",
+        onScroll
+      );
     };
   }, [view, fontSize]);
 
   /* =========================================================
+     AUDIO CLEANUP
+  ========================================================= */
+
+  useEffect(() => {
+    return () => {
+      const audio =
+        audioRef.current;
+
+      if (audio) {
+        audio.pause();
+        audio.removeAttribute("src");
+        audio.load();
+      }
+    };
+  }, []);
+
+  /* =========================================================
      ESC
-     ========================================================= */
+  ========================================================= */
 
   useEffect(() => {
     const onKeyDown = (
@@ -611,7 +660,7 @@ export function MushafReader({
       setTafsirAyah(null);
       setShowFonts(false);
       setShowReciters(false);
-      setShowSettings(false);
+      setSajdaOpen(false);
     };
 
     window.addEventListener(
@@ -629,14 +678,9 @@ export function MushafReader({
 
   /* =========================================================
      AYAH
-     ========================================================= */
+  ========================================================= */
 
-  const onAyahClick = (
-    event: MouseEvent,
-    n: number
-  ) => {
-    event.stopPropagation();
-
+  const selectAyah = (n: number) => {
     setTafsirAyah(null);
 
     setSelected((current) =>
@@ -646,9 +690,18 @@ export function MushafReader({
     );
   };
 
+  const onAyahClick = (
+    event: MouseEvent,
+    n: number
+  ) => {
+    event.stopPropagation();
+    selectAyah(n);
+  };
+
   const openTafsirInline = (
     ayah: number
   ) => {
+    setSelected(null);
     setTafsirAyah(ayah);
   };
 
@@ -661,34 +714,37 @@ export function MushafReader({
 
   /* =========================================================
      CLOSE MENUS
-     ========================================================= */
+  ========================================================= */
 
   const closeMenus = () => {
     setSelected(null);
     setShowReciters(false);
     setShowFonts(false);
-    setShowSettings(false);
-    setTafsirAyah(null);
   };
 
   /* =========================================================
      FONT STYLE
-     ========================================================= */
+  ========================================================= */
 
   const mushafTextStyle: MushafTextStyle = {
     "--mushaf-font-size":
-      `${fontSize}px`,
+      ${fontSize}px,
     lineHeight: 2.5,
   };
 
   /* =========================================================
      RENDER
-     ========================================================= */
+  ========================================================= */
 
   return (
     <div onClick={closeMenus}>
+      {/* =====================================================
+          AUDIO
+      ===================================================== */}
+
       <audio
         ref={audioRef}
+        preload="none"
         onEnded={onEnded}
         onTimeUpdate={onTimeUpdate}
       />
@@ -701,7 +757,7 @@ export function MushafReader({
         <div
           className="h-full transition-[width] duration-150"
           style={{
-            width: `${progress}%`,
+            width: ${progress}%,
             background:
               "linear-gradient(90deg,#10b981,#3b82f6)",
           }}
@@ -724,16 +780,18 @@ export function MushafReader({
           shadow-lg
           backdrop-blur
         "
+        onClick={(event) =>
+          event.stopPropagation()
+        }
       >
         {/* VIEW */}
 
         <div className="flex items-center gap-1 rounded-xl bg-cream-100 p-1">
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setView("mushaf");
-            }}
+            onClick={() =>
+              setView("mushaf")
+            }
             className={`
               rounded-lg px-3 py-1.5
               text-xs font-semibold
@@ -750,10 +808,9 @@ export function MushafReader({
 
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setView("ayah");
-            }}
+            onClick={() =>
+              setView("ayah")
+            }
             className={`
               rounded-lg px-3 py-1.5
               text-xs font-semibold
@@ -769,9 +826,7 @@ export function MushafReader({
           </button>
         </div>
 
-        {/* =================================================
-            FONT SIZE
-        ================================================= */}
+        {/* FONT SIZE */}
 
         <div
           className="
@@ -782,9 +837,6 @@ export function MushafReader({
             bg-cream-100/60
             px-2 py-1
           "
-          onClick={(e) =>
-            e.stopPropagation()
-          }
         >
           <button
             type="button"
@@ -828,16 +880,9 @@ export function MushafReader({
           </button>
         </div>
 
-        {/* =================================================
-            FONT SELECTOR
-        ================================================= */}
+        {/* FONT SELECTOR */}
 
-        <div
-          className="relative"
-          onClick={(e) =>
-            e.stopPropagation()
-          }
-        >
+        <div className="relative">
           <button
             type="button"
             onClick={() => {
@@ -855,6 +900,7 @@ export function MushafReader({
             "
           >
             <span>خط</span>
+
             <span className="text-ink-500">
               ▾
             </span>
@@ -865,7 +911,7 @@ export function MushafReader({
               className="
                 ayah-pop absolute
                 left-0 top-full z-50 mt-1
-                w-48 overflow-hidden
+                w-52 overflow-hidden
                 rounded-xl
                 border border-sand-300
                 bg-white
@@ -885,6 +931,7 @@ export function MushafReader({
                     flex w-full
                     items-center
                     justify-between
+                    gap-3
                     px-3 py-2
                     text-right text-xs
                     transition
@@ -897,7 +944,7 @@ export function MushafReader({
                   `}
                 >
                   <span
-                    className={`text-lg ${item.id}`}
+                    className={text-lg ${item.id}}
                     style={{
                       color: "#071a1c",
                     }}
@@ -914,23 +961,17 @@ export function MushafReader({
           )}
         </div>
 
-        {/* =================================================
-            RECITER
-        ================================================= */}
+        {/* RECITER */}
 
-        <div
-          className="relative"
-          onClick={(e) =>
-            e.stopPropagation()
-          }
-        >
+        <div className="relative">
           <button
             type="button"
-            onClick={() =>
+            onClick={() => {
               setShowReciters(
                 (value) => !value
-              )
-            }
+              );
+              setShowFonts(false);
+            }}
             className="
               flex items-center gap-1
               rounded-lg
@@ -939,9 +980,9 @@ export function MushafReader({
               text-xs sm:text-sm
             "
           >
-            <span>🎙</span>
+            <span>🎙️</span>
 
-            <span className="hidden max-w-[60px] truncate sm:inline">
+            <span className="hidden max-w-[90px] truncate sm:inline">
               {reciter.name}
             </span>
 
@@ -956,7 +997,7 @@ export function MushafReader({
                 ayah-pop absolute
                 left-0 top-full z-[60]
                 mt-1 max-h-[50vh]
-                w-48 overflow-y-auto
+                w-56 overflow-y-auto
                 rounded-xl
                 border border-sand-300
                 bg-white
@@ -968,7 +1009,7 @@ export function MushafReader({
                   sticky top-0
                   border-b border-sand-300
                   bg-white
-                  px-3 py-1.5
+                  px-3 py-2
                   text-[10px]
                   font-bold
                   text-emerald-700
@@ -990,7 +1031,8 @@ export function MushafReader({
                     flex w-full
                     items-center
                     justify-between
-                    px-3 py-2
+                    gap-2
+                    px-3 py-2.5
                     text-right text-xs
                     transition
                     hover:bg-cream-100
@@ -1018,18 +1060,13 @@ export function MushafReader({
           )}
         </div>
 
-        {/* =================================================
-            AUDIO
-        ================================================= */}
+        {/* AUDIO */}
 
         <div className="flex items-center gap-1">
           {isPlaying ? (
             <button
               type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                stopAudio();
-              }}
+              onClick={stopAudio}
               className="
                 rounded-lg
                 bg-red-600
@@ -1046,10 +1083,7 @@ export function MushafReader({
           ) : (
             <button
               type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                playFullSurah();
-              }}
+              onClick={playFullSurah}
               className="
                 rounded-lg
                 btn-primary
@@ -1058,7 +1092,7 @@ export function MushafReader({
                 font-semibold
               "
             >
-              ▶ تلاوة
+              ▶️ تلاوة
             </button>
           )}
         </div>
@@ -1087,8 +1121,11 @@ export function MushafReader({
         <span className="mushaf-watermark" />
 
         <span className="mushaf-corner left-3 top-3 rounded-tl-lg border-l-2 border-t-2" />
+
         <span className="mushaf-corner right-3 top-3 rounded-tr-lg border-r-2 border-t-2" />
+
         <span className="mushaf-corner bottom-3 left-3 rounded-bl-lg border-b-2 border-l-2" />
+
         <span className="mushaf-corner bottom-3 right-3 rounded-br-lg border-b-2 border-r-2" />
 
         <SurahHeader
@@ -1117,7 +1154,8 @@ export function MushafReader({
                   "linear-gradient(120deg,#047857,#059669,#2563eb)",
                 WebkitBackgroundClip:
                   "text",
-                backgroundClip: "text",
+                backgroundClip:
+                  "text",
                 color: "transparent",
               }}
             >
@@ -1135,7 +1173,7 @@ export function MushafReader({
         {view === "mushaf" && (
           <div className="mushaf-content">
             <p
-              className={`mushaf-text ${font}`}
+              className={mushaf-text ${font}}
               dir="rtl"
               style={mushafTextStyle}
             >
@@ -1143,9 +1181,7 @@ export function MushafReader({
                 <span
                   key={ayah.numberInSurah}
                 >
-                  {/* =========================================
-                      AYAH
-                  ========================================= */}
+                  {/* AYAH */}
 
                   <span
                     ref={(element) => {
@@ -1162,6 +1198,7 @@ export function MushafReader({
                     }}
                     role="button"
                     tabIndex={0}
+                    aria-label={الآية ${ayah.numberInSurah}}
                     onClick={(event) =>
                       onAyahClick(
                         event,
@@ -1177,8 +1214,7 @@ export function MushafReader({
                       ) {
                         event.preventDefault();
 
-                        onAyahClick(
-                          event as unknown as MouseEvent,
+                        selectAyah(
                           ayah.numberInSurah
                         );
                       }
@@ -1198,15 +1234,16 @@ export function MushafReader({
                       }
                     `}
                   >
-                    {/* =======================================
-                        WORD HIGHLIGHT
-                    ======================================= */}
+                    {/* WORD HIGHLIGHT */}
 
                     {highlight &&
                     playingAyah ===
                       ayah.numberInSurah ? (
                       ayah.words.map(
-                        (word, wordIndex) => (
+                        (
+                          word,
+                          wordIndex
+                        ) => (
                           <span
                             key={wordIndex}
                             onClick={(event) => {
@@ -1225,7 +1262,7 @@ export function MushafReader({
                                     color:
                                       hlColor,
                                     background:
-                                      `${hlColor}22`,
+                                      ${hlColor}22,
                                     borderRadius:
                                       "6px",
                                     padding:
@@ -1255,9 +1292,7 @@ export function MushafReader({
                     />
                   </span>
 
-                  {/* =========================================
-                      SAJDA
-                  ========================================= */}
+                  {/* SAJDA */}
 
                   {isSajda(
                     surah.meta.number,
@@ -1270,6 +1305,7 @@ export function MushafReader({
                         setSajdaOpen(true);
                       }}
                       title="موضع سجدة"
+                      aria-label="فتح دعاء السجدة"
                       className="
                         mx-1
                         inline-flex
@@ -1282,15 +1318,15 @@ export function MushafReader({
                         text-[11px]
                         font-bold
                         text-amber-700
+                        transition
+                        hover:bg-amber-200
                       "
                     >
                       ۩ سجدة
                     </button>
                   )}
 
-                  {/* =========================================
-                      AYAH ACTIONS
-                  ========================================= */}
+                  {/* AYAH ACTIONS */}
 
                   {selected ===
                     ayah.numberInSurah &&
@@ -1322,7 +1358,10 @@ export function MushafReader({
                               ayah.numberInSurah,
                               false
                             );
-                            setSelected(null);
+
+                            setSelected(
+                              null
+                            );
                           }}
                           className="ayah-chip ayah-chip-listen"
                         >
@@ -1335,15 +1374,14 @@ export function MushafReader({
                             setSelected(null)
                           }
                           className="ayah-chip ayah-chip-close"
+                          aria-label="إغلاق"
                         >
                           ✕
                         </button>
                       </span>
                     )}
 
-                  {/* =========================================
-                      INLINE TAFSIR
-                  ========================================= */}
+                  {/* INLINE TAFSIR */}
 
                   {tafsirAyah ===
                     ayah.numberInSurah && (
@@ -1376,6 +1414,7 @@ export function MushafReader({
                             );
                           }}
                           className="ayah-tafsir-close"
+                          aria-label="إغلاق التفسير"
                         >
                           ✕
                         </button>
@@ -1441,6 +1480,8 @@ export function MushafReader({
                   }
                 `}
               >
+                {/* HEADER */}
+
                 <div
                   className="
                     mb-3
@@ -1506,19 +1547,93 @@ export function MushafReader({
                     >
                       📖 تفسير
                     </button>
+
+                    {isSajda(
+                      surah.meta.number,
+                      ayah.numberInSurah
+                    ) && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setSajdaOpen(true)
+                        }
+                        className="
+                          rounded-lg
+                          bg-amber-100
+                          px-3 py-1.5
+                          text-xs
+                          font-semibold
+                          text-amber-700
+                          transition
+                          hover:bg-amber-200
+                        "
+                      >
+                        ۩ سجدة
+                      </button>
+                    )}
                   </div>
                 </div>
 
+                {/* AYAH TEXT */}
+
                 <p
-                  className={`text-ink-900 ${font}`}
+                  className={text-ink-900 ${font}}
+                  dir="rtl"
                   style={{
                     fontSize:
-                      `${fontSize}px`,
+                      ${fontSize}px,
                     lineHeight: 2.2,
                   }}
                 >
                   {ayah.text}
                 </p>
+
+                {/* TAFSIR */}
+
+                {tafsirAyah ===
+                  ayah.numberInSurah && (
+                  <div
+                    className="
+                      mt-4
+                      rounded-xl
+                      border border-emerald-100
+                      bg-emerald-50/50
+                      p-4
+                    "
+                  >
+                    <div className="mb-2 flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="ayah-tafsir-badge">
+                          {toDigits(
+                            ayah.numberInSurah
+                          )}
+                        </span>
+
+                        <span className="font-display text-sm font-bold text-ink-900">
+                          التفسير الميسّر
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setTafsirAyah(
+                            null
+                          )
+                        }
+                        className="ayah-tafsir-close"
+                        aria-label="إغلاق التفسير"
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    <p className="text-sm leading-7 text-ink-700">
+                      {ayah.tafsir ||
+                        "التفسير غير متوفّر لهذه الآية حالياً."}
+                    </p>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -1530,67 +1645,132 @@ export function MushafReader({
       ===================================================== */}
 
       <p className="mt-4 text-center text-xs text-ink-500">
-        {view === "mushaf" && (
-  <div className="mushaf-content">
-    <p
-      key={`mushaf-${fontSize}-${font}`}
-      className={`mushaf-text ${font}`}
-      dir="rtl"
-      style={{
-        fontSize: `${fontSize}px`,
-        lineHeight: 2.5,
-      }}
-    >
-      {surah.ayahs.map((a) => (
-        <span key={a.numberInSurah}>
-          <span
-            ref={(el) => { if (el) ayahRefs.current.set(a.numberInSurah, el); }}
-            role="button"
-            tabIndex={0}
-            onClick={(e) => onAyahClick(e, a.numberInSurah)}
-            onKeyDown={(e) => { if (e.key === "Enter") onAyahClick(e as unknown as React.MouseEvent, a.numberInSurah); }}
-            className={`cursor-pointer rounded-md transition ${playingAyah === a.numberInSurah ? "ayah-playing" : selected === a.numberInSurah ? "bg-[rgba(59,130,246,0.12)]" : "hover:bg-[rgba(16,185,129,0.10)]"}`}
+        {view === "mushaf"
+          ? "اضغط على الآية لعرض خيارات التفسير والاستماع."
+          : "يمكنك الاستماع إلى الآية أو فتح تفسيرها."}
+      </p>
+
+      {/* =====================================================
+          SAJDA MODAL
+      ===================================================== */}
+
+      {sajdaOpen && (
+        <div
+          className="
+            fixed inset-0 z-[100]
+            flex items-center justify-center
+            bg-black/40
+            p-4
+            backdrop-blur-sm
+          "
+          onClick={() =>
+            setSajdaOpen(false)
+          }
+        >
+          <div
+            className="
+              w-full max-w-lg
+              rounded-2xl
+              border border-sand-300
+              bg-white
+              p-5
+              shadow-2xl
+            "
+            dir="rtl"
+            onClick={(event) =>
+              event.stopPropagation()
+            }
           >
-            {highlight && playingAyah === a.numberInSurah ? (
-              a.words.map((w, wi) => (
-                <span
-                  key={wi}
-                  onClick={(e) => { e.stopPropagation(); seekToWord(a, wi); }}
-                  className="cursor-pointer"
-                  style={wi === activeWord ? { color: hlColor, background: `${hlColor}22`, borderRadius: "6px", padding: "0 2px", transition: "color .15s, background .15s" } : undefined}
-                >
-                  {w.t}{" "}
-                </span>
-              ))
-            ) : (
-              a.text
+            {/* HEADER */}
+
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <h2 className="font-display text-lg font-bold text-ink-900">
+                  موضع سجدة
+                </h2>
+
+                <p className="mt-1 text-xs text-ink-500">
+                  دعاء السجود
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setSajdaOpen(false)
+                }
+                className="
+                  grid h-9 w-9
+                  place-items-center
+                  rounded-full
+                  bg-cream-100
+                  text-ink-500
+                  transition
+                  hover:bg-red-50
+                  hover:text-red-600
+                "
+                aria-label="إغلاق"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* DUA */}
+
+            <div
+              className="
+                rounded-xl
+                border border-emerald-100
+                bg-emerald-50/60
+                p-5
+                text-center
+              "
+            >
+              <p
+                className="
+                  text-xl
+                  leading-[2.2]
+                  text-ink-900
+                "
+                style={{
+                  fontFamily:
+                    "var(--font-quran)",
+                }}
+              >
+                {SAJDA_DUA}
+              </p>
+            </div>
+
+            {/* SOURCE */}
+
+            {SAJDA_DUA_SOURCE && (
+              <p className="mt-3 text-center text-[11px] text-ink-500">
+                المصدر: {SAJDA_DUA_SOURCE}
+              </p>
             )}
-            <AyahMarker n={a.numberInSurah} active={playingAyah === a.numberInSurah} />
-          </span>
-          {isSajda(surah.meta.number, a.numberInSurah) && (
-            <button onClick={(e) => { e.stopPropagation(); setSajdaOpen(true); }} title="موضع سجدة" className="mx-1 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 align-middle text-[11px] font-bold text-amber-700">۩ سجدة</button>
-          )}
-          {selected === a.numberInSurah && tafsirAyah !== a.numberInSurah && (
-            <span className="ayah-inline-actions" contentEditable={false} onClick={(e) => e.stopPropagation()}>
-              <button onClick={() => openTafsirInline(a.numberInSurah)} className="ayah-chip ayah-chip-tafsir">📖 التفسير</button>
-              <button onClick={() => { playAyah(a.numberInSurah, false); setSelected(null); }} className="ayah-chip ayah-chip-listen">🔊 استماع</button>
-              <button onClick={() => setSelected(null)} className="ayah-chip ayah-chip-close">✕</button>
-            </span>
-          )}
-          {tafsirAyah === a.numberInSurah && (
-            <span className="ayah-tafsir-inline" contentEditable={false} onClick={(e) => e.stopPropagation()}>
-              <span className="ayah-tafsir-head">
-                <span className="ayah-tafsir-badge">{toDigits(a.numberInSurah)}</span>
-                <span className="font-display text-sm font-bold text-ink-900">التفسير الميسّر</span>
-                <button onClick={() => { setTafsirAyah(null); setSelected(null); }} className="ayah-tafsir-close">✕</button>
-              </span>
-              <span className="ayah-tafsir-body">{a.tafsir || "التفسير غير متوفّر لهذه الآية حالياً."}</span>
-              <button onClick={() => playAyah(a.numberInSurah, false)} className="mt-2 rounded-lg btn-primary px-4 py-2 text-xs font-semibold">🔊 استماع للآية</button>
-            </span>
-          )}
-          {" "}
-        </span>
-      ))}
-    </p>
-  </div>
-)}
+
+            {/* CLOSE */}
+
+            <button
+              type="button"
+              onClick={() =>
+                setSajdaOpen(false)
+              }
+              className="
+                mt-4
+                w-full
+                rounded-xl
+                btn-primary
+                px-4 py-2.5
+                text-sm
+                font-semibold
+              "
+            >
+              إغلاق
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
