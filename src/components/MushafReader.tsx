@@ -227,65 +227,30 @@ export function MushafReader({ surah }: { surah: SurahContent }) {
       </div>
 
       {/* ===== شريط الأدوات الثابت ===== */}
-      <div className="mushaf-toolbar sticky top-16 z-30 mb-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-gold-500/20 bg-white/95 p-2 shadow-lg backdrop-blur">
+      <div className="sticky top-16 z-30 mb-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-gold-500/20 bg-white/95 p-2 shadow-lg backdrop-blur">
         {/* تبديل العرض */}
         <div className="flex items-center gap-1 rounded-xl bg-cream-100 p-1">
-          <button 
-            onClick={() => setView("mushaf")} 
-            className={`rounded-lg px-3 py-1.5 text-xs sm:text-sm font-semibold transition ${
-              view === "mushaf" ? "bg-white text-emerald-700 shadow" : "text-ink-500 hover:text-emerald-600"
-            }`}
-          >
-            مصحف
-          </button>
-          <button 
-            onClick={() => setView("ayah")} 
-            className={`rounded-lg px-3 py-1.5 text-xs sm:text-sm font-semibold transition ${
-              view === "ayah" ? "bg-white text-emerald-700 shadow" : "text-ink-500 hover:text-emerald-600"
-            }`}
-          >
-            آية بآية
-          </button>
+          <button onClick={() => setView("mushaf")} className={`rounded-lg px-3 py-1.5 text-xs sm:text-sm font-semibold transition ${view === "mushaf" ? "bg-white text-emerald-700 shadow" : "text-ink-500 hover:text-emerald-600"}`}>مصحف</button>
+          <button onClick={() => setView("ayah")} className={`rounded-lg px-3 py-1.5 text-xs sm:text-sm font-semibold transition ${view === "ayah" ? "bg-white text-emerald-700 shadow" : "text-ink-500 hover:text-emerald-600"}`}>آية بآية</button>
         </div>
 
         {/* تحكم حجم الخط */}
         <div className="flex items-center gap-1 sm:gap-2 bg-cream-100/50 rounded-xl px-2 py-1">
-          <button 
-            onClick={() => changeSize(-2)} 
-            className="mushaf-control-btn"
-            aria-label="تصغير الخط"
-          >
-            −
-          </button>
+          <button onClick={() => changeSize(-2)} className="mushaf-control-btn">−</button>
           <span className="mushaf-font-size">{fontSize}</span>
-          <button 
-            onClick={() => changeSize(2)} 
-            className="mushaf-control-btn"
-            aria-label="تكبير الخط"
-          >
-            +
-          </button>
+          <button onClick={() => changeSize(2)} className="mushaf-control-btn">+</button>
         </div>
 
         {/* اختيار الخط */}
         <div className="relative" onClick={(e) => e.stopPropagation()}>
-          <button 
-            onClick={() => { setShowFonts((v) => !v); setShowReciters(false); }} 
-            className="flex items-center gap-1 rounded-lg btn-ghost px-2 py-1.5 text-xs sm:text-sm"
-          >
+          <button onClick={() => { setShowFonts((v) => !v); setShowReciters(false); }} className="flex items-center gap-1 rounded-lg btn-ghost px-2 py-1.5 text-xs sm:text-sm">
             <span>خط</span>
             <span className="text-ink-500">▾</span>
           </button>
           {showFonts && (
             <div className="ayah-pop absolute left-0 top-full z-50 mt-1 w-48 overflow-hidden rounded-xl border border-sand-300 bg-white shadow-xl">
               {FONTS.map((f) => (
-                <button 
-                  key={f.id} 
-                  onClick={() => chooseFont(f.id)} 
-                  className={`flex w-full items-center justify-between px-3 py-2 text-right text-xs transition hover:bg-cream-100 ${
-                    font === f.id ? "bg-cream-100" : ""
-                  }`}
-                >
+                <button key={f.id} onClick={() => chooseFont(f.id)} className={`flex w-full items-center justify-between px-3 py-2 text-right text-xs transition hover:bg-cream-100 ${font === f.id ? "bg-cream-100" : ""}`}>
                   <span className={`text-lg ${f.id}`} style={{ color: "#071a1c" }}>بِسْمِ</span>
                   <span className="text-[10px] text-ink-500">{f.label}</span>
                 </button>
@@ -296,10 +261,7 @@ export function MushafReader({ surah }: { surah: SurahContent }) {
 
         {/* اختيار القارئ */}
         <div className="relative" onClick={(e) => e.stopPropagation()}>
-          <button 
-            onClick={() => setShowReciters((v) => !v)} 
-            className="flex items-center gap-1 rounded-lg btn-ghost px-2 py-1.5 text-xs sm:text-sm"
-          >
+          <button onClick={() => setShowReciters((v) => !v)} className="flex items-center gap-1 rounded-lg btn-ghost px-2 py-1.5 text-xs sm:text-sm">
             <span>🎙</span>
             <span className="hidden sm:inline max-w-[60px] truncate">{reciter.name}</span>
             <span className="text-ink-500">▾</span>
@@ -308,13 +270,7 @@ export function MushafReader({ surah }: { surah: SurahContent }) {
             <div className="ayah-pop absolute left-0 top-full z-[60] mt-1 max-h-[50vh] w-48 overflow-y-auto rounded-xl border border-sand-300 bg-white shadow-xl">
               <div className="sticky top-0 border-b border-sand-300 bg-white px-3 py-1.5 text-[10px] font-bold text-emerald-700">اختر القارئ</div>
               {RECITERS.map((r) => (
-                <button
-                  key={r.id}
-                  onClick={() => chooseReciter(r)}
-                  className={`flex w-full items-center justify-between px-3 py-2 text-right text-xs transition hover:bg-cream-100 ${
-                    r.id === reciter.id ? "bg-cream-100" : ""
-                  }`}
-                >
+                <button key={r.id} onClick={() => chooseReciter(r)} className={`flex w-full items-center justify-between px-3 py-2 text-right text-xs transition hover:bg-cream-100 ${r.id === reciter.id ? "bg-cream-100" : ""}`}>
                   <span className="font-semibold text-ink-900">{r.name}</span>
                   {r.id === reciter.id && <span className="text-emerald-700">✓</span>}
                 </button>
@@ -326,28 +282,15 @@ export function MushafReader({ surah }: { surah: SurahContent }) {
         {/* أزرار الصوت */}
         <div className="flex items-center gap-1">
           {isPlaying ? (
-            <button 
-              onClick={stopAudio} 
-              className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 transition"
-            >
-              ■ إيقاف
-            </button>
+            <button onClick={stopAudio} className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 transition">■ إيقاف</button>
           ) : (
-            <button 
-              onClick={playFullSurah} 
-              className="rounded-lg btn-primary px-3 py-1.5 text-xs font-semibold"
-            >
-              ▶ تلاوة
-            </button>
+            <button onClick={playFullSurah} className="rounded-lg btn-primary px-3 py-1.5 text-xs font-semibold">▶ تلاوة</button>
           )}
         </div>
       </div>
 
       {/* ===== صفحة المصحف ===== */}
-      <div 
-        ref={pageRef} 
-        className={`mushaf-page paper-${paper} px-4 py-6 sm:px-8 sm:py-10 md:px-12 md:py-14 lg:px-16 lg:py-16 ${surahPlaying ? "ring-2 ring-emerald-500/30" : ""}`}
-      >
+      <div ref={pageRef} className={`mushaf-page paper-${paper} px-4 py-6 sm:px-8 sm:py-10 md:px-12 md:py-14 lg:px-16 lg:py-16 ${surahPlaying ? "ring-2 ring-emerald-500/30" : ""}`}>
         <span className="mushaf-watermark" />
         <span className="mushaf-corner left-3 top-3 border-l-2 border-t-2 rounded-tl-lg" />
         <span className="mushaf-corner right-3 top-3 border-r-2 border-t-2 rounded-tr-lg" />
@@ -365,10 +308,9 @@ export function MushafReader({ surah }: { surah: SurahContent }) {
           </div>
         )}
 
-        {/* ===== عرض المصحف ===== */}
         {view === "mushaf" && (
           <div className="mushaf-content">
-            <p className={`mushaf-text ${font}`} dir="rtl" style={{ fontSize: `clamp(1rem, ${fontSize / 16}rem, 2rem)`, lineHeight: 2.5 }}>
+            <p className={`mushaf-text ${font}`} dir="rtl" style={{ fontSize: `${fontSize}px`, lineHeight: 2.5 }}>
               {surah.ayahs.map((a) => (
                 <span key={a.numberInSurah}>
                   <span
@@ -396,13 +338,7 @@ export function MushafReader({ surah }: { surah: SurahContent }) {
                     <AyahMarker n={a.numberInSurah} active={playingAyah === a.numberInSurah} />
                   </span>
                   {isSajda(surah.meta.number, a.numberInSurah) && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setSajdaOpen(true); }}
-                      title="موضع سجدة"
-                      className="mx-1 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 align-middle text-[11px] font-bold text-amber-700"
-                    >
-                      ۩ سجدة
-                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); setSajdaOpen(true); }} title="موضع سجدة" className="mx-1 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 align-middle text-[11px] font-bold text-amber-700">۩ سجدة</button>
                   )}
                   {selected === a.numberInSurah && tafsirAyah !== a.numberInSurah && (
                     <span className="ayah-inline-actions" contentEditable={false} onClick={(e) => e.stopPropagation()}>
@@ -429,24 +365,18 @@ export function MushafReader({ surah }: { surah: SurahContent }) {
           </div>
         )}
 
-        {/* ===== عرض آية بآية ===== */}
         {view === "ayah" && (
           <div className="space-y-4" dir="rtl">
             {surah.ayahs.map((a) => (
-              <div
-                key={a.numberInSurah}
-                className={`rounded-2xl border p-4 sm:p-5 transition ${playingAyah === a.numberInSurah ? "border-emerald-400 bg-emerald-50/60 shadow-md" : "border-sand-300/60 bg-white/70"}`}
-              >
+              <div key={a.numberInSurah} className={`rounded-2xl border p-4 sm:p-5 transition ${playingAyah === a.numberInSurah ? "border-emerald-400 bg-emerald-50/60 shadow-md" : "border-sand-300/60 bg-white/70"}`}>
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                  <span className="grid h-8 w-8 place-items-center rounded-full text-xs font-bold text-white" style={{ background: "linear-gradient(135deg,#10b981,#3b82f6)" }}>
-                    {a.numberInSurah.toLocaleString("ar-EG")}
-                  </span>
+                  <span className="grid h-8 w-8 place-items-center rounded-full text-xs font-bold text-white" style={{ background: "linear-gradient(135deg,#10b981,#3b82f6)" }}>{a.numberInSurah.toLocaleString("ar-EG")}</span>
                   <div className="flex flex-wrap gap-1.5">
                     <button onClick={() => playAyah(a.numberInSurah, false)} className="rounded-lg btn-ghost px-3 py-1.5 text-xs">🔊 استماع</button>
                     <button onClick={() => openTafsir(a.numberInSurah)} className="rounded-lg btn-ghost px-3 py-1.5 text-xs">📖 تفسير</button>
                   </div>
                 </div>
-                <p className={`text-ink-900 ${font}`} style={{ fontSize: `clamp(1rem, ${fontSize / 16}rem, 2rem)`, lineHeight: 2.2 }}>{a.text}</p>
+                <p className={`text-ink-900 ${font}`} style={{ fontSize: `${fontSize}px`, lineHeight: 2.2 }}>{a.text}</p>
               </div>
             ))}
           </div>
@@ -479,9 +409,7 @@ export function MushafReader({ surah }: { surah: SurahContent }) {
           <div className="sheet-panel w-full max-w-2xl rounded-t-3xl border-2 border-emerald-300 bg-white p-6 shadow-2xl sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <span className="grid h-10 w-10 place-items-center rounded-full text-sm font-bold text-white" style={{ background: "linear-gradient(135deg,#10b981,#3b82f6)" }}>
-                  {tafsir.numberInSurah.toLocaleString("ar-EG")}
-                </span>
+                <span className="grid h-10 w-10 place-items-center rounded-full text-sm font-bold text-white" style={{ background: "linear-gradient(135deg,#10b981,#3b82f6)" }}>{tafsir.numberInSurah.toLocaleString("ar-EG")}</span>
                 <div>
                   <h3 className="font-display text-lg font-bold text-ink-900">التفسير الميسّر</h3>
                   <p className="text-xs text-ink-500">سورة {surah.meta.nameAr} · الآية {tafsir.numberInSurah.toLocaleString("ar-EG")}</p>

@@ -1509,4 +1509,248 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .achievement-grid {
     grid-template-columns: repeat(3, 1fr);
   }
+}  /* ============================================================
+   FIX: STABLE MUSHAF CONTROLS
+   ============================================================ */
+
+/* منع التمرير التلقائي أثناء التلاوة */
+.mushaf-content {
+  position: relative;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  max-height: calc(100vh - 220px);
+  overscroll-behavior: contain;
+}
+
+.mushaf-content.user-scrolling {
+  scroll-behavior: auto;
+}
+
+/* تثبيت شريط الأدوات */
+.mushaf-toolbar {
+  position: sticky;
+  top: 64px;
+  z-index: 30;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(184, 144, 47, 0.15);
+  border-radius: 16px;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* أزرار التحكم - تعمل بشكل صحيح */
+.mushaf-control-btn {
+  min-width: 36px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(241, 234, 216, 0.5);
+  transition: all 0.2s ease;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #2a2723;
+  border: none;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.mushaf-control-btn:hover {
+  background: rgba(184, 144, 47, 0.2);
+}
+
+.mushaf-control-btn:active {
+  transform: scale(0.92);
+  background: rgba(184, 144, 47, 0.3);
+}
+
+.mushaf-font-size {
+  min-width: 2.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #2a2723;
+  user-select: none;
+}
+
+/* ============================================================
+   FIX: ACHIEVEMENT CARD STABLE
+   ============================================================ */
+
+.achievement-card {
+  position: relative;
+  background: linear-gradient(180deg, #fffefb, #fcf8ee);
+  border-radius: clamp(16px, 3vw, 28px);
+  box-shadow: 
+    0 1px 0 rgba(255,255,255,0.8),
+    0 20px 50px -20px rgba(42,39,35,0.25),
+    0 8px 20px -12px rgba(184,144,47,0.2);
+  outline: 2px solid rgba(184,144,47,0.45);
+  outline-offset: -2px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.achievement-card::before {
+  content: "";
+  position: absolute;
+  inset: clamp(6px, 1.2vw, 12px);
+  border: 1.5px solid rgba(184,144,47,0.35);
+  border-radius: clamp(10px, 2vw, 18px);
+  pointer-events: none;
+}
+
+.achievement-card::after {
+  content: "";
+  position: absolute;
+  inset: clamp(9px, 1.6vw, 16px);
+  border: 1px solid rgba(184,144,47,0.15);
+  border-radius: clamp(7px, 1.4vw, 14px);
+  pointer-events: none;
+}
+
+/* ============================================================
+   FIX: RESPONSIVE FOR ALL DEVICES
+   ============================================================ */
+
+/* هواتف صغيرة جداً */
+@media (max-width: 380px) {
+  .achievement-card {
+    border-radius: 14px;
+    padding: 0.75rem !important;
+    min-height: 280px !important;
+  }
+  .achievement-card::before {
+    inset: 4px;
+    border-radius: 8px;
+  }
+  .achievement-card::after {
+    inset: 6px;
+    border-radius: 6px;
+  }
+  .mushaf-control-btn {
+    min-width: 32px;
+    min-height: 32px;
+    font-size: 1rem;
+  }
+  .mushaf-font-size {
+    min-width: 2rem;
+    font-size: 0.75rem;
+  }
+  .mushaf-toolbar {
+    padding: 4px 6px;
+    gap: 2px;
+  }
+}
+
+/* هواتف متوسطة */
+@media (min-width: 381px) and (max-width: 480px) {
+  .achievement-card {
+    border-radius: 18px;
+    padding: 1rem !important;
+    min-height: 320px !important;
+  }
+  .achievement-card::before {
+    inset: 6px;
+    border-radius: 10px;
+  }
+  .achievement-card::after {
+    inset: 8px;
+    border-radius: 8px;
+  }
+  .mushaf-toolbar {
+    padding: 6px 8px;
+  }
+  .mushaf-control-btn {
+    min-width: 34px;
+    min-height: 34px;
+    font-size: 1.1rem;
+  }
+  .mushaf-font-size {
+    min-width: 2.2rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* الأجهزة اللوحية */
+@media (min-width: 481px) and (max-width: 768px) {
+  .achievement-card {
+    border-radius: 22px;
+    padding: 1.25rem !important;
+    min-height: 360px !important;
+  }
+  .mushaf-toolbar {
+    padding: 8px 10px;
+  }
+}
+
+/* شاشات كبيرة */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .achievement-card {
+    border-radius: 24px;
+    padding: 1.5rem !important;
+    min-height: 380px !important;
+  }
+}
+
+/* شاشات عريضة */
+@media (min-width: 1025px) {
+  .achievement-card {
+    border-radius: 28px;
+    padding: 1.75rem !important;
+    min-height: 420px !important;
+  }
+  .mushaf-control-btn {
+    min-width: 40px;
+    min-height: 40px;
+    font-size: 1.3rem;
+  }
+  .mushaf-font-size {
+    min-width: 2.8rem;
+    font-size: 1rem;
+  }
+}
+
+/* ============================================================
+   FIX: MUSHAF TEXT STABLE
+   ============================================================ */
+
+.mushaf-text {
+  font-family: var(--font-quran);
+  color: #1a1408;
+  text-align: justify;
+  text-align-last: center;
+  line-height: 2.2;
+  transition: font-size 0.2s ease;
+}
+
+/* ============================================================
+   FIX: SCROLLBAR FOR MUSHAF
+   ============================================================ */
+
+.mushaf-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.mushaf-content::-webkit-scrollbar-track {
+  background: rgba(184, 144, 47, 0.08);
+  border-radius: 10px;
+}
+
+.mushaf-content::-webkit-scrollbar-thumb {
+  background: rgba(184, 144, 47, 0.3);
+  border-radius: 10px;
+}
+
+.mushaf-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(184, 144, 47, 0.5);
 }
