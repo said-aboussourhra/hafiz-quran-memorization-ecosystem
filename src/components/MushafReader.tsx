@@ -1530,272 +1530,67 @@ export function MushafReader({
       ===================================================== */}
 
       <p className="mt-4 text-center text-xs text-ink-500">
-        {view === "mushaf"
-          ? "انقر على أي آية ليظهر بجانبها: تفسير أو استماع · أثناء التلاوة انقر أي كلمة للقفز إليها"
-          : "وضع القراءة آية بآية — لكل آية أزرار التفسير والاستماع"}
-      </p>
-
-      {/* =====================================================
-          SAJDA MODAL
-      ===================================================== */}
-
-      {sajdaOpen && (
-        <div
-          className="
-            sheet-backdrop
-            fixed inset-0 z-[80]
-            flex items-end
-            justify-center
-            bg-ink-900/40
-            p-0
-            backdrop-blur-sm
-            sm:items-center
-            sm:p-6
-          "
-          onClick={() =>
-            setSajdaOpen(false)
-          }
-        >
-          <div
-            className="
-              sheet-panel
-              w-full max-w-lg
-              rounded-t-3xl
-              border-2 border-amber-300
-              bg-white
-              p-6
-              text-center
-              shadow-2xl
-              sm:rounded-3xl
-            "
-            onClick={(event) =>
-              event.stopPropagation()
-            }
+        {view === "mushaf" && (
+  <div className="mushaf-content">
+    <p
+      key={`mushaf-${fontSize}-${font}`}
+      className={`mushaf-text ${font}`}
+      dir="rtl"
+      style={{
+        fontSize: `${fontSize}px`,
+        lineHeight: 2.5,
+      }}
+    >
+      {surah.ayahs.map((a) => (
+        <span key={a.numberInSurah}>
+          <span
+            ref={(el) => { if (el) ayahRefs.current.set(a.numberInSurah, el); }}
+            role="button"
+            tabIndex={0}
+            onClick={(e) => onAyahClick(e, a.numberInSurah)}
+            onKeyDown={(e) => { if (e.key === "Enter") onAyahClick(e as unknown as React.MouseEvent, a.numberInSurah); }}
+            className={`cursor-pointer rounded-md transition ${playingAyah === a.numberInSurah ? "ayah-playing" : selected === a.numberInSurah ? "bg-[rgba(59,130,246,0.12)]" : "hover:bg-[rgba(16,185,129,0.10)]"}`}
           >
-            <div
-              className="
-                mx-auto
-                grid
-                h-16 w-16
-                place-items-center
-                rounded-2xl
-                text-3xl
-              "
-              style={{
-                background:
-                  "linear-gradient(135deg,#fef3c7,#fde68a)",
-              }}
-            >
-              ۩
-            </div>
-
-            <h3 className="mt-4 font-display text-xl font-black text-ink-900">
-              موضع سجدة تلاوة
-            </h3>
-
-            <p className="mt-1 text-sm text-ink-500">
-              يُستحبّ السجود عند تلاوة هذه الآية،
-              ويُقال في السجود:
-            </p>
-
-            <div className="mt-5 rounded-2xl bg-cream-100 p-5">
-              <p
-                className="
-                  text-2xl
-                  leading-loose
-                  text-ink-900
-                "
-                style={{
-                  fontFamily:
-                    "var(--font-quran)",
-                }}
-              >
-                {SAJDA_DUA}
-              </p>
-            </div>
-
-            <p className="mt-3 text-xs text-ink-500">
-              {SAJDA_DUA_SOURCE}
-            </p>
-
-            <button
-              type="button"
-              onClick={() =>
-                setSajdaOpen(false)
-              }
-              className="
-                mt-5
-                w-full
-                rounded-xl
-                btn-primary
-                py-3
-                text-sm
-                font-semibold
-              "
-            >
-              تمّ
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* =====================================================
-          TAFSIR MODAL
-      ===================================================== */}
-
-      {tafsir &&
-        view === "ayah" && (
-          <div
-            className="
-              sheet-backdrop
-              fixed inset-0 z-[80]
-              flex items-end
-              justify-center
-              bg-ink-900/40
-              p-0
-              backdrop-blur-sm
-              sm:items-center
-              sm:p-6
-            "
-            onClick={() =>
-              setTafsirAyah(null)
-            }
-          >
-            <div
-              className="
-                sheet-panel
-                w-full max-w-2xl
-                rounded-t-3xl
-                border-2 border-emerald-300
-                bg-white
-                p-6
-                shadow-2xl
-                sm:rounded-3xl
-              "
-              onClick={(event) =>
-                event.stopPropagation()
-              }
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span
-                    className="
-                      grid
-                      h-10 w-10
-                      place-items-center
-                      rounded-full
-                      text-sm
-                      font-bold
-                      text-white
-                    "
-                    style={{
-                      background:
-                        "linear-gradient(135deg,#10b981,#3b82f6)",
-                    }}
-                  >
-                    {tafsir.numberInSurah.toLocaleString(
-                      "ar-EG"
-                    )}
-                  </span>
-
-                  <div>
-                    <h3 className="font-display text-lg font-bold text-ink-900">
-                      التفسير الميسّر
-                    </h3>
-
-                    <p className="text-xs text-ink-500">
-                      سورة{" "}
-                      {surah.meta.nameAr}
-                      {" · "}
-                      الآية{" "}
-                      {tafsir.numberInSurah.toLocaleString(
-                        "ar-EG"
-                      )}
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setTafsirAyah(null)
-                  }
-                  className="
-                    grid
-                    h-9 w-9
-                    place-items-center
-                    rounded-lg
-                    btn-ghost
-                  "
+            {highlight && playingAyah === a.numberInSurah ? (
+              a.words.map((w, wi) => (
+                <span
+                  key={wi}
+                  onClick={(e) => { e.stopPropagation(); seekToWord(a, wi); }}
+                  className="cursor-pointer"
+                  style={wi === activeWord ? { color: hlColor, background: `${hlColor}22`, borderRadius: "6px", padding: "0 2px", transition: "color .15s, background .15s" } : undefined}
                 >
-                  ✕
-                </button>
-              </div>
-
-              <div className="mt-5 rounded-2xl bg-cream-100 p-5">
-                <p
-                  className="
-                    text-2xl
-                    leading-loose
-                    text-ink-900
-                  "
-                  style={{
-                    fontFamily:
-                      "var(--font-quran)",
-                  }}
-                >
-                  {tafsir.text}
-                </p>
-              </div>
-
-              <div className="my-4 divider-ornament" />
-
-              <p className="max-h-56 overflow-y-auto text-[15px] leading-relaxed text-ink-700">
-                {tafsir.tafsir ||
-                  "التفسير غير متوفّر لهذه الآية حالياً."}
-              </p>
-
-              <div className="mt-5 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() =>
-                    playAyah(
-                      tafsir.numberInSurah,
-                      false
-                    )
-                  }
-                  className="
-                    flex-1
-                    rounded-xl
-                    btn-ghost
-                    py-3
-                    text-sm
-                    font-semibold
-                  "
-                >
-                  🔊 استماع للآية
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setTafsirAyah(null)
-                  }
-                  className="
-                    flex-1
-                    rounded-xl
-                    btn-primary
-                    py-3
-                    text-sm
-                    font-semibold
-                  "
-                >
-                  إغلاق
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-    </div>
-  );
-}
+                  {w.t}{" "}
+                </span>
+              ))
+            ) : (
+              a.text
+            )}
+            <AyahMarker n={a.numberInSurah} active={playingAyah === a.numberInSurah} />
+          </span>
+          {isSajda(surah.meta.number, a.numberInSurah) && (
+            <button onClick={(e) => { e.stopPropagation(); setSajdaOpen(true); }} title="موضع سجدة" className="mx-1 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 align-middle text-[11px] font-bold text-amber-700">۩ سجدة</button>
+          )}
+          {selected === a.numberInSurah && tafsirAyah !== a.numberInSurah && (
+            <span className="ayah-inline-actions" contentEditable={false} onClick={(e) => e.stopPropagation()}>
+              <button onClick={() => openTafsirInline(a.numberInSurah)} className="ayah-chip ayah-chip-tafsir">📖 التفسير</button>
+              <button onClick={() => { playAyah(a.numberInSurah, false); setSelected(null); }} className="ayah-chip ayah-chip-listen">🔊 استماع</button>
+              <button onClick={() => setSelected(null)} className="ayah-chip ayah-chip-close">✕</button>
+            </span>
+          )}
+          {tafsirAyah === a.numberInSurah && (
+            <span className="ayah-tafsir-inline" contentEditable={false} onClick={(e) => e.stopPropagation()}>
+              <span className="ayah-tafsir-head">
+                <span className="ayah-tafsir-badge">{toDigits(a.numberInSurah)}</span>
+                <span className="font-display text-sm font-bold text-ink-900">التفسير الميسّر</span>
+                <button onClick={() => { setTafsirAyah(null); setSelected(null); }} className="ayah-tafsir-close">✕</button>
+              </span>
+              <span className="ayah-tafsir-body">{a.tafsir || "التفسير غير متوفّر لهذه الآية حالياً."}</span>
+              <button onClick={() => playAyah(a.numberInSurah, false)} className="mt-2 rounded-lg btn-primary px-4 py-2 text-xs font-semibold">🔊 استماع للآية</button>
+            </span>
+          )}
+          {" "}
+        </span>
+      ))}
+    </p>
+  </div>
+)}
