@@ -1754,3 +1754,107 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .mushaf-content::-webkit-scrollbar-thumb:hover {
   background: rgba(184, 144, 47, 0.5);
 }
+/* ============================================================
+   ACHIEVEMENT CARD - محسّن ومتجاول بالكامل
+   ============================================================ */
+
+.achievement-card {
+  position: relative;
+  background: linear-gradient(180deg, #fffefb, #fcf8ee);
+  border-radius: clamp(16px, 3vw, 28px);
+  box-shadow: 
+    0 1px 0 rgba(255,255,255,0.8),
+    0 20px 50px -20px rgba(42,39,35,0.25),
+    0 8px 20px -12px rgba(184,144,47,0.2);
+  outline: 2px solid rgba(184,144,47,0.45);
+  outline-offset: -2px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.achievement-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 
+    0 1px 0 rgba(255,255,255,0.8),
+    0 30px 60px -20px rgba(42,39,35,0.3),
+    0 12px 30px -14px rgba(184,144,47,0.25);
+}
+
+.achievement-card::before {
+  content: "";
+  position: absolute;
+  inset: clamp(6px, 1.2vw, 12px);
+  border: 1.5px solid rgba(184,144,47,0.35);
+  border-radius: clamp(10px, 2vw, 18px);
+  pointer-events: none;
+}
+
+.achievement-card::after {
+  content: "";
+  position: absolute;
+  inset: clamp(9px, 1.6vw, 16px);
+  border: 1px solid rgba(184,144,47,0.15);
+  border-radius: clamp(7px, 1.4vw, 14px);
+  pointer-events: none;
+}
+
+.achievement-card .divider-ornament {
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgba(184,144,47,0.4), transparent);
+  margin: 0 auto;
+}
+
+/* ============================================================
+   RESPONSIVE - ACHIEVEMENT CARD
+   ============================================================ */
+
+@media (max-width: 400px) {
+  .achievement-card {
+    border-radius: 14px;
+    padding: 0.75rem !important;
+    min-height: 260px !important;
+  }
+  .achievement-card::before {
+    inset: 4px;
+    border-radius: 8px;
+  }
+  .achievement-card::after {
+    inset: 6px;
+    border-radius: 6px;
+  }
+}
+
+@media (min-width: 401px) and (max-width: 640px) {
+  .achievement-card {
+    border-radius: 18px;
+    padding: 1rem !important;
+    min-height: 300px !important;
+  }
+  .achievement-card::before {
+    inset: 6px;
+    border-radius: 10px;
+  }
+  .achievement-card::after {
+    inset: 8px;
+    border-radius: 8px;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .achievement-card {
+    border-radius: 22px;
+    padding: 1.25rem !important;
+    min-height: 340px !important;
+  }
+}
+
+@media (min-width: 1025px) {
+  .achievement-card {
+    border-radius: 28px;
+    padding: 1.5rem !important;
+    min-height: 380px !important;
+  }
+}

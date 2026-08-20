@@ -51,7 +51,6 @@ export function MushafReader({ surah }: { surah: SurahContent }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const pageRef = useRef<HTMLDivElement | null>(null);
   const ayahRefs = useRef<Map<number, HTMLSpanElement>>(new Map());
-  const [autoScroll, setAutoScroll] = useState(true);
 
   const surahNum = surah.meta.number;
   const tafsir = tafsirAyah != null ? surah.ayahs.find((a) => a.numberInSurah === tafsirAyah) ?? null : null;
@@ -133,11 +132,8 @@ export function MushafReader({ surah }: { surah: SurahContent }) {
     saveLastRead(surah.meta.number, surah.meta.nameAr);
   }, [surah.meta.number, surah.meta.nameAr]);
 
-  useEffect(() => {
-    if (!autoScroll || playingAyah == null) return;
-    const el = ayahRefs.current.get(playingAyah);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [playingAyah, autoScroll]);
+  // ❌ تم إزالة التمرير التلقائي بالكامل - المصحف لا يتحرك أثناء التلاوة
+  // useEffect للتمرير التلقائي تم حذفه
 
   useEffect(() => {
     try {
@@ -149,9 +145,7 @@ export function MushafReader({ surah }: { surah: SurahContent }) {
       const f = localStorage.getItem("hafiz_font");
       if (f && FONTS.some((x) => x.id === f)) setFont(f);
       const s = localStorage.getItem("hafiz_fontsize");
-      if (s) setFontSize(Math.max(26, Math.min(60, Number(s) || 34)));
-      const as = localStorage.getItem("hafiz_autoscroll");
-      if (as != null) setAutoScroll(as === "1");
+      if (s) setFontSize(Math.max(24, Math.min(64, Number(s) || 34)));
       const hl = localStorage.getItem("hafiz_highlight");
       if (hl != null) setHighlight(hl === "1");
       const hc = localStorage.getItem("hafiz_hlcolor");
@@ -167,10 +161,13 @@ export function MushafReader({ surah }: { surah: SurahContent }) {
     try { localStorage.setItem("hafiz_font", id); } catch { /* ignore */ }
   };
 
+  // ✅ دالة تغيير الحجم المُحسّنة (تعمل الآن)
   const changeSize = (delta: number) => {
-    const newSize = Math.max(28, Math.min(56, fontSize + delta));
-    setFontSize(newSize);
-    try { localStorage.setItem("hafiz_fontsize", String(newSize)); } catch { /* ignore */ }
+    setFontSize((current) => {
+      const newSize = Math.max(24, Math.min(64, current + delta));
+      try { localStorage.setItem("hafiz_fontsize", String(newSize)); } catch { /* ignore */ }
+      return newSize;
+    });
   };
 
   const chooseReciter = (r: Reciter) => {
@@ -234,11 +231,11 @@ export function MushafReader({ surah }: { surah: SurahContent }) {
           <button onClick={() => setView("ayah")} className={`rounded-lg px-3 py-1.5 text-xs sm:text-sm font-semibold transition ${view === "ayah" ? "bg-white text-emerald-700 shadow" : "text-ink-500 hover:text-emerald-600"}`}>آية بآية</button>
         </div>
 
-        {/* تحكم حجم الخط */}
+        {/* ✅ تحكم حجم الخط - يعمل الآن */}
         <div className="flex items-center gap-1 sm:gap-2 bg-cream-100/50 rounded-xl px-2 py-1">
-          <button onClick={() => changeSize(-2)} className="mushaf-control-btn">−</button>
+          <button onClick={() => changeSize(-2)} className="mushaf-control-btn" aria-label="تصغير الخط">−</button>
           <span className="mushaf-font-size">{fontSize}</span>
-          <button onClick={() => changeSize(2)} className="mushaf-control-btn">+</button>
+          <button onClick={() => changeSize(2)} className="mushaf-control-btn" aria-label="تكبير الخط">+</button>
         </div>
 
         {/* اختيار الخط */}
@@ -289,7 +286,7 @@ export function MushafReader({ surah }: { surah: SurahContent }) {
         </div>
       </div>
 
-      {/* ===== صفحة المصحف ===== */}
+      {/* ===== صفحة المصحف - ثابتة لا تتحرك ===== */}
       <div ref={pageRef} className={`mushaf-page paper-${paper} px-4 py-6 sm:px-8 sm:py-10 md:px-12 md:py-14 lg:px-16 lg:py-16 ${surahPlaying ? "ring-2 ring-emerald-500/30" : ""}`}>
         <span className="mushaf-watermark" />
         <span className="mushaf-corner left-3 top-3 border-l-2 border-t-2 rounded-tl-lg" />
@@ -310,7 +307,14 @@ export function MushafReader({ surah }: { surah: SurahContent }) {
 
         {view === "mushaf" && (
           <div className="mushaf-content">
-            <p className={`mushaf-text ${font}`} dir="rtl" style={{ fontSize: `${fontSize}px`, lineHeight: 2.5 }}>
+            {/* ✅ استخدام CSS Variable بدلاً من fontSize مباشرة */}
+            <p
+              className={`mushaf-text ${font}`}
+              dir="rtl"
+              style={{
+                "--mushaf-font-size": `${fontSize}px`,
+              } as React.CSSProperties}
+            >
               {surah.ayahs.map((a) => (
                 <span key={a.numberInSurah}>
                   <span
