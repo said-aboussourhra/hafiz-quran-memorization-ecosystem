@@ -1028,13 +1028,42 @@ html, body { max-width: 100%; overflow-x: hidden; }
   pointer-events: none;
 }
 
+/* ============================================================
+   FIX — حجم المصحف يتحكم به React
+   ============================================================ */
+
 .mushaf-text {
-  font-family: var(--font-quran);
-  color: #1a1408;
-  text-align: justify;
-  text-align-last: center;
-  line-height: 2;
-  font-size: clamp(0.9rem, 1.8vw, 1.4rem);
+  font-size: var(--mushaf-font-size, 34px) !important;
+
+  line-height: 2.5;
+
+  transition:
+    font-size 0.18s ease;
+}
+
+/* لا تسمح للـ responsive بتغيير حجم القرآن */
+@media (max-width: 480px) {
+  .mushaf-text {
+    font-size: var(--mushaf-font-size, 34px) !important;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .mushaf-text {
+    font-size: var(--mushaf-font-size, 34px) !important;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .mushaf-text {
+    font-size: var(--mushaf-font-size, 34px) !important;
+  }
+}
+
+@media (min-width: 1025px) {
+  .mushaf-text {
+    font-size: var(--mushaf-font-size, 34px) !important;
+  }
 }
 
 /* ============================================================
