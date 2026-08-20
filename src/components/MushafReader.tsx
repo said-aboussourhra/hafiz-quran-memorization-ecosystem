@@ -726,9 +726,9 @@ export function MushafReader({
      FONT STYLE
   ========================================================= */
 
+  // ✅ تم التصحيح: إضافة backticks
   const mushafTextStyle: MushafTextStyle = {
-    "--mushaf-font-size":
-      ${fontSize}px,
+    "--mushaf-font-size": `${fontSize}px`,
     lineHeight: 2.5,
   };
 
@@ -757,7 +757,8 @@ export function MushafReader({
         <div
           className="h-full transition-[width] duration-150"
           style={{
-            width: ${progress}%,
+            // ✅ تم التصحيح: إضافة backticks
+            width: `${progress}%`,
             background:
               "linear-gradient(90deg,#10b981,#3b82f6)",
           }}
@@ -943,8 +944,9 @@ export function MushafReader({
                     }
                   `}
                 >
+                  {/* ✅ تم التصحيح: إضافة backticks */}
                   <span
-                    className={text-lg ${item.id}}
+                    className={`text-lg ${item.id}`}
                     style={{
                       color: "#071a1c",
                     }}
@@ -1172,8 +1174,9 @@ export function MushafReader({
 
         {view === "mushaf" && (
           <div className="mushaf-content">
+            {/* ✅ تم التصحيح: إضافة backticks */}
             <p
-              className={mushaf-text ${font}}
+              className={`mushaf-text ${font}`}
               dir="rtl"
               style={mushafTextStyle}
             >
@@ -1198,7 +1201,8 @@ export function MushafReader({
                     }}
                     role="button"
                     tabIndex={0}
-                    aria-label={الآية ${ayah.numberInSurah}}
+                    // ✅ تم التصحيح: إضافة backticks
+                    aria-label={`الآية ${ayah.numberInSurah}`}
                     onClick={(event) =>
                       onAyahClick(
                         event,
@@ -1261,8 +1265,8 @@ export function MushafReader({
                                 ? {
                                     color:
                                       hlColor,
-                                    background:
-                                      ${hlColor}22,
+                                    // ✅ تم التصحيح: إضافة backticks
+                                    background: `${hlColor}22`,
                                     borderRadius:
                                       "6px",
                                     padding:
@@ -1576,12 +1580,13 @@ export function MushafReader({
 
                 {/* AYAH TEXT */}
 
+                {/* ✅ تم التصحيح: إضافة backticks */}
                 <p
-                  className={text-ink-900 ${font}}
+                  className={`text-ink-900 ${font}`}
                   dir="rtl"
                   style={{
-                    fontSize:
-                      ${fontSize}px,
+                    // ✅ تم التصحيح: إضافة backticks
+                    fontSize: `${fontSize}px`,
                     lineHeight: 2.2,
                   }}
                 >
