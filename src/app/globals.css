@@ -29,35 +29,41 @@
   --bg-page: #fbfdfc;
   --surface: #ffffff;
   --surface-2: #f4fbf9;
-  --paper: #fbf7ec;
+  --paper: #fbf7ec; /* warm mushaf paper */
   --text-strong: #071a1c;
   --text-soft: #4a6664;
 
+  /* ===== Design tokens ===== */
   --radius-sm: 12px;
   --radius: 18px;
   --radius-lg: 24px;
   --radius-xl: 30px;
 
+  /* elevation — soft, layered, never cheap black */
   --shadow-1: 0 1px 2px rgba(16,42,46,.04), 0 4px 12px -6px rgba(20,97,143,.10);
   --shadow-2: 0 2px 4px rgba(16,42,46,.04), 0 10px 24px -10px rgba(20,97,143,.14);
   --shadow-3: 0 8px 20px -10px rgba(16,185,129,.18), 0 24px 50px -24px rgba(37,99,235,.24);
+  --shadow-glow-emerald: 0 0 0 1px rgba(16,185,129,.2), 0 14px 40px -16px rgba(16,185,129,.4);
 
+  /* hairlines & separators */
   --hairline: rgba(16,185,129,.16);
   --hairline-strong: rgba(16,185,129,.32);
 
+  /* motion */
   --ease-premium: cubic-bezier(.22,1,.36,1);
   --ease-out: cubic-bezier(.16,1,.3,1);
   --t-fast: 170ms;
   --t-normal: 300ms;
   --t-slow: 560ms;
 
+  /* brand gradients */
   --grad-brand: linear-gradient(135deg,#10b981 0%,#059669 45%,#2563eb 100%);
   --grad-brand-soft: linear-gradient(135deg,rgba(16,185,129,.14),rgba(37,99,235,.14));
+  --grad-gold: linear-gradient(135deg,#e8c97a,#b8902f);
 }
 
-/* ============================================================
-   BASE
-   ============================================================ */
+
+
 html { scroll-behavior: smooth; }
 
 body {
@@ -71,9 +77,11 @@ body {
   color: var(--text-strong);
   font-family: var(--font-ui);
   font-weight: 500;
+  transition: background-color .4s ease, color .4s ease;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
-
+/* felt-not-seen Islamic geometry veil over the whole page */
 body::before {
   content: "";
   position: fixed;
@@ -88,6 +96,8 @@ body::before {
   mask-image: radial-gradient(circle at 50% 30%, #000, transparent 92%);
 }
 
+/* Dark-mode surface overrides (keep the emerald-blue identity) */
+
 ::selection { background: rgba(16,185,129, 0.25); color: #102a2e; }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -96,20 +106,24 @@ body::before {
 ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #059669, #2563eb); }
 
 .font-arabic { font-family: var(--font-arabic); }
+
+/* Selectable Quran fonts for the mushaf (use !important to always win) */
+.qf-amiri { font-family: var(--font-quran), "Amiri Quran", serif !important; }
+.qf-kfgqpc { font-family: var(--font-quran-kfgqpc), "Scheherazade New", serif !important; }
+.qf-naskh { font-family: var(--font-quran-naskh), "Noto Naskh Arabic", serif !important; }
+.qf-markazi { font-family: var(--font-quran-markazi), "Markazi Text", serif !important; }
 .font-display { font-family: var(--font-display); }
 
-/* ============================================================
-   SURFACES
-   ============================================================ */
+/* ===== Surfaces ===== */
 .card {
   position: relative;
   background: linear-gradient(180deg, #ffffff, #fbfefe);
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
   box-shadow: var(--shadow-2);
-  transition: transform var(--t-normal) var(--ease-premium), box-shadow var(--t-normal) var(--ease-out);
+  transition: transform var(--t-normal) var(--ease-premium), box-shadow var(--t-normal) var(--ease-out), border-color var(--t-normal) ease;
 }
-
+/* layer 1: faint Islamic geometry + inner top highlight */
 .card::before {
   content: "";
   position: absolute;
@@ -122,21 +136,34 @@ body::before {
     repeating-linear-gradient(45deg, rgba(184,144,47,0.026) 0 1px, transparent 1px 18px),
     repeating-linear-gradient(-45deg, rgba(16,185,129,0.022) 0 1px, transparent 1px 18px);
 }
-
+/* layer 2: magnetic light following the cursor (set via --mx/--my) */
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--t-normal) ease;
+  background: radial-gradient(220px circle at var(--mx,50%) var(--my,0%), rgba(16,185,129,.10), transparent 60%);
+}
+.card > * { position: relative; z-index: 1; }
 .card:hover {
   border-color: var(--hairline-strong);
   box-shadow: var(--shadow-3);
 }
-
+.card:hover::after { opacity: 1; }
 .card-warm {
   background: linear-gradient(180deg, #f4fbf9, #eaf6f4);
   border: 1px solid rgba(16,185,129, 0.28);
+  box-shadow: 0 10px 30px rgba(26, 127, 181, 0.10);
 }
-
 .card-ocean {
   background: linear-gradient(160deg, #eef8fb, #e4f2f7);
   border: 1px solid rgba(59,130,246, 0.28);
+  box-shadow: 0 10px 30px rgba(26, 127, 181, 0.12);
 }
+.hairline { border-color: rgba(16,185,129, 0.18); }
 
 .gold-text {
   background: linear-gradient(120deg, #10b981 0%, #059669 45%, #2563eb 100%);
@@ -144,6 +171,13 @@ body::before {
   background-clip: text;
   color: transparent;
 }
+.ocean-text {
+  background: linear-gradient(120deg, #3b82f6 0%, #1d4ed8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.emerald-text { color: #047857; }
 
 .btn-primary {
   position: relative;
@@ -151,9 +185,8 @@ body::before {
   background: linear-gradient(120deg, #10b981 0%, #059669 50%, #2563eb 100%);
   color: #fff;
   box-shadow: 0 8px 22px -6px rgba(17,160,138,0.5), inset 0 1px 0 rgba(255,255,255,0.25);
-  transition: transform var(--t-fast) var(--ease-premium), box-shadow var(--t-fast) ease;
+  transition: transform var(--t-fast) var(--ease-premium), box-shadow var(--t-fast) ease, filter var(--t-fast) ease;
 }
-
 .btn-primary::after {
   content: "";
   position: absolute;
@@ -163,103 +196,360 @@ body::before {
   transform: skewX(-20deg);
   transition: left .6s ease;
 }
-
 .btn-primary:hover::after { left: 130%; }
-.btn-primary:hover { transform: translateY(-1px); filter: brightness(1.05); }
-
+.btn-primary:hover { transform: translateY(-1px); filter: brightness(1.05); box-shadow: 0 12px 30px -8px rgba(17,160,138,0.6), inset 0 1px 0 rgba(255,255,255,0.3); }
+.btn-primary:active { transform: translateY(0) scale(.99); }
 .btn-ghost {
   background: rgba(255,255,255,0.8);
   border: 1px solid var(--hairline-strong);
   color: #2b4a4d;
   backdrop-filter: blur(6px);
-  transition: background var(--t-fast) ease, border-color var(--t-fast) ease;
+  transition: background var(--t-fast) ease, border-color var(--t-fast) ease, transform var(--t-fast) var(--ease-premium);
+}
+.btn-ghost:hover { background: #eef7f5; border-color: rgba(37,99,235,0.4); transform: translateY(-1px); }
+.btn-ghost:active { transform: translateY(0) scale(.99); }
+
+/* ===== Unified inputs ===== */
+.field {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid var(--hairline-strong);
+  background: rgba(255,255,255,0.9);
+  padding: 0.75rem 1rem;
+  color: var(--text-strong);
+  transition: border-color var(--t-fast) ease, box-shadow var(--t-fast) ease, background var(--t-fast) ease;
+  outline: none;
+}
+.field::placeholder { color: var(--text-soft); opacity: .7; }
+.field:focus { border-color: #10b981; box-shadow: 0 0 0 4px rgba(16,185,129,.14); background: #fff; }
+
+/* ===== Section eyebrow ===== */
+.eyebrow {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-size: .72rem; font-weight: 700; letter-spacing: .28em;
+  color: transparent;
+  background: var(--grad-brand); -webkit-background-clip: text; background-clip: text;
+}
+.eyebrow::before { content: ""; width: 22px; height: 2px; border-radius: 2px; background: var(--grad-brand); }
+
+/* ===== Chip / pill ===== */
+.chip {
+  display: inline-flex; align-items: center; gap: .35rem;
+  border-radius: 999px; padding: .35rem .85rem;
+  font-size: .8rem; font-weight: 700;
+  background: var(--grad-brand-soft); color: #047857;
+  border: 1px solid rgba(16,185,129,.2);
 }
 
-.btn-ghost:hover { background: #eef7f5; border-color: rgba(37,99,235,0.4); }
+/* premium glass surface for floating panels */
+.glass-panel {
+  background: rgba(255,255,255,0.72);
+  backdrop-filter: blur(16px) saturate(1.3);
+  border: 1px solid rgba(255,255,255,0.6);
+  box-shadow: var(--shadow-2);
+}
+
+/* gradient hairline accent bar */
+.accent-bar { height: 4px; border-radius: 4px; background: var(--grad-brand); }
 
 .divider-ornament {
   height: 1px;
   background: linear-gradient(90deg, transparent, rgba(16,185,129,0.45), rgba(59,130,246,0.45), transparent);
 }
 
-/* ============================================================
-   MUSHAF - النسخة الثابتة
-   ============================================================ */
-.mushaf-page {
-  position: relative;
-  width: 100%;
-  max-width: 1100px;
-  margin: 0 auto;
-  overflow: visible;
-  isolation: isolate;
-  border-radius: 28px;
-  border: 1px solid rgba(184, 144, 47, 0.35);
-  background:
-    radial-gradient(circle at 50% 0%, rgba(255,255,255,.95), transparent 45%),
-    linear-gradient(180deg, #fffdf7 0%, #faf5e8 100%);
-  box-shadow:
-    0 2px 4px rgba(42,39,35,.05),
-    0 15px 40px rgba(42,39,35,.12),
-    0 30px 80px rgba(184,144,47,.08);
-  min-height: 500px;
-  padding: 60px 70px;
+/* ===== Premium aesthetic utilities ===== */
+.glass {
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(14px) saturate(1.2);
+  border: 1px solid rgba(255,255,255,0.6);
+  box-shadow: 0 10px 40px -16px rgba(29,78,216,0.25);
 }
 
-.mushaf-page::before {
+.glow-emerald { box-shadow: 0 0 0 1px rgba(16,185,129,0.18), 0 18px 50px -20px rgba(16,185,129,0.5); }
+.glow-ocean { box-shadow: 0 0 0 1px rgba(59,130,246,0.18), 0 18px 50px -20px rgba(59,130,246,0.5); }
+
+/* animated aurora background blob */
+.aurora {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: -1;
+  animation: auroraFloat 16s ease-in-out infinite;
+}
+@keyframes auroraFloat {
+  0%,100% { transform: translate(0,0) scale(1); }
+  33% { transform: translate(30px,-26px) scale(1.12); }
+  66% { transform: translate(-24px,18px) scale(0.94); }
+}
+
+/* gradient moving border on hover cards */
+.lift {
+  transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s ease, border-color .35s ease;
+}
+.lift:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow:
+    0 12px 28px -12px rgba(16,185,129,0.28),
+    0 34px 70px -30px rgba(37,99,235,0.35);
+}
+
+/* gradient text shimmer for headings */
+.shine-text {
+  background: linear-gradient(110deg, #047857, #059669 35%, #3b82f6 60%, #1d4ed8);
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shineMove 6s linear infinite;
+}
+@keyframes shineMove { to { background-position: 220% center; } }
+
+/* soft count-up appear */
+@keyframes popUp { from { opacity:0; transform: translateY(10px) scale(.96);} to {opacity:1; transform:translateY(0) scale(1);} }
+.pop { animation: popUp .6s cubic-bezier(.22,1,.36,1) both; }
+
+/* page enter transition */
+@keyframes pageEnter { from { opacity:0; transform: translateY(12px);} to {opacity:1; transform:translateY(0);} }
+.page-enter { animation: pageEnter .5s cubic-bezier(.22,1,.36,1) both; }
+
+/* decorative orbit ring */
+@keyframes orbit { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+.orbit { animation: orbit 28s linear infinite; }
+
+/* breathing glow */
+@keyframes breathe { 0%,100%{opacity:.45; transform:scale(1);} 50%{opacity:.85; transform:scale(1.06);} }
+.breathe { animation: breathe 7s ease-in-out infinite; }
+
+/* staggered entrance for grids */
+@keyframes cardIn { from { opacity:0; transform: translateY(14px) scale(.97);} to {opacity:1; transform:translateY(0) scale(1);} }
+.card-in { animation: cardIn .5s cubic-bezier(.22,1,.36,1) both; }
+
+/* name card — premium hover with gradient sweep */
+.name-card {
+  position: relative;
+  overflow: hidden;
+  transition: transform .4s cubic-bezier(.22,1,.36,1), box-shadow .4s ease, border-color .4s ease;
+}
+.name-card::before {
   content: "";
   position: absolute;
-  inset: 14px;
-  border: 1px solid rgba(184,144,47,.18);
-  border-radius: 20px;
-  pointer-events: none;
-  z-index: 0;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(59,130,246,0.12));
+  opacity: 0;
+  transition: opacity .4s ease;
+}
+.name-card:hover {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 24px 50px -22px rgba(37,99,235,0.5);
+  border-color: rgba(16,185,129,0.5);
+}
+.name-card:hover::before { opacity: 1; }
+.name-card > * { position: relative; z-index: 1; }
+
+/* speaking pulse ring */
+@keyframes speakPulse { 0%{box-shadow:0 0 0 0 rgba(16,185,129,0.5);} 100%{box-shadow:0 0 0 16px rgba(16,185,129,0);} }
+.speaking { animation: speakPulse 1.2s ease-out infinite; border-color: #10b981 !important; }
+
+/* sound icon badge */
+.sound-badge {
+  transition: transform .3s ease, opacity .3s ease;
+  opacity: 0;
+  transform: scale(0.6);
+}
+.name-card:hover .sound-badge, .dhikr-card:hover .sound-badge { opacity: 1; transform: scale(1); }
+
+.dhikr-card { transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s ease; }
+.dhikr-card:hover { transform: translateY(-4px); box-shadow: 0 20px 44px -22px rgba(37,99,235,0.4); }
+
+.mic-btn { transition: transform .2s ease, box-shadow .2s ease; }
+.mic-btn:hover { transform: scale(1.06); }
+.mic-btn.speaking { animation: micPulse 1s ease-out infinite; }
+@keyframes micPulse { 0%{box-shadow:0 0 0 0 rgba(192,57,43,0.5);} 100%{box-shadow:0 0 0 22px rgba(192,57,43,0);} }
+
+/* Inline ayah action chips (appear beside the exact ayah in the flow) */
+.ayah-inline-actions {
+  display: inline-flex;
+  vertical-align: middle;
+  gap: 0.35rem;
+  margin: 0 0.4rem;
+  font-family: var(--font-ui);
+  animation: chipIn .25s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes chipIn { from { opacity:0; transform: scale(.8); } to { opacity:1; transform: scale(1); } }
+.ayah-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 16px -6px rgba(37,99,235,0.4);
+}
+.ayah-chip-tafsir { background: #ffffff; border: 2px solid #10b981; color: #047857; }
+.ayah-chip-listen { background: linear-gradient(135deg,#10b981,#3b82f6); color: #fff; }
+.ayah-chip-close { background: #f1f5f4; color: #64748b; padding: 0.35rem 0.55rem; }
+.ayah-chip:hover { filter: brightness(1.05); transform: translateY(-1px); }
+
+/* Inline tafsir card, right beside the ayah */
+.ayah-tafsir-inline {
+  display: block;
+  margin: 0.8rem 0;
+  padding: 1rem 1.2rem;
+  border-radius: 18px;
+  background: linear-gradient(160deg,#f0faf7,#eaf3fb);
+  border: 2px solid rgba(16,185,129,0.4);
+  box-shadow: 0 12px 30px -14px rgba(37,99,235,0.4);
+  font-family: var(--font-ui);
+  text-align: right;
+  animation: chipIn .25s cubic-bezier(.22,1,.36,1) both;
+}
+.ayah-tafsir-head { display: flex; align-items: center; gap: 0.6rem; }
+.ayah-tafsir-badge {
+  display: inline-grid; place-items: center;
+  min-width: 1.9rem; height: 1.9rem; padding: 0 0.4rem;
+  border-radius: 999px;
+  font-size: 0.85rem; font-weight: 800; color: #fff;
+  background: linear-gradient(135deg,#10b981,#3b82f6);
+}
+.ayah-tafsir-close {
+  margin-inline-start: auto;
+  display: grid; place-items: center;
+  height: 1.8rem; width: 1.8rem; border-radius: 10px;
+  background: #ffffff; border: 1px solid #d7e3e0; color: #64748b; cursor: pointer;
+}
+.ayah-tafsir-body {
+  display: block;
+  margin-top: 0.7rem;
+  font-size: 1rem;
+  line-height: 1.9;
+  color: #1e3d40;
+  font-weight: 500;
 }
 
-.mushaf-content {
-  position: relative;
-  width: 100%;
-  height: auto;
-  max-height: none !important;
-  overflow: visible !important;
-  scroll-behavior: auto !important;
+/* Certificate frame */
+.cert-frame {
+  background: radial-gradient(120% 90% at 50% 0%, #fdfaf1 0%, #f6efdf 60%, #f1e9d4 100%);
+  outline: 3px solid rgba(5,150,105,0.5);
+  outline-offset: -3px;
+  box-shadow: 0 30px 70px -30px rgba(60,50,30,0.4);
 }
-
-.mushaf-text {
-  width: 100%;
-  margin: 0 auto;
-  color: #171512;
-  text-align: justify;
-  text-align-last: center;
-  font-size: var(--mushaf-font-size, 34px);
-  line-height: 2.45;
-  font-family: var(--font-quran), "Amiri", serif;
-  word-spacing: 0.08em;
-  letter-spacing: 0;
-  direction: rtl;
-  transition: font-size .18s ease, line-height .18s ease;
-}
-
-.mushaf-text .ayah-playing {
-  border-radius: 10px;
-  background: linear-gradient(90deg, rgba(16,185,129,.04), rgba(16,185,129,.13), rgba(16,185,129,.04));
-  box-shadow: 0 0 0 1px rgba(16,185,129,.08);
-  transition: background .2s ease, box-shadow .2s ease;
-}
-
-.mushaf-text .ayah-playing,
-.mushaf-text .ayah-playing * {
-  scroll-margin: 0 !important;
-}
-
-.mushaf-corner {
+.cert-frame::before {
+  content: "";
   position: absolute;
-  width: clamp(16px, 4vw, 26px);
-  height: clamp(16px, 4vw, 26px);
-  border-color: rgba(184,144,47,0.8);
+  inset: 12px;
+  border: 1.5px solid rgba(184,144,47,0.55);
+  border-radius: 18px;
   pointer-events: none;
+}
+.cert-corner {
+  position: absolute;
+  width: 26px; height: 26px;
+  border: 3px solid #b8902f;
+  z-index: 1;
+}
+.cert-corner.right-4.top-4 { border-left: none; border-bottom: none; border-top-right-radius: 12px; }
+.cert-corner.left-4.top-4 { border-right: none; border-bottom: none; border-top-left-radius: 12px; }
+.cert-corner.right-4.bottom-4 { border-left: none; border-top: none; border-bottom-right-radius: 12px; }
+.cert-corner.left-4.bottom-4 { border-right: none; border-top: none; border-bottom-left-radius: 12px; }
+
+.warn-toast { animation: warnShake .5s ease; }
+@keyframes warnShake { 0%,100%{transform:translateX(0);} 20%{transform:translateX(-6px);} 40%{transform:translateX(6px);} 60%{transform:translateX(-4px);} 80%{transform:translateX(4px);} }
+
+/* Developer letter frame */
+.letter-frame {
+  box-shadow: 0 30px 70px -30px rgba(37,99,235,0.35);
+  outline: 2px solid rgba(5,150,105,0.55);
+  outline-offset: -2px;
+}
+.letter-frame::before {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border: 1.5px solid rgba(59,130,246,0.30);
+  border-radius: 22px;
+  pointer-events: none;
+}
+.letter-corner {
+  position: absolute;
+  width: 26px; height: 26px;
+  border-color: #059669;
   z-index: 1;
 }
 
+/* ===== Sky/galaxy for universe (light) ===== */
+.sky {
+  background:
+    radial-gradient(60% 60% at 50% 40%, rgba(59,130,246,0.12), transparent 70%),
+    radial-gradient(50% 50% at 50% 55%, rgba(16,185,129,0.10), transparent 65%),
+    radial-gradient(40% 40% at 80% 80%, rgba(29,78,216,0.08), transparent 60%),
+    linear-gradient(180deg, #eef8f6, #e3f1f4);
+}
+
+@keyframes twinkle { 0%,100%{opacity:.5;transform:scale(.92)} 50%{opacity:1;transform:scale(1.08)} }
+@keyframes pulseGlow { 0%,100%{box-shadow:0 0 6px 1px currentColor;opacity:.8} 50%{box-shadow:0 0 16px 4px currentColor;opacity:1} }
+@keyframes floaty { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+@keyframes spinSlow { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+@keyframes riseFade { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+@keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+
+.animate-twinkle { animation: twinkle 4s ease-in-out infinite; }
+.animate-pulse-glow { animation: pulseGlow 3.2s ease-in-out infinite; }
+.animate-floaty { animation: floaty 6s ease-in-out infinite; }
+.animate-spin-slow { animation: spinSlow 80s linear infinite; }
+.rise { animation: riseFade .7s ease-out both; }
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(16,185,129,0.4), rgba(59,130,246,0.4), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 3s linear infinite;
+}
+
+.star-node { border-radius:999px; transition: transform .25s ease, box-shadow .25s ease; }
+.star-node:hover { transform: scale(1.4); z-index:20; }
+
+/* Mushaf page styling */
+.mushaf-frame {
+  background:
+    linear-gradient(180deg, #fffdf6, #fbf5e6);
+  border: 2px solid rgba(184,144,47,0.35);
+  box-shadow: inset 0 0 0 6px rgba(255,255,255,0.7), inset 0 0 0 7px rgba(184,144,47,0.18), 0 12px 40px rgba(42,39,35,0.08);
+  border-radius: 24px;
+}
+.ayah-word {
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 0 2px;
+  transition: background .15s ease, color .15s ease;
+}
+.ayah-word:hover { background: rgba(16,185,129,0.14); }
+.ayah-active { background: rgba(4,120,87,0.12); box-shadow: 0 0 0 1px rgba(4,120,87,0.25); }
+.ayah-playing { background: rgba(59,130,246,0.16); border-radius: 8px; box-shadow: 0 0 0 1px rgba(59,130,246,0.4), 0 0 18px rgba(59,130,246,0.22); }
+
+/* ===== Real Mushaf page (emerald-ocean) ===== */
+.mushaf-page {
+  position: relative;
+  /* warm ivory paper like a printed mushaf */
+  background:
+    radial-gradient(70% 45% at 50% 0%, rgba(5,150,105,0.05), transparent 70%),
+    radial-gradient(120% 95% at 50% 0%, #fdfaf1 0%, #f8f1e2 55%, #f3ecd9 100%);
+  border-radius: 22px;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.9),
+    0 40px 90px -30px rgba(60,50,30,0.30),
+    0 14px 40px -22px rgba(184,144,47,0.25);
+  outline: 2px solid rgba(184,144,47,0.45);
+  outline-offset: -2px;
+}
+/* Paper color variants */
+.mushaf-page.paper-green { background: radial-gradient(70% 45% at 50% 0%, rgba(5,150,105,0.08), transparent 70%), radial-gradient(120% 95% at 50% 0%, #f2fbf6 0%, #e6f6ee 55%, #dcf1e6 100%); outline-color: rgba(5,150,105,0.5); }
+.mushaf-page.paper-blue { background: radial-gradient(70% 45% at 50% 0%, rgba(37,99,235,0.08), transparent 70%), radial-gradient(120% 95% at 50% 0%, #f2f7fd 0%, #e6f0fb 55%, #dbe9f8 100%); outline-color: rgba(37,99,235,0.5); }
+.mushaf-page.paper-plain { background: #ffffff; outline-color: rgba(184,144,47,0.4); }
+/* faint Islamic geometric watermark */
+.mushaf-page > .mushaf-text,
+.mushaf-page > * { position: relative; z-index: 1; }
 .mushaf-watermark {
   position: absolute;
   inset: 18px;
@@ -273,73 +563,1056 @@ body::before {
     radial-gradient(circle at 50% 50%, rgba(184,144,47,0.05) 0, transparent 14px);
   background-size: 44px 44px, 44px 44px, 44px 44px;
 }
+.mushaf-page::before {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border: 1.5px solid rgba(59,130,246,0.35);
+  border-radius: 14px;
+  pointer-events: none;
+}
+.mushaf-page::after {
+  content: "";
+  position: absolute;
+  inset: 16px;
+  border: 1px solid rgba(5,150,105,0.20);
+  border-radius: 11px;
+  pointer-events: none;
+}
+.mushaf-corner {
+  position: absolute;
+  width: 26px; height: 26px;
+  border-color: rgba(184,144,47,0.8);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.surah-band {
+  position: relative;
+  border-radius: 14px;
+  background:
+    linear-gradient(120deg, #d8f3ec 0%, #cfeaf3 55%, #d6e8f5 100%);
+  border: 1px solid rgba(5,150,105,0.55);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.6),
+    inset 0 0 18px rgba(59,130,246,0.10),
+    0 3px 14px rgba(37,99,235,0.18);
+}
+.surah-band::before, .surah-band::after {
+  content: "";
+  position: absolute;
+  top: 50%; transform: translateY(-50%);
+  width: 22px; height: 22px;
+  border: 1px solid rgba(5,150,105,0.55);
+  border-radius: 50%;
+}
+.surah-band::before { right: 10px; }
+.surah-band::after { left: 10px; }
+
+.mushaf-text {
+  font-family: var(--font-quran);
+  color: #29200f; /* warm dark ink on ivory paper */
+  text-align: justify;
+  text-align-last: center;
+  text-justify: inter-word;
+  word-spacing: 0.02em;
+  letter-spacing: 0;
+}
+
+.basmala-quran {
+  font-family: var(--font-quran);
+}
+
+.basmala-ornament {
+  position: relative;
+  background: linear-gradient(90deg, transparent, rgba(5,150,105,0.55), rgba(59,130,246,0.55), transparent);
+  height: 1px;
+}
+.basmala-ornament::after {
+  content: "";
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #059669, #2563eb);
+}
+
+/* Ornamental ayah end marker (emerald rosette + eastern digits) */
+.ayah-rosette {
+  display: inline-grid;
+  place-items: center;
+  position: relative;
+  vertical-align: middle;
+  width: 1.7em; height: 1.7em;
+  margin: 0 0.22em;
+  font-family: var(--font-ui);
+  font-size: 0.56em;
+  font-weight: 800;
+  color: #0a7468;
+  line-height: 1;
+}
+.ayah-rosette svg {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+}
+.ayah-rosette span { position: relative; z-index: 1; }
+
+/* Ayah action popover */
+.ayah-pop {
+  animation: popIn 0.18s ease-out both;
+}
+@keyframes popIn {
+  from { opacity: 0; transform: translateY(6px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.sheet-backdrop { animation: fadeIn 0.25s ease both; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.sheet-panel { animation: sheetUp 0.32s cubic-bezier(0.22,1,0.36,1) both; }
+@keyframes sheetUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+.ayah-marker {
+  display: inline-grid;
+  place-items: center;
+  vertical-align: middle;
+  width: 1.9em; height: 1.9em;
+  font-size: .62em;
+  color: #b8902f;
+  background: radial-gradient(circle, #fff 55%, rgba(184,144,47,0.12) 100%);
+  border: 1px solid rgba(184,144,47,0.5);
+  border-radius: 999px;
+  margin: 0 .25em;
+  font-family: var(--font-ui);
+}
 
 /* ============================================================
-   MUSHAF TOOLBAR
+   SACRED INTRO EXPERIENCE
    ============================================================ */
-.mushaf-toolbar {
-  position: sticky;
-  top: 16px;
-  z-index: 40;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 18px;
-  padding: 8px;
-  border: 1px solid rgba(184,144,47,.22);
-  border-radius: 18px;
-  background: rgba(255,255,255,.92);
-  box-shadow: 0 8px 30px rgba(42,39,35,.10);
-  backdrop-filter: blur(16px);
-  flex-wrap: wrap;
+@property --reveal {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
 }
 
-.mushaf-control-btn {
-  width: 38px;
-  height: 38px;
-  min-width: 38px;
-  min-height: 38px;
+.intro-root {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.intro-glow {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 80vmin;
+  height: 80vmin;
+  transform: translate(-50%, -50%) scale(0.6);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(230,250,246,0.9) 0%, rgba(212,238,244,0.5) 40%, rgba(212,238,244,0) 72%);
+  opacity: 0;
+  animation: introGlow 3.2s ease-out forwards;
+  pointer-events: none;
+}
+
+/* ===== Luxurious verse frame (blue-green) ===== */
+.intro-frame {
+  position: relative;
+  padding: 3rem 2.6rem;
+  border-radius: 30px;
+  /* warm ivory manuscript paper */
+  background:
+    radial-gradient(120% 100% at 50% 0%, #fffdf6 0%, #fbf5e6 60%, #f6eed8 100%);
+  box-shadow:
+    0 30px 80px -30px rgba(37,99,235,0.45),
+    0 10px 30px -18px rgba(184,144,47,0.4),
+    inset 0 0 40px rgba(184,144,47,0.06);
+  opacity: 0;
+  animation: frameIn 1.4s cubic-bezier(0.22,1,0.36,1) 0.3s forwards;
+}
+@keyframes frameIn { from { opacity:0; transform: scale(0.9) translateY(10px); filter: blur(4px);} to { opacity:1; transform: scale(1) translateY(0); filter: blur(0);} }
+/* animated gradient border */
+.intro-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 30px;
+  padding: 3px;
+  background: linear-gradient(135deg, #10b981, #059669 30%, #b8902f 50%, #3b82f6 75%, #1d4ed8);
+  background-size: 300% 300%;
+  animation: frameSheen 6s ease infinite;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+@keyframes frameSheen { 0%,100%{background-position:0% 50%;} 50%{background-position:100% 50%;} }
+/* inner gold hairline frame */
+.intro-frame::after {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  border-radius: 20px;
+  border: 1.5px solid rgba(184,144,47,0.45);
+  box-shadow: inset 0 0 0 4px rgba(255,255,255,0.5);
+  pointer-events: none;
+}
+.intro-frame-corner {
+  position: absolute;
+  width: 26px; height: 26px;
+  border-color: #b8902f;
+  z-index: 2;
+}
+/* soft aura behind the frame */
+.intro-frame-aura {
+  position: absolute;
+  inset: -30px;
+  border-radius: 40px;
+  background: radial-gradient(circle, rgba(16,185,129,0.18), rgba(59,130,246,0.12) 45%, transparent 70%);
+  filter: blur(28px);
+  z-index: -1;
+  animation: auraPulse 5s ease-in-out infinite;
+}
+@keyframes auraPulse { 0%,100%{opacity:0.6; transform:scale(1);} 50%{opacity:1; transform:scale(1.05);} }
+/* decorative top ornament */
+.intro-frame-top {
+  position: absolute;
+  top: -14px; left: 50%;
+  transform: translateX(-50%);
+  color: #b8902f;
+  font-size: 1.4rem;
+  background: #fbf5e6;
+  padding: 0 12px;
+  z-index: 3;
+}
+
+/* Radiant glow burst on "continue" (no lightning) */
+.intro-burst {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 10vmin;
+  height: 10vmin;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.98) 0%, rgba(16,185,129,0.5) 30%, rgba(59,130,246,0.35) 55%, transparent 75%);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 25;
+}
+.intro-root.glow-burst .intro-burst { animation: burstExpand 1.6s cubic-bezier(0.3,0,0.2,1) forwards; }
+@keyframes burstExpand {
+  0% { opacity: 0.3; width: 10vmin; height: 10vmin; }
+  35% { opacity: 1; }
+  100% { opacity: 1; width: 260vmax; height: 260vmax; }
+}
+.intro-root.glow-burst .intro-frame { animation: verseGlowOut 1.2s ease-in forwards; }
+@keyframes verseGlowOut {
+  0% { opacity: 1; filter: blur(0); transform: scale(1); box-shadow: 0 0 0 rgba(16,185,129,0); }
+  100% { opacity: 0; filter: blur(8px); transform: scale(1.08); }
+}
+@keyframes introGlow {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+  60% { opacity: 1; }
+  100% { opacity: 0.9; transform: translate(-50%, -50%) scale(1); }
+}
+
+.intro-pattern {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  color: #1d4ed8;
+  animation: introPattern 4s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes introPattern {
+  0% { opacity: 0; transform: scale(1.04); }
+  100% { opacity: 0.05; transform: scale(1); }
+}
+
+.intro-basmala {
+  font-family: var(--font-arabic);
+  color: #111111;
+  text-align: center;
+  opacity: 0;
+  letter-spacing: 0.01em;
+  animation: introFadeUp 2s cubic-bezier(0.22, 1, 0.36, 1) 0.6s forwards;
+  text-shadow: 0 0 28px rgba(255, 248, 230, 0.9);
+}
+@keyframes introFadeUp {
+  0% { opacity: 0; transform: translateY(14px); filter: blur(6px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+.intro-verse {
+  font-family: var(--font-quran);
+  color: #29200f; /* warm ink on ivory */
+  text-align: center;
+  line-height: 2.15;
+  opacity: 0;
+  animation: introVerseIn 1.8s cubic-bezier(0.22, 1, 0.36, 1) 0.5s forwards;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.6), 0 0 30px rgba(184,144,47,0.15);
+}
+@keyframes introVerseIn {
+  0% { opacity: 0; transform: translateY(12px) scale(0.98); filter: blur(6px); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+.intro-verse-decor {
+  color: #059669;
+  font-weight: 700;
+}
+
+/* النور transition */
+.intro-noor {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 10vmin;
+  height: 10vmin;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffffff 0%, #fffdf7 40%, rgba(255,255,255,0.9) 70%, rgba(255,255,255,0) 100%);
+  opacity: 0;
+  pointer-events: none;
+}
+.intro-root.noor .intro-noor {
+  animation: noorExpand 2.8s cubic-bezier(0.45, 0, 0.2, 1) forwards;
+}
+@keyframes noorExpand {
+  0% { opacity: 0.2; width: 10vmin; height: 10vmin; }
+  35% { opacity: 1; }
+  100% { opacity: 1; width: 320vmax; height: 320vmax; }
+}
+.intro-root.noor .intro-stage {
+  animation: verseDissolve 1.6s ease-in forwards;
+}
+@keyframes verseDissolve {
+  0% { opacity: 1; filter: blur(0); transform: scale(1); }
+  100% { opacity: 0; filter: blur(14px); transform: scale(1.06); }
+}
+
+.intro-root.fade-out {
+  animation: introFadeOut 1s ease-out forwards;
+}
+@keyframes introFadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; visibility: hidden; }
+}
+
+.intro-attribution {
+  opacity: 0;
+  animation: introFadeUp 1.6s ease 6.5s forwards;
+}
+
+/* Continue button — appears below the verse, never auto-advances */
+.intro-continue-wrap {
+  margin-top: 3rem;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 1s ease, transform 1s ease;
+  pointer-events: none;
+}
+.intro-continue-wrap.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.intro-continue {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  border: 1px solid rgba(184,144,47,.20);
-  border-radius: 12px;
-  background: rgba(255,255,255,.75);
-  color: #2a2723;
-  font-size: 22px;
-  font-weight: 800;
-  line-height: 1;
+  gap: 0.6rem;
+  padding: 0.95rem 2.6rem;
+  border-radius: 999px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(120deg, #10b981, #059669 50%, #2563eb);
+  border: none;
   cursor: pointer;
-  user-select: none;
-  touch-action: manipulation;
-  transition: transform .15s ease, background .15s ease, box-shadow .15s ease, border-color .15s ease;
+  box-shadow: 0 12px 34px rgba(5,150,105,0.35);
+  transition: transform .25s ease, box-shadow .25s ease, filter .25s ease;
+}
+.intro-continue:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 16px 44px rgba(37,99,235,0.4); filter: brightness(1.05); }
+.intro-continue:disabled { opacity: 0.5; cursor: default; }
+.intro-continue-arrow { display: inline-block; transition: transform .25s ease; }
+.intro-continue:hover .intro-continue-arrow { transform: translateX(-4px); }
+
+/* ===== Final polish pass ===== */
+/* premium focus-visible ring (accessibility) */
+:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(16,185,129,.35), 0 0 0 5px rgba(37,99,235,.18);
+  border-radius: 10px;
+}
+/* refined selection in dark */
+/* elegant gradient divider utility */
+.hr-lux { height: 1px; border: 0; background: linear-gradient(90deg, transparent, var(--hairline-strong), transparent); }
+
+/* honour reduced-motion everywhere */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
-.mushaf-control-btn:hover {
-  background: #fff;
-  border-color: rgba(184,144,47,.45);
-  box-shadow: 0 5px 15px rgba(42,39,35,.08);
-}
-
-.mushaf-control-btn:active {
-  transform: scale(.90);
-  background: rgba(184,144,47,.12);
-}
-
-.mushaf-font-size {
-  min-width: 52px;
-  text-align: center;
-  color: #2a2723;
-  font-size: 14px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  user-select: none;
-}
-
+/* prevent horizontal overflow on any screen */
+html, body { max-width: 100%; overflow-x: hidden; }
 /* ============================================================
    ACHIEVEMENT CARD
    ============================================================ */
+.achievement-card {
+  position: relative;
+  background: linear-gradient(180deg, #fffefb, #fcf8ee);
+  border-radius: 28px;
+  box-shadow: 
+    0 1px 0 rgba(255,255,255,0.8),
+    0 30px 70px -24px rgba(42,39,35,0.28),
+    0 10px 30px -18px rgba(184,144,47,0.25);
+  outline: 2px solid rgba(184,144,47,0.55);
+  outline-offset: -2px;
+}
+
+.achievement-card::before {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border: 1.5px solid rgba(184,144,47,0.40);
+  border-radius: 18px;
+  pointer-events: none;
+}
+
+.achievement-card::after {
+  content: "";
+  position: absolute;
+  inset: 16px;
+  border: 1px solid rgba(184,144,47,0.18);
+  border-radius: 14px;
+  pointer-events: none;
+}
+
+/* ============================================================
+   MUSHAF PAGE RESPONSIVE
+   ============================================================ */
+.mushaf-page {
+  position: relative;
+  background: radial-gradient(120% 90% at 50% 0%, #fffefb 0%, #fcf8ee 55%, #f7f0e0 100%);
+  border-radius: clamp(16px, 2.5vw, 28px);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.8), 0 30px 70px -24px rgba(42,39,35,0.28), 0 10px 30px -18px rgba(184,144,47,0.25);
+  outline: 2px solid rgba(184,144,47,0.55);
+  outline-offset: -2px;
+}
+
+.mushaf-page::before {
+  content: "";
+  position: absolute;
+  inset: clamp(8px, 1.6vw, 16px);
+  border: 1.5px solid rgba(184,144,47,0.40);
+  border-radius: clamp(12px, 1.8vw, 20px);
+  pointer-events: none;
+}
+
+.mushaf-page::after {
+  content: "";
+  position: absolute;
+  inset: clamp(12px, 2vw, 20px);
+  border: 1px solid rgba(184,144,47,0.18);
+  border-radius: clamp(8px, 1.4vw, 16px);
+  pointer-events: none;
+}
+
+/* ============================================================
+   FIX — حجم المصحف يتحكم به React
+   ============================================================ */
+
+.mushaf-text {
+  font-size: var(--mushaf-font-size, 34px) !important;
+
+  line-height: 2.5;
+
+  transition:
+    font-size 0.18s ease;
+}
+
+/* لا تسمح للـ responsive بتغيير حجم القرآن */
+@media (max-width: 480px) {
+  .mushaf-text {
+    font-size: var(--mushaf-font-size, 34px) !important;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .mushaf-text {
+    font-size: var(--mushaf-font-size, 34px) !important;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .mushaf-text {
+    font-size: var(--mushaf-font-size, 34px) !important;
+  }
+}
+
+@media (min-width: 1025px) {
+  .mushaf-text {
+    font-size: var(--mushaf-font-size, 34px) !important;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE FOR ALL DEVICES
+   ============================================================ */
+@media (max-width: 480px) {
+  .achievement-card {
+    padding: 1rem !important;
+    border-radius: 20px;
+  }
+  .achievement-card::before {
+    inset: 8px;
+    border-radius: 12px;
+  }
+  .achievement-card::after {
+    inset: 10px;
+    border-radius: 10px;
+  }
+  .mushaf-page {
+    padding: 0.75rem !important;
+    border-radius: 16px;
+  }
+  .mushaf-page::before {
+    inset: 6px;
+    border-radius: 10px;
+  }
+  .mushaf-page::after {
+    inset: 8px;
+    border-radius: 8px;
+  }
+  .mushaf-text {
+    font-size: 0.85rem;
+    line-height: 1.8;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .achievement-card {
+    padding: 1.5rem !important;
+  }
+  .mushaf-page {
+    padding: 1rem !important;
+  }
+  .mushaf-text {
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .achievement-card {
+    padding: 2rem !important;
+  }
+  .mushaf-page {
+    padding: 1.5rem !important;
+  }
+  .mushaf-text {
+    font-size: 1.1rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .achievement-card {
+    padding: 2.5rem !important;
+  }
+  .mushaf-page {
+    padding: 2rem !important;
+  }
+  .mushaf-text {
+    font-size: 1.2rem; 
+  }
+}
+ /* ============================================================
+   MUSHAF RESPONSIVE — جميع الأجهزة
+   ============================================================ */
+
+.mushaf-page {
+  position: relative;
+  background: radial-gradient(120% 90% at 50% 0%, #fffefb 0%, #fcf8ee 55%, #f7f0e0 100%);
+  border-radius: clamp(16px, 2.5vw, 28px);
+  box-shadow: 
+    0 1px 0 rgba(255,255,255,0.8),
+    0 30px 70px -24px rgba(42,39,35,0.28),
+    0 10px 30px -18px rgba(184,144,47,0.25);
+  outline: 2px solid rgba(184,144,47,0.55);
+  outline-offset: -2px;
+}
+
+.mushaf-page::before {
+  content: "";
+  position: absolute;
+  inset: clamp(8px, 1.6vw, 16px);
+  border: 1.5px solid rgba(184,144,47,0.40);
+  border-radius: clamp(12px, 1.8vw, 20px);
+  pointer-events: none;
+}
+
+.mushaf-page::after {
+  content: "";
+  position: absolute;
+  inset: clamp(12px, 2vw, 20px);
+  border: 1px solid rgba(184,144,47,0.18);
+  border-radius: clamp(8px, 1.4vw, 16px);
+  pointer-events: none;
+}
+
+.mushaf-text {
+  font-family: var(--font-quran);
+  color: #1a1408;
+  text-align: justify;
+  text-align-last: center;
+  line-height: 2.2;
+}
+
+/* هوامش مناسبة للهواتف */
+@media (max-width: 480px) {
+  .mushaf-page {
+    padding: 0.75rem !important;
+    border-radius: 16px;
+  }
+  .mushaf-page::before {
+    inset: 6px;
+    border-radius: 10px;
+  }
+  .mushaf-page::after {
+    inset: 8px;
+    border-radius: 8px;
+  }
+  .mushaf-text {
+    font-size: clamp(0.85rem, 4vw, 1.1rem) !important;
+    line-height: 2;
+  }
+  .ayah-chip {
+    font-size: 0.6rem !important;
+    padding: 2px 6px !important;
+  }
+  .ayah-inline-actions {
+    gap: 2px !important;
+  }
+}
+
+/* الأجهزة اللوحية */
+@media (min-width: 481px) and (max-width: 768px) {
+  .mushaf-page {
+    padding: 1rem !important;
+  }
+  .mushaf-text {
+    font-size: clamp(1rem, 2.5vw, 1.3rem) !important;
+  }
+}
+
+/* شاشات كبيرة */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .mushaf-page {
+    padding: 1.5rem !important;
+  }
+  .mushaf-text {
+    font-size: clamp(1.1rem, 2vw, 1.5rem) !important;
+  }
+}
+
+/* شاشات عريضة */
+@media (min-width: 1025px) {
+  .mushaf-page {
+    padding: 2rem !important;
+  }
+  .mushaf-text {
+    font-size: clamp(1.2rem, 1.8vw, 1.8rem) !important;
+  }
+}/* ============================================================
+   MUSHAF READER STYLES
+   ============================================================ */
+
+/* شريط الأدوات الثابت */
+.mushaf-toolbar {
+  position: sticky;
+  top: 64px;
+  z-index: 30;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(184, 144, 47, 0.15);
+  border-radius: 16px;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+/* أزرار التحكم */
+.mushaf-control-btn {
+  min-width: 36px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(241, 234, 216, 0.5);
+  transition: all 0.2s ease;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #4a463e;
+  border: none;
+  cursor: pointer;
+}
+
+.mushaf-control-btn:hover {
+  background: rgba(184, 144, 47, 0.15);
+}
+
+.mushaf-control-btn:active {
+  transform: scale(0.95);
+}
+
+.mushaf-font-size {
+  min-width: 2.2rem;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #2a2723;
+}
+
+/* محتوى المصحف */
+.mushaf-content {
+  position: relative;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.mushaf-page {
+  position: relative;
+  background: radial-gradient(120% 90% at 50% 0%, #fffefb 0%, #fcf8ee 55%, #f7f0e0 100%);
+  border-radius: clamp(16px, 2.5vw, 28px);
+  box-shadow: 
+    0 1px 0 rgba(255,255,255,0.8),
+    0 30px 70px -24px rgba(42,39,35,0.28),
+    0 10px 30px -18px rgba(184,144,47,0.25);
+  outline: 2px solid rgba(184,144,47,0.55);
+  outline-offset: -2px;
+}
+
+.mushaf-page::before {
+  content: "";
+  position: absolute;
+  inset: clamp(8px, 1.6vw, 16px);
+  border: 1.5px solid rgba(184,144,47,0.40);
+  border-radius: clamp(12px, 1.8vw, 20px);
+  pointer-events: none;
+}
+
+.mushaf-page::after {
+  content: "";
+  position: absolute;
+  inset: clamp(12px, 2vw, 20px);
+  border: 1px solid rgba(184,144,47,0.18);
+  border-radius: clamp(8px, 1.4vw, 16px);
+  pointer-events: none;
+}
+
+.mushaf-text {
+  font-family: var(--font-quran);
+  color: #1a1408;
+  text-align: justify;
+  text-align-last: center;
+  line-height: 2.2;
+}
+
+/* أيقونات المصحف */
+.mushaf-corner {
+  position: absolute;
+  width: clamp(16px, 4vw, 26px);
+  height: clamp(16px, 4vw, 26px);
+  border-color: rgba(184,144,47,0.7);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.mushaf-watermark {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 20% 30%, rgba(184,144,47,0.02) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 480px) {
+  .mushaf-toolbar {
+    top: 56px;
+    padding: 6px 8px;
+    border-radius: 12px;
+    gap: 4px;
+  }
+  .mushaf-control-btn {
+    min-width: 32px;
+    min-height: 32px;
+    font-size: 0.9rem;
+  }
+  .mushaf-font-size {
+    min-width: 1.8rem;
+    font-size: 0.75rem;
+  }
+  .mushaf-page {
+    padding: 0.75rem !important;
+    border-radius: 16px;
+  }
+  .mushaf-page::before {
+    inset: 6px;
+    border-radius: 10px;
+  }
+  .mushaf-page::after {
+    inset: 8px;
+    border-radius: 8px;
+  }
+  .mushaf-text {
+    font-size: clamp(0.85rem, 4vw, 1.1rem) !important;
+    line-height: 2;
+  }
+  .ayah-chip {
+    font-size: 0.6rem !important;
+    padding: 2px 6px !important;
+  }
+  .ayah-inline-actions {
+    gap: 2px !important;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .mushaf-page {
+    padding: 1rem !important;
+  }
+  .mushaf-text {
+    font-size: clamp(1rem, 2.5vw, 1.3rem) !important;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .mushaf-page {
+    padding: 1.5rem !important;
+  }
+  .mushaf-text {
+    font-size: clamp(1.1rem, 2vw, 1.5rem) !important;
+  }
+}
+
+@media (min-width: 1025px) {
+  .mushaf-page {
+    padding: 2rem !important;
+  }
+  .mushaf-text {
+    font-size: clamp(1.2rem, 1.8vw, 1.8rem) !important;
+  }
+} /* ============================================================
+   ACHIEVEMENT CARD - متجاوب بالكامل
+   ============================================================ */
+
+.achievement-card {
+  position: relative;
+  background: linear-gradient(180deg, #fffefb, #fcf8ee);
+  border-radius: clamp(16px, 3vw, 28px);
+  box-shadow: 
+    0 1px 0 rgba(255,255,255,0.8),
+    0 20px 50px -20px rgba(42,39,35,0.25),
+    0 8px 20px -12px rgba(184,144,47,0.2);
+  outline: 2px solid rgba(184,144,47,0.45);
+  outline-offset: -2px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  width: 100%;
+  max-width: 100%;
+}
+
+.achievement-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 1px 0 rgba(255,255,255,0.8),
+    0 30px 60px -20px rgba(42,39,35,0.3),
+    0 12px 30px -14px rgba(184,144,47,0.25);
+}
+
+.achievement-card::before {
+  content: "";
+  position: absolute;
+  inset: clamp(6px, 1.2vw, 12px);
+  border: 1.5px solid rgba(184,144,47,0.35);
+  border-radius: clamp(10px, 2vw, 18px);
+  pointer-events: none;
+}
+
+.achievement-card::after {
+  content: "";
+  position: absolute;
+  inset: clamp(9px, 1.6vw, 16px);
+  border: 1px solid rgba(184,144,47,0.15);
+  border-radius: clamp(7px, 1.4vw, 14px);
+  pointer-events: none;
+}
+
+.achievement-card .divider-ornament {
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgba(184,144,47,0.4), transparent);
+  margin: 0 auto;
+  width: 80%;
+}
+
+/* تحسينات للهواتف الصغيرة */
+@media (max-width: 380px) {
+  .achievement-card {
+    border-radius: 14px;
+    padding: 0.75rem !important;
+    min-height: 280px !important;
+  }
+  .achievement-card::before {
+    inset: 5px;
+    border-radius: 8px;
+  }
+  .achievement-card::after {
+    inset: 7px;
+    border-radius: 6px;
+  }
+}
+
+/* تحسينات للهواتف المتوسطة */
+@media (min-width: 381px) and (max-width: 480px) {
+  .achievement-card {
+    border-radius: 18px;
+    padding: 1rem !important;
+    min-height: 320px !important;
+  }
+  .achievement-card::before {
+    inset: 6px;
+    border-radius: 10px;
+  }
+  .achievement-card::after {
+    inset: 8px;
+    border-radius: 8px;
+  }
+}
+
+/* تحسينات للأجهزة اللوحية */
+@media (min-width: 481px) and (max-width: 768px) {
+  .achievement-card {
+    border-radius: 22px;
+    padding: 1.25rem !important;
+    min-height: 360px !important;
+  }
+}
+
+/* تحسينات للشاشات الكبيرة */
+@media (min-width: 769px) {
+  .achievement-card {
+    border-radius: 28px;
+    padding: 1.5rem !important;
+    min-height: 420px !important;
+  }
+}
+
+/* شبكة البطاقات - متجاوبة */
+.achievement-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+  padding: 0 clamp(0.5rem, 2vw, 1rem);
+}
+
+@media (min-width: 640px) {
+  .achievement-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .achievement-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}  /* ============================================================
+   FIX: STABLE MUSHAF CONTROLS
+   ============================================================ */
+
+/* منع التمرير التلقائي أثناء التلاوة */
+.mushaf-content {
+  position: relative;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  max-height: calc(100vh - 220px);
+  overscroll-behavior: contain;
+}
+
+.mushaf-content.user-scrolling {
+  scroll-behavior: auto;
+}
+
+/* تثبيت شريط الأدوات */
+.mushaf-toolbar {
+  position: sticky;
+  top: 64px;
+  z-index: 30;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(184, 144, 47, 0.15);
+  border-radius: 16px;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* أزرار التحكم - تعمل بشكل صحيح */
+.mushaf-control-btn {
+  min-width: 36px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(241, 234, 216, 0.5);
+  transition: all 0.2s ease;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #2a2723;
+  border: none;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.mushaf-control-btn:hover {
+  background: rgba(184, 144, 47, 0.2);
+}
+
+.mushaf-control-btn:active {
+  transform: scale(0.92);
+  background: rgba(184, 144, 47, 0.3);
+}
+
+.mushaf-font-size {
+  min-width: 2.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #2a2723;
+  user-select: none;
+}
+
+/* ============================================================
+   FIX: ACHIEVEMENT CARD STABLE
+   ============================================================ */
+
 .achievement-card {
   position: relative;
   background: linear-gradient(180deg, #fffefb, #fcf8ee);
@@ -374,79 +1647,243 @@ body::before {
   pointer-events: none;
 }
 
+/* ============================================================
+   FIX: RESPONSIVE FOR ALL DEVICES
+   ============================================================ */
+
+/* هواتف صغيرة جداً */
+@media (max-width: 380px) {
+  .achievement-card {
+    border-radius: 14px;
+    padding: 0.75rem !important;
+    min-height: 280px !important;
+  }
+  .achievement-card::before {
+    inset: 4px;
+    border-radius: 8px;
+  }
+  .achievement-card::after {
+    inset: 6px;
+    border-radius: 6px;
+  }
+  .mushaf-control-btn {
+    min-width: 32px;
+    min-height: 32px;
+    font-size: 1rem;
+  }
+  .mushaf-font-size {
+    min-width: 2rem;
+    font-size: 0.75rem;
+  }
+  .mushaf-toolbar {
+    padding: 4px 6px;
+    gap: 2px;
+  }
+}
+
+/* هواتف متوسطة */
+@media (min-width: 381px) and (max-width: 480px) {
+  .achievement-card {
+    border-radius: 18px;
+    padding: 1rem !important;
+    min-height: 320px !important;
+  }
+  .achievement-card::before {
+    inset: 6px;
+    border-radius: 10px;
+  }
+  .achievement-card::after {
+    inset: 8px;
+    border-radius: 8px;
+  }
+  .mushaf-toolbar {
+    padding: 6px 8px;
+  }
+  .mushaf-control-btn {
+    min-width: 34px;
+    min-height: 34px;
+    font-size: 1.1rem;
+  }
+  .mushaf-font-size {
+    min-width: 2.2rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* الأجهزة اللوحية */
+@media (min-width: 481px) and (max-width: 768px) {
+  .achievement-card {
+    border-radius: 22px;
+    padding: 1.25rem !important;
+    min-height: 360px !important;
+  }
+  .mushaf-toolbar {
+    padding: 8px 10px;
+  }
+}
+
+/* شاشات كبيرة */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .achievement-card {
+    border-radius: 24px;
+    padding: 1.5rem !important;
+    min-height: 380px !important;
+  }
+}
+
+/* شاشات عريضة */
+@media (min-width: 1025px) {
+  .achievement-card {
+    border-radius: 28px;
+    padding: 1.75rem !important;
+    min-height: 420px !important;
+  }
+  .mushaf-control-btn {
+    min-width: 40px;
+    min-height: 40px;
+    font-size: 1.3rem;
+  }
+  .mushaf-font-size {
+    min-width: 2.8rem;
+    font-size: 1rem;
+  }
+}
+
+/* ============================================================
+   FIX: MUSHAF TEXT STABLE
+   ============================================================ */
+
+.mushaf-text {
+  font-family: var(--font-quran);
+  color: #1a1408;
+  text-align: justify;
+  text-align-last: center;
+  line-height: 2.2;
+  transition: font-size 0.2s ease;
+}
+
+/* ============================================================
+   FIX: SCROLLBAR FOR MUSHAF
+   ============================================================ */
+
+.mushaf-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.mushaf-content::-webkit-scrollbar-track {
+  background: rgba(184, 144, 47, 0.08);
+  border-radius: 10px;
+}
+
+.mushaf-content::-webkit-scrollbar-thumb {
+  background: rgba(184, 144, 47, 0.3);
+  border-radius: 10px;
+}
+
+.mushaf-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(184, 144, 47, 0.5);
+}
+/* ============================================================
+   ACHIEVEMENT CARD - محسّن ومتجاول بالكامل
+   ============================================================ */
+
+.achievement-card {
+  position: relative;
+  background: linear-gradient(180deg, #fffefb, #fcf8ee);
+  border-radius: clamp(16px, 3vw, 28px);
+  box-shadow: 
+    0 1px 0 rgba(255,255,255,0.8),
+    0 20px 50px -20px rgba(42,39,35,0.25),
+    0 8px 20px -12px rgba(184,144,47,0.2);
+  outline: 2px solid rgba(184,144,47,0.45);
+  outline-offset: -2px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
 .achievement-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-3px);
   box-shadow: 
     0 1px 0 rgba(255,255,255,0.8),
     0 30px 60px -20px rgba(42,39,35,0.3),
     0 12px 30px -14px rgba(184,144,47,0.25);
 }
 
-/* ============================================================
-   ANIMATIONS
-   ============================================================ */
-@keyframes twinkle { 0%,100%{opacity:.5;transform:scale(.92)} 50%{opacity:1;transform:scale(1.08)} }
-@keyframes pulseGlow { 0%,100%{box-shadow:0 0 6px 1px currentColor;opacity:.8} 50%{box-shadow:0 0 16px 4px currentColor;opacity:1} }
-@keyframes floaty { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
-@keyframes spinSlow { from{transform:rotate(0)} to{transform:rotate(360deg)} }
-@keyframes riseFade { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
-@keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+.achievement-card::before {
+  content: "";
+  position: absolute;
+  inset: clamp(6px, 1.2vw, 12px);
+  border: 1.5px solid rgba(184,144,47,0.35);
+  border-radius: clamp(10px, 2vw, 18px);
+  pointer-events: none;
+}
 
-.animate-twinkle { animation: twinkle 4s ease-in-out infinite; }
-.animate-pulse-glow { animation: pulseGlow 3.2s ease-in-out infinite; }
-.animate-floaty { animation: floaty 6s ease-in-out infinite; }
-.animate-spin-slow { animation: spinSlow 80s linear infinite; }
-.rise { animation: riseFade .7s ease-out both; }
+.achievement-card::after {
+  content: "";
+  position: absolute;
+  inset: clamp(9px, 1.6vw, 16px);
+  border: 1px solid rgba(184,144,47,0.15);
+  border-radius: clamp(7px, 1.4vw, 14px);
+  pointer-events: none;
+}
+
+.achievement-card .divider-ornament {
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgba(184,144,47,0.4), transparent);
+  margin: 0 auto;
+}
 
 /* ============================================================
-   RESPONSIVE
+   RESPONSIVE - ACHIEVEMENT CARD
    ============================================================ */
-@media (max-width: 480px) {
-  .mushaf-page {
-    padding: 18px 14px !important;
-    border-radius: 20px;
-  }
-  .mushaf-page::before { inset: 8px; border-radius: 14px; }
-  .mushaf-toolbar { top: 8px; padding: 6px; gap: 4px; border-radius: 14px; }
-  .mushaf-control-btn { width: 32px; height: 32px; min-width: 32px; min-height: 32px; font-size: 18px; }
-  .mushaf-font-size { min-width: 42px; font-size: 12px; }
-  .mushaf-text { line-height: 2.3; word-spacing: 0; }
+
+@media (max-width: 400px) {
   .achievement-card {
-    padding: 1rem !important;
-    border-radius: 18px;
-    min-height: 280px !important;
+    border-radius: 14px;
+    padding: 0.75rem !important;
+    min-height: 260px !important;
   }
-  .achievement-card::before { inset: 6px; border-radius: 10px; }
-  .achievement-card::after { inset: 8px; border-radius: 8px; }
+  .achievement-card::before {
+    inset: 4px;
+    border-radius: 8px;
+  }
+  .achievement-card::after {
+    inset: 6px;
+    border-radius: 6px;
+  }
 }
 
-@media (min-width: 481px) and (max-width: 768px) {
-  .mushaf-page { padding: 30px 24px !important; }
-  .mushaf-text { line-height: 2.4; }
-  .achievement-card { padding: 1.25rem !important; min-height: 320px !important; }
+@media (min-width: 401px) and (max-width: 640px) {
+  .achievement-card {
+    border-radius: 18px;
+    padding: 1rem !important;
+    min-height: 300px !important;
+  }
+  .achievement-card::before {
+    inset: 6px;
+    border-radius: 10px;
+  }
+  .achievement-card::after {
+    inset: 8px;
+    border-radius: 8px;
+  }
 }
 
-@media (min-width: 769px) and (max-width: 1024px) {
-  .mushaf-page { padding: 48px 40px !important; }
-  .mushaf-text { line-height: 2.45; }
-  .achievement-card { padding: 1.5rem !important; min-height: 360px !important; }
+@media (min-width: 641px) and (max-width: 1024px) {
+  .achievement-card {
+    border-radius: 22px;
+    padding: 1.25rem !important;
+    min-height: 340px !important;
+  }
 }
 
 @media (min-width: 1025px) {
-  .mushaf-page { padding: 60px 70px !important; }
-  .mushaf-text { line-height: 2.5; }
-  .achievement-card { padding: 1.75rem !important; min-height: 400px !important; }
-  .mushaf-control-btn { width: 40px; height: 40px; min-width: 40px; min-height: 40px; font-size: 24px; }
-  .mushaf-font-size { min-width: 56px; font-size: 16px; }
-}
-
-/* منع التمرير التلقائي */
-.mushaf-page, .mushaf-content, .mushaf-text {
-  scroll-margin: 0 !important;
-}
-.mushaf-page * {
-  scroll-margin-top: 0 !important;
-}
-.mushaf-text .ayah-playing {
-  scroll-behavior: auto !important;
+  .achievement-card {
+    border-radius: 28px;
+    padding: 1.5rem !important;
+    min-height: 380px !important;
+  }
 }
