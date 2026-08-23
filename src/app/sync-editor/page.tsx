@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { RECITERS_CATALOG, type ReciterProfile } from "@/lib/reciterRegistry";
+import { RECITERS, type Reciter } from "@/lib/reciterRegistry";
 import { SURAHS } from "@/lib/surahs";
 import {
   getAyahTimingMap,
@@ -28,13 +28,14 @@ export default function SyncEditorPage() {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const reciter = RECITERS_CATALOG.find((r) => r.id === selectedReciterId) || RECITERS_CATALOG[0];
+  const reciter = RECITERS.find((r) => r.id === selectedReciterId) || RECITERS[0];
   const surahMeta = SURAHS.find((s) => s.number === selectedSurah) || SURAHS[0];
 
   // Load timings whenever reciter, surah, or ayah changes
   useEffect(() => {
     const pad3 = (n: number) => String(n).padStart(3, "0");
-    const folder = reciter.everyayahFolder || "Alafasy_128kbps";
+    // ✅ استخدام everyayahFolder مع fallback آمن
+    const folder = (reciter as any).everyayahFolder || "Alafasy_128kbps";
     const url = `https://everyayah.com/data/${folder}/${pad3(selectedSurah)}${pad3(selectedAyah)}.mp3`;
     setAudioUrl(url);
 
@@ -150,7 +151,7 @@ export default function SyncEditorPage() {
             onChange={(e) => setSelectedReciterId(e.target.value)}
             className="w-full rounded-xl border border-gray-200 bg-cream-50 px-3 py-2 text-xs text-ink-900 font-semibold focus:outline-none focus:border-emerald-500"
           >
-            {RECITERS_CATALOG.map((r) => (
+            {RECITERS.map((r) => (
               <option key={r.id} value={r.id}>
                 {r.nameArabic} ({r.style})
               </option>
