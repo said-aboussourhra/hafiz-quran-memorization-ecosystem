@@ -32,7 +32,11 @@ export type SyncLevel =
   | "word" // per-word timestamps / per-ayah files → word highlighting
   | "ayah" // per-ayah audio, no word timestamps
   | "surah" // full-surah continuous stream
-  | "none"; // cannot sync reliably
+  | "none" // cannot sync reliably
+  | "WORD_VERIFIED" // ✅ إضافة للتوافق
+  | "WORD_AUTO" // ✅ إضافة للتوافق
+  | "AYAH_SYNC" // ✅ إضافة للتوافق
+  | "AUDIO_ONLY"; // ✅ إضافة للتوافق
 
 export type Availability = "available" | "partial" | "unavailable";
 
@@ -54,9 +58,13 @@ export interface Reciter {
   image: string | null;
   /** Short verified biography, or null when not available. */
   bio: string | null;
+  /** Arabic biography (for display) */
+  bioArabic?: string | null; // ✅ إضافة
   style: RecitationStyle;
   /** riwaya (رواية), e.g. Hafs 'an 'Asim. */
   riwaya: string | null;
+  /** Alternative spelling for riwaya */
+  riwayah?: string | null; // ✅ إضافة للتوافق
   /** True only if every recording listed has been confirmed reachable. */
   verified: boolean;
   /** The default recording source for this reciter in the player. */
@@ -69,6 +77,14 @@ export interface Reciter {
   verifiedSources: string[];
   /** Tags/country etc., for filtering (free-form but controlled vocabulary). */
   tags: string[];
+  /** Folder name for everyayah.com recordings */
+  everyayahFolder?: string | null; // ✅ إضافة
+  /** List of available surah numbers for this reciter */
+  availableSurahs?: number[]; // ✅ إضافة
+  /** Audio quality rating */
+  audioQuality?: "high" | "medium" | "low"; // ✅ إضافة
+  /** Default sync level for this reciter */
+  defaultSyncLevel?: SyncLevel; // ✅ إضافة
 }
 
 /** A single available recording (one reciter × one surah × one source). */
@@ -153,12 +169,18 @@ export const RECITERS: Reciter[] = [
     nameEnglish: "Yasser Al-Dosari",
     image: null,
     bio: null,
+    bioArabic: null,
     style: "murattal",
     riwaya: "حفص عن عاصم",
+    riwayah: "حفص عن عاصم",
     verified: true,
     defaultSource: "everyayah",
     verifiedSources: ["everyayah.com"],
     tags: ["saudi", "haram"],
+    everyayahFolder: "Yasser_Ad-Dussary_128kbps",
+    availableSurahs: ALL_SURAHS,
+    audioQuality: "high",
+    defaultSyncLevel: "ayah",
   },
   {
     id: "afasy",
@@ -166,12 +188,18 @@ export const RECITERS: Reciter[] = [
     nameEnglish: "Mishary Rashid Alafasy",
     image: null,
     bio: null,
+    bioArabic: null,
     style: "murattal",
     riwaya: "حفص عن عاصم",
+    riwayah: "حفص عن عاصم",
     verified: true,
     defaultSource: "everyayah",
     verifiedSources: ["everyayah.com"],
     tags: ["kuwait"],
+    everyayahFolder: "Alafasy_128kbps",
+    availableSurahs: ALL_SURAHS,
+    audioQuality: "high",
+    defaultSyncLevel: "ayah",
   },
   {
     id: "husary",
@@ -179,12 +207,18 @@ export const RECITERS: Reciter[] = [
     nameEnglish: "Mahmoud Khalil Al-Husary",
     image: null,
     bio: null,
+    bioArabic: null,
     style: "murattal",
     riwaya: "حفص عن عاصم",
+    riwayah: "حفص عن عاصم",
     verified: true,
     defaultSource: "everyayah",
     verifiedSources: ["everyayah.com"],
     tags: ["egypt"],
+    everyayahFolder: "Husary_128kbps",
+    availableSurahs: ALL_SURAHS,
+    audioQuality: "high",
+    defaultSyncLevel: "ayah",
   },
   {
     id: "abdulbasit",
@@ -192,12 +226,18 @@ export const RECITERS: Reciter[] = [
     nameEnglish: "Abdul Basit Abdul Samad",
     image: null,
     bio: null,
+    bioArabic: null,
     style: "mujawwad",
     riwaya: "حفص عن عاصم",
+    riwayah: "حفص عن عاصم",
     verified: true,
     defaultSource: "everyayah",
     verifiedSources: ["everyayah.com"],
     tags: ["egypt"],
+    everyayahFolder: "Abdul_Basit_Murattal_192kbps",
+    availableSurahs: ALL_SURAHS,
+    audioQuality: "high",
+    defaultSyncLevel: "ayah",
   },
   {
     id: "minshawi",
@@ -205,12 +245,18 @@ export const RECITERS: Reciter[] = [
     nameEnglish: "Mohamed Siddiq El-Minshawi",
     image: null,
     bio: null,
+    bioArabic: null,
     style: "murattal",
     riwaya: "حفص عن عاصم",
+    riwayah: "حفص عن عاصم",
     verified: true,
     defaultSource: "everyayah",
     verifiedSources: ["everyayah.com"],
     tags: ["egypt"],
+    everyayahFolder: "Minshawy_Murattal_128kbps",
+    availableSurahs: ALL_SURAHS,
+    audioQuality: "high",
+    defaultSyncLevel: "ayah",
   },
   {
     id: "sudais",
@@ -218,12 +264,18 @@ export const RECITERS: Reciter[] = [
     nameEnglish: "Abdul Rahman Al-Sudais",
     image: null,
     bio: null,
+    bioArabic: null,
     style: "murattal",
     riwaya: "حفص عن عاصم",
+    riwayah: "حفص عن عاصم",
     verified: true,
     defaultSource: "everyayah",
     verifiedSources: ["everyayah.com"],
     tags: ["saudi", "haram"],
+    everyayahFolder: "Abdurrahmaan_As-Sudais_192kbps",
+    availableSurahs: ALL_SURAHS,
+    audioQuality: "high",
+    defaultSyncLevel: "ayah",
   },
   {
     id: "shuraim",
@@ -231,12 +283,18 @@ export const RECITERS: Reciter[] = [
     nameEnglish: "Saud Al-Shuraim",
     image: null,
     bio: null,
+    bioArabic: null,
     style: "murattal",
     riwaya: "حفص عن عاصم",
+    riwayah: "حفص عن عاصم",
     verified: true,
     defaultSource: "everyayah",
     verifiedSources: ["everyayah.com"],
     tags: ["saudi", "haram"],
+    everyayahFolder: "Saood_ash-Shuraym_128kbps",
+    availableSurahs: ALL_SURAHS,
+    audioQuality: "high",
+    defaultSyncLevel: "ayah",
   },
   {
     id: "ghamdi",
@@ -244,12 +302,18 @@ export const RECITERS: Reciter[] = [
     nameEnglish: "Saad Al-Ghamdi",
     image: null,
     bio: null,
+    bioArabic: null,
     style: "murattal",
     riwaya: "حفص عن عاصم",
+    riwayah: "حفص عن عاصم",
     verified: true,
     defaultSource: "everyayah",
     verifiedSources: ["everyayah.com"],
     tags: ["saudi"],
+    everyayahFolder: "Ghamadi_40kbps",
+    availableSurahs: ALL_SURAHS,
+    audioQuality: "medium",
+    defaultSyncLevel: "ayah",
   },
   {
     id: "shatri",
@@ -257,12 +321,18 @@ export const RECITERS: Reciter[] = [
     nameEnglish: "Abu Bakr Al-Shatri",
     image: null,
     bio: null,
+    bioArabic: null,
     style: "murattal",
     riwaya: "حفص عن عاصم",
+    riwayah: "حفص عن عاصم",
     verified: true,
     defaultSource: "everyayah",
     verifiedSources: ["everyayah.com"],
     tags: ["yemen"],
+    everyayahFolder: "Abu_Bakr_Ash-Shaatree_128kbps",
+    availableSurahs: ALL_SURAHS,
+    audioQuality: "high",
+    defaultSyncLevel: "ayah",
   },
   {
     id: "ajamy",
@@ -270,12 +340,18 @@ export const RECITERS: Reciter[] = [
     nameEnglish: "Ahmed Al-Ajmi",
     image: null,
     bio: null,
+    bioArabic: null,
     style: "murattal",
     riwaya: "حفص عن عاصم",
+    riwayah: "حفص عن عاصم",
     verified: true,
     defaultSource: "everyayah",
     verifiedSources: ["everyayah.com"],
     tags: ["saudi"],
+    everyayahFolder: "ahmed_ibn_ali_al_ajamy_128kbps",
+    availableSurahs: ALL_SURAHS,
+    audioQuality: "high",
+    defaultSyncLevel: "ayah",
   },
   {
     id: "maher",
@@ -283,12 +359,18 @@ export const RECITERS: Reciter[] = [
     nameEnglish: "Maher Al Muaiqly",
     image: null,
     bio: null,
+    bioArabic: null,
     style: "murattal",
     riwaya: "حفص عن عاصم",
+    riwayah: "حفص عن عاصم",
     verified: true,
     defaultSource: "everyayah",
     verifiedSources: ["everyayah.com"],
     tags: ["saudi", "haram"],
+    everyayahFolder: "Maher_AlMuaiqly_64kbps",
+    availableSurahs: ALL_SURAHS,
+    audioQuality: "medium",
+    defaultSyncLevel: "ayah",
   },
   {
     id: "tablawi",
@@ -296,12 +378,18 @@ export const RECITERS: Reciter[] = [
     nameEnglish: "Mohamed Al-Tablawi",
     image: null,
     bio: null,
+    bioArabic: null,
     style: "murattal",
     riwaya: "حفص عن عاصم",
+    riwayah: "حفص عن عاصم",
     verified: true,
     defaultSource: "everyayah",
     verifiedSources: ["everyayah.com"],
     tags: ["egypt"],
+    everyayahFolder: "Mohammad_al_Tablaway_128kbps",
+    availableSurahs: ALL_SURAHS,
+    audioQuality: "high",
+    defaultSyncLevel: "ayah",
   },
   {
     id: "islam_sobhi",
@@ -309,12 +397,18 @@ export const RECITERS: Reciter[] = [
     nameEnglish: "Islam Sobhi",
     image: null,
     bio: null,
+    bioArabic: null,
     style: "murattal",
     riwaya: "حفص عن عاصم",
+    riwayah: "حفص عن عاصم",
     verified: true,
     defaultSource: "mp3quran",
     verifiedSources: ["mp3quran.net"],
     tags: ["egypt"],
+    everyayahFolder: null,
+    availableSurahs: ALL_SURAHS,
+    audioQuality: "high",
+    defaultSyncLevel: "surah",
   },
   {
     id: "sherif_mostafa",
@@ -322,12 +416,18 @@ export const RECITERS: Reciter[] = [
     nameEnglish: "Sherif Mostafa",
     image: null,
     bio: null,
+    bioArabic: null,
     style: "murattal",
     riwaya: "حفص عن عاصم",
+    riwayah: "حفص عن عاصم",
     verified: true,
     defaultSource: "archive",
     verifiedSources: ["archive.org"],
     tags: ["egypt"],
+    everyayahFolder: null,
+    availableSurahs: [13, 15, 19, 20, 31, 32, 53, 55, 56, 57, 60, 61, 62, 63, 64, 65, 66, 67, 71, 75, 76, 77, 89],
+    audioQuality: "high",
+    defaultSyncLevel: "surah",
   },
   {
     id: "hamza_boudib",
@@ -335,12 +435,18 @@ export const RECITERS: Reciter[] = [
     nameEnglish: "Hamza Boudib",
     image: null,
     bio: null,
+    bioArabic: null,
     style: "murattal",
     riwaya: "حفص عن عاصم",
+    riwayah: "حفص عن عاصم",
     verified: true,
     defaultSource: "archive",
     verifiedSources: ["archive.org"],
     tags: ["algeria"],
+    everyayahFolder: null,
+    availableSurahs: [16, 21, 44, 50, 53, 55, 56, 59, 67, 68, 70, 74, 77, 78, 83, 89],
+    audioQuality: "high",
+    defaultSyncLevel: "surah",
   },
   // ── Requested reciters registered with honest, UNVERIFIED availability ──
   // We list them so the architecture accommodates them, but we do NOT invent
@@ -352,12 +458,18 @@ export const RECITERS: Reciter[] = [
     nameEnglish: "Saeed Al-Dabbah",
     image: null,
     bio: null,
+    bioArabic: null,
     style: "murattal",
     riwaya: null,
+    riwayah: null,
     verified: false,
     defaultSource: null,
     verifiedSources: [],
     tags: [],
+    everyayahFolder: null,
+    availableSurahs: [],
+    audioQuality: "low",
+    defaultSyncLevel: "none",
   },
   {
     id: "mohamed_abbada",
@@ -365,12 +477,18 @@ export const RECITERS: Reciter[] = [
     nameEnglish: "Mohamed Abbada",
     image: null,
     bio: null,
+    bioArabic: null,
     style: "murattal",
     riwaya: null,
+    riwayah: null,
     verified: false,
     defaultSource: null,
     verifiedSources: [],
     tags: [],
+    everyayahFolder: null,
+    availableSurahs: [],
+    audioQuality: "low",
+    defaultSyncLevel: "none",
   },
 ];
 
@@ -492,6 +610,30 @@ export const FILTERS: { id: ReciterFilter; label: string; dot: string; match: (r
   },
   { id: "all", label: "الكل", dot: "", match: () => true },
 ];
+
+// ============================================================
+// FILTER RECITERS (مفقودة سابقاً)
+// ============================================================
+
+export function filterReciters(
+  reciters: Reciter[],
+  filter: ReciterFilter
+): Reciter[] {
+  if (filter === "all") return reciters;
+  return reciters.filter((r) => {
+    const recordings = getRecordings(r.id);
+    if (filter === "word") {
+      return recordings.some((rec) => rec.syncLevel === "word" || rec.sourceType === "everyayah");
+    }
+    if (filter === "ayah") {
+      return recordings.some((rec) => rec.syncLevel === "ayah");
+    }
+    if (filter === "surah") {
+      return recordings.some((rec) => rec.syncLevel === "surah");
+    }
+    return true;
+  });
+}
 
 // ============================================================
 // COMPATIBILITY ALIASES (for older imports)
