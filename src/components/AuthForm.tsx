@@ -33,14 +33,20 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
       });
       const data = await res.json();
       
-      // ✅ التصحيح: استخدم ok بدلاً من success
       if (!data.ok) {
         setError(data.error || "حدث خطأ، حاول مجدداً.");
         return;
       }
-      
-      // hard navigation guarantees the server layout re-reads the session
-      window.location.assign("/dashboard");
+
+      // ✅ الحصول على userId من الاستجابة
+      const userId = data.user?.id;
+      if (!userId) {
+        setError("حدث خطأ: لم يتم العثور على معرف المستخدم.");
+        return;
+      }
+
+      // ✅ التوجيه إلى dashboard مع إضافة id المستخدم
+      window.location.assign(`/dashboard/${userId}`);
     } catch {
       setError("تعذّر الاتصال بالخادم.");
     } finally {
