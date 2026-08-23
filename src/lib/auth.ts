@@ -1,6 +1,6 @@
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
-import { requireDb } from "@/db";
+import { db, isDbAvailable } from "@/db";
 import { users, type User } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
@@ -44,6 +44,7 @@ export function buildSessionCookie(userId: number) {
     sameSite: "lax" as const,
     path: "/",
     maxAge: 60 * 60 * 24 * 30,
+    secure: process.env.NODE_ENV === "production",
   };
 }
 
@@ -57,7 +58,11 @@ export async function getCurrentUser(): Promise<User | null> {
   if (!token) return null;
   const id = verifyToken(token);
   if (!id) return null;
-  const db = await requireDb();
-  const [user] = await db.select().from(users).where(eq(users.id, id));
-  return user ?? null;
+  if (!isDbAvailable() || !db) return null;
+  try {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user ?? null;
+  } catch {
+    return null;
+  }
 }

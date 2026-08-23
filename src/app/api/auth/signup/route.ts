@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireDb } from "@/db";
+import { ensureSchema } from "@/db/ensure";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { buildSessionCookie, hashPassword } from "@/lib/auth";
@@ -23,6 +24,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: "صيغة البريد الإلكتروني غير صحيحة." }, { status: 400 });
     }
 
+    await ensureSchema();
     const db = await requireDb();
     const [existing] = await db.select().from(users).where(eq(users.email, email));
     if (existing) {
@@ -38,7 +40,12 @@ export async function POST(req: Request) {
     const res = NextResponse.json({ ok: true, user: { id: created.id, name: created.name } });
     res.cookies.set(buildSessionCookie(created.id));
     return res;
-  } catch {
-    return NextResponse.json({ ok: false, error: "حدث خطأ في الخادم." }, { status: 500 });
+  } catch (err) {
+    console.error("[signup] failed:", err);
+    const msg =
+      err instanceof Error && /relation .* does not exist|Undefined table/i.test(err.message)
+        ? "قاعدة البيانات قيد التهيئة، أعد المحاولة بعد لحظات."
+        : "تعذّر إنشاء الحساب الآن. حاول مجددًا بعد قليل.";
+    return NextResponse.json({ ok: false, error: msg }, { status: 500 });
   }
 }
