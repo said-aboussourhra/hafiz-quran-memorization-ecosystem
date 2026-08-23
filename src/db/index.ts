@@ -26,3 +26,21 @@ if (process.env.NODE_ENV !== "production" && pool) {
 }
 
 export const db = pool ? drizzle(pool) : null;
+
+/**
+ * Throws a clear, user-safe error when the database is not configured.
+ * Use this at the top of any server action / route / data function that needs
+ * a live connection so we never crash with a raw "Cannot read properties of null".
+ */
+export async function requireDb() {
+  if (!db) {
+    const err = new Error("DATABASE_NOT_CONFIGURED");
+    err.name = "DatabaseNotConfiguredError";
+    throw err;
+  }
+  return db;
+}
+
+export function isDbAvailable(): boolean {
+  return db !== null;
+}

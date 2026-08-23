@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
+import { QR } from "@/components/QRCode";
 
 interface CertificateProps {
   /** اسم المكرم */
@@ -10,10 +11,38 @@ interface CertificateProps {
   surahName: string;
   /** عدد الآيات المتقنة */
   ayahCount: number;
-  /** نسبة الإتقان */
-  perfection: string;
+  /** نسبة الإتقان (0–100) — تُعرض كنص عربي منسّق */
+  accuracy?: number;
+  /** نسبة الإتقان كنص جاهز (يُستخدم إن وُجد بدلاً من accuracy) */
+  perfection?: string;
+  /** معرّف المستخدم (لو وُجد) لتوليد معرّف شهادة فريد وثابت */
+  userId?: number | null;
+  /** تاريخ الإصدار ISO؛ افتراضياً الآن */
+  issuedAt?: string;
   /** أيقونة إضافية أو أي عنصر */
   extra?: ReactNode;
+}
+
+/**
+ * معرّف شهادة رقمية فريد وثابت (deterministic) يُشتق من بيانات الإنجاز.
+ * ليس مزامنةً مع جهة رسمية، بل معرّفٌ يمكن للمنصة التحقق من صحته محلياً.
+ */
+function buildCertificateId(parts: {
+  name: string;
+  surahName: string;
+  ayahCount: number;
+  userId?: number | null;
+  issuedAt: string;
+}): string {
+  const seed = `${parts.userId ?? "guest"}|${parts.name}|${parts.surahName}|${parts.ayahCount}|${parts.issuedAt.slice(0, 10)}`;
+  // FNV-1a–style 32-bit hash → base36, prefixed for readability.
+  let h = 0x811c9dc5;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  const stamp = parts.issuedAt.slice(0, 10).replace(/-/g, "");
+  return `HFZ-${stamp}-${h.toString(36).toUpperCase().padStart(7, "0")}`;
 }
 
 /**
@@ -25,10 +54,37 @@ export function Certificate({
   name,
   surahName,
   ayahCount,
+  accuracy,
   perfection,
+  userId,
+  issuedAt,
   extra,
 }: CertificateProps) {
-  const year = new Date().getFullYear().toLocaleString("ar-EG", { useGrouping: false });
+  const issuedDate = useMemo(() => (issuedAt ? new Date(issuedAt) : new Date()), [issuedAt]);
+  const year = issuedDate.getFullYear().toLocaleString("ar-EG", { useGrouping: false });
+  const perfectionText =
+    perfection ??
+    (typeof accuracy === "number"
+      ? `${Math.round(accuracy).toLocaleString("ar-EG")}٪`
+      : "١٠٠٪");
+
+  const certId = useMemo(
+    () =>
+      buildCertificateId({
+        name,
+        surahName,
+        ayahCount,
+        userId,
+        issuedAt: issuedDate.toISOString(),
+      }),
+    [name, surahName, ayahCount, userId, issuedDate],
+  );
+
+  // رمز التحقق — يوجّه إلى صفحة تحقق المنظمة (مفهوم تحقق صادق، بلا ادّعاء كاذب).
+  const verifyHref =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/developer?cert=${encodeURIComponent(certId)}`
+      : `/developer?cert=${encodeURIComponent(certId)}`;
 
   return (
     <div className="certificate-wrapper">
@@ -66,9 +122,12 @@ export function Certificate({
               <div className="certificate-header">
                 <p className="certificate-bismillah">بسم الله الرحمن الرحيم</p>
                 <div className="certificate-divider" />
-                <p className="certificate-title-arabic">شهادة تقدير</p>
-                <p className="certificate-title-heart">❤️ إتمام حفظ</p>
+                <p className="certificate-title-arabic">شهادة تقديرية رقمية</p>
+                <p className="certificate-title-heart">🤍 إتمام حفظ</p>
                 <p className="certificate-congrats">تهانينا</p>
+                <p className="certificate-disclaimer">
+                  شهادة تقديرية من منصة حافظ على إتمام الحفظ، وليست إجازة قرآنية رسمية
+                </p>
               </div>
 
               {/* اسم المكرم */}
@@ -83,7 +142,7 @@ export function Certificate({
                   قد أتمّ بفضل الله حفظ سورة {surahName}
                 </p>
                 <p className="certificate-perfection">
-                  بنسبة إتقان {perfection} (آية {ayahCount})
+                  بنسبة إتقان {perfectionText} (آية {ayahCount.toLocaleString("ar-EG")})
                 </p>
               </div>
 
@@ -93,7 +152,7 @@ export function Certificate({
               {/* الحديث */}
               <div className="certificate-hadith">
                 <p className="certificate-hadith-text">
-                  "خيركم من تعلم القرآن وعلمه"
+                  &ldquo;خيركم من تعلم القرآن وعلمه&rdquo;
                 </p>
                 <p className="certificate-hadith-source">رواه البخاري</p>
               </div>
@@ -113,6 +172,18 @@ export function Certificate({
                 </p>
               </div>
 
+              {/* التحقق: معرّف فريد + رمز QR (مفهوم تحقق صادق) */}
+              <div className="certificate-verify">
+                <QR value={verifyHref} size={92} />
+                <div className="certificate-verify-text">
+                  <p className="certificate-verify-label">للتحقق من الشهادة</p>
+                  <p className="certificate-certid" dir="ltr">{certId}</p>
+                  <p className="certificate-verify-hint">
+                    امسح الرمز أو أدخل المعرّف في صفحة التحقق بمنصة حافظ
+                  </p>
+                </div>
+              </div>
+
               {extra && <div className="certificate-extra">{extra}</div>}
             </div>
           </div>
@@ -130,9 +201,7 @@ export function Certificate({
           display: flex;
           justify-content: center;
           align-items: center;
-          padding: 1.5rem;
-          min-height: 100vh;
-          background: linear-gradient(145deg, #f5f0e8 0%, #ede8dd 100%);
+          padding: 1rem 0.25rem;
           font-family: var(--font-ui);
         }
 
@@ -371,6 +440,53 @@ export function Certificate({
           margin-top: 0.75rem;
         }
 
+        .certificate-disclaimer {
+          margin-top: 0.6rem;
+          font-size: 0.68rem;
+          line-height: 1.6;
+          color: #8a7a52;
+          max-width: 36ch;
+          margin-inline: auto;
+        }
+
+        /* ===== التحقق (QR + المعرّف) ===== */
+        .certificate-verify {
+          margin-top: 1.25rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 1rem;
+          padding: 0.9rem 1rem;
+          border-radius: 16px;
+          background: rgba(16, 185, 129, 0.05);
+          border: 1px dashed rgba(16, 185, 129, 0.35);
+        }
+        .certificate-verify-text {
+          text-align: start;
+        }
+        .certificate-verify-label {
+          font-size: 0.7rem;
+          font-weight: 700;
+          color: #047857;
+          letter-spacing: 0.05em;
+        }
+        .certificate-certid {
+          margin-top: 0.25rem;
+          font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+          font-size: 0.85rem;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          color: #1a2335;
+          direction: ltr;
+        }
+        .certificate-verify-hint {
+          margin-top: 0.2rem;
+          font-size: 0.66rem;
+          color: #6a7a8a;
+          line-height: 1.5;
+          max-width: 28ch;
+        }
+
         /* ===== التجاوب ===== */
         @media (max-width: 480px) {
           .certificate-card {
@@ -395,6 +511,14 @@ export function Certificate({
           }
           .certificate-perfection {
             font-size: 1rem;
+          }
+          .certificate-verify {
+            flex-direction: column;
+            gap: 0.6rem;
+            text-align: center;
+          }
+          .certificate-verify-text {
+            text-align: center;
           }
           .certificate-hadith-text {
             font-size: 0.95rem;

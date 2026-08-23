@@ -1,6 +1,6 @@
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
-import { db } from "@/db";
+import { requireDb } from "@/db";
 import { users, type User } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
@@ -57,6 +57,7 @@ export async function getCurrentUser(): Promise<User | null> {
   if (!token) return null;
   const id = verifyToken(token);
   if (!id) return null;
+  const db = await requireDb();
   const [user] = await db.select().from(users).where(eq(users.id, id));
   return user ?? null;
 }

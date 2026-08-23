@@ -5,6 +5,7 @@ import { getUniverseData, getProgressStats } from "@/lib/progress";
 import { TOTAL_AYAHS } from "@/lib/surahs";
 import { VIRTUES } from "@/lib/virtues";
 import { AyahOfDayCard } from "@/components/AyahOfDayCard";
+import { DailyPlanCard } from "@/components/hafiz/DailyPlanCard";
 import { ayahOfToday } from "@/lib/ayahOfDay";
 
 export const dynamic = "force-dynamic";
@@ -94,6 +95,11 @@ export default async function HomePage() {
             <div className="mt-1 text-xs text-ink-500">{s.l}</div>
           </div>
         ))}
+      </section>
+
+      {/* DAILY PLAN — HAFIZ smart session entry */}
+      <section>
+        <DailyPlanCard />
       </section>
 
       {/* AYAH OF THE DAY — shareable */}

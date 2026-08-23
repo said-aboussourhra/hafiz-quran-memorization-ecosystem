@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { SURAHS } from "@/lib/surahs";
 import { JUZ_INFO } from "@/lib/plan";
 
@@ -39,17 +39,24 @@ export function MushafIndex({ prog, loggedIn }: { prog: Prog; loggedIn: boolean 
   const [q, setQ] = useState("");
   const [tab, setTab] = useState<"all" | "meccan" | "medinan" | "memorized" | "inprogress" | "favorites">("all");
   const [byJuz, setByJuz] = useState(false);
-  const [favs, setFavs] = useState<Set<number>>(new Set());
-  const [lastRead, setLastRead] = useState<{ surah: number; name: string } | null>(null);
-
-  useEffect(() => {
+  const [favs, setFavs] = useState<Set<number>>(() => {
+    if (typeof window === "undefined") return new Set();
     try {
-      const f = localStorage.getItem("hafiz_favs");
-      if (f) setFavs(new Set(JSON.parse(f)));
-      const lr = localStorage.getItem("hafiz_last_read");
-      if (lr) setLastRead(JSON.parse(lr));
-    } catch { /* ignore */ }
-  }, []);
+      const f = window.localStorage.getItem("hafiz_favs");
+      return f ? new Set<number>(JSON.parse(f)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+  const [lastRead] = useState<{ surah: number; name: string } | null>(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const lr = window.localStorage.getItem("hafiz_last_read");
+      return lr ? JSON.parse(lr) : null;
+    } catch {
+      return null;
+    }
+  });
 
   const toggleFav = (n: number, e: React.MouseEvent) => {
     e.preventDefault();

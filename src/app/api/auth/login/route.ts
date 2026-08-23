@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/db";
+import { requireDb } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { buildSessionCookie, verifyPassword } from "@/lib/auth";
@@ -14,6 +14,7 @@ export async function POST(req: Request) {
     if (!email || !password) {
       return NextResponse.json({ ok: false, error: "يرجى إدخال البريد وكلمة المرور." }, { status: 400 });
     }
+    const db = await requireDb();
     const [user] = await db.select().from(users).where(eq(users.email, email));
     if (!user || !verifyPassword(password, user.passwordHash, user.passwordSalt)) {
       return NextResponse.json({ ok: false, error: "البريد أو كلمة المرور غير صحيحة." }, { status: 401 });

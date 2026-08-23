@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -17,20 +19,49 @@ import { saveLastRead } from "@/components/LastRead";
 import {
   isSajda,
 } from "@/lib/sajda";
+import { readBool, readString } from "@/lib/clientSettings";
+import {
+  FONT_SIZE,
+  LINE_HEIGHT,
+  WORD_SPACING,
+  READING_WIDTH,
+  readFontSize, writeFontSize,
+  readLineHeight, writeLineHeight,
+  readWordSpacing, writeWordSpacing,
+  readReadingWidth, writeReadingWidth,
+  readHighlightStyle, writeHighlightStyle,
+  type HighlightStyle,
+} from "@/lib/readingPrefs";
+import {
+  isBookmarked,
+  toggleBookmark,
+  copyAyah,
+  savePosition,
+} from "@/lib/bookmarks";
 
 import {
   RECITERS,
   DEFAULT_RECITER,
   ayahUrl,
+  surahUrl,
   hasPerAyah,
   perAyahFallback,
   type Reciter,
 } from "@/lib/reciters";
+import { useAudioEngine } from "@/lib/audio/useAudioEngine";
+import { AudioControls } from "@/components/AudioControls";
+import { useHafiz } from "@/lib/hafiz/useHafiz";
+import { HafizPanel } from "@/components/hafiz/HafizPanel";
+import { baseSyncStatus, loadTimings } from "@/lib/audio/timings";
+import type { AudioSource } from "@/lib/audio/types";
 
-type ViewMode = "mushaf" | "ayah";
+type ViewMode = "mushaf" | "ayah" | "continuous";
 
 type MushafTextStyle = CSSProperties & {
   "--mushaf-font-size": string;
+  "--mushaf-line-height": string;
+  "--mushaf-word-spacing": string;
+  "--mushaf-reading-width": string;
 };
 
 const FONTS = [
@@ -92,6 +123,63 @@ function toDigits(n: number): string {
   return String(n);
 }
 
+function prefersReducedMotion(): boolean {
+  return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+/** Accessible −/value/+ control used inside the appearance panel. */
+function SettingStepper({
+  label,
+  value,
+  onDec,
+  onInc,
+  onReset,
+  decLabel,
+  incLabel,
+}: {
+  label: string;
+  value: string;
+  onDec: () => void;
+  onInc: () => void;
+  onReset: () => void;
+  decLabel: string;
+  incLabel: string;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <button
+        type="button"
+        onClick={onReset}
+        className="text-[11px] font-semibold text-slate-600 hover:text-emerald-700"
+        title="إعادة الافتراضي"
+      >
+        {label}
+      </button>
+      <div className="flex items-center gap-1">
+        <button
+          type="button"
+          onClick={onInc}
+          aria-label={incLabel}
+          className="grid h-7 w-7 place-items-center rounded-lg bg-white text-slate-700 shadow-sm hover:bg-emerald-50 hover:text-emerald-700"
+        >
+          +
+        </button>
+        <span className="min-w-[52px] text-center text-[11px] font-bold text-slate-700" dir="ltr">
+          {value}
+        </span>
+        <button
+          type="button"
+          onClick={onDec}
+          aria-label={decLabel}
+          className="grid h-7 w-7 place-items-center rounded-lg bg-white text-slate-700 shadow-sm hover:bg-emerald-50 hover:text-emerald-700"
+        >
+          −
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /* =========================================================
    ICONS
 ========================================================= */
@@ -139,6 +227,96 @@ function IconList({
       <circle cx="4" cy="6" r="1" />
       <circle cx="4" cy="12" r="1" />
       <circle cx="4" cy="18" r="1" />
+    </svg>
+  );
+}
+
+function IconScroll({
+  className = "h-5 w-5",
+}: {
+  className?: string;
+}) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="6" y="3" width="12" height="18" rx="2" />
+      <path d="M10 7h4M10 11h4M10 15h2.5" />
+    </svg>
+  );
+}
+
+function IconBookmark({
+  className = "h-5 w-5",
+  filled = false,
+}: {
+  className?: string;
+  filled?: boolean;
+}) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M6 3h12v18l-6-4-6 4z" />
+    </svg>
+  );
+}
+
+function IconCopy({
+  className = "h-5 w-5",
+}: {
+  className?: string;
+}) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="9" y="9" width="11" height="11" rx="2" />
+      <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+    </svg>
+  );
+}
+
+function IconTarget({
+  className = "h-5 w-5",
+}: {
+  className?: string;
+}) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="8" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="12" cy="12" r="0.6" fill="currentColor" />
     </svg>
   );
 }
@@ -357,8 +535,15 @@ export function MushafReader({
      STATE
   ========================================================= */
 
-  const [fontSize, setFontSize] = useState(34);
-  const [font, setFont] = useState("qf-kfgqpc");
+  const [fontSize, setFontSize] = useState(() => readFontSize());
+  const [lineHeight, setLineHeight] = useState(() => readLineHeight());
+  const [wordSpacing, setWordSpacing] = useState(() => readWordSpacing());
+  const [readingWidth, setReadingWidth] = useState(() => readReadingWidth());
+  const [font, setFont] = useState(() =>
+    FONTS.some((f) => f.id === readString("hafiz_font", "qf-kfgqpc"))
+      ? readString("hafiz_font", "qf-kfgqpc")
+      : "qf-kfgqpc"
+  );
 
   const [showFonts, setShowFonts] = useState(false);
   const [showReciters, setShowReciters] = useState(false);
@@ -377,39 +562,48 @@ export function MushafReader({
   const [sajdaOpen, setSajdaOpen] =
     useState(false);
 
-  const [playingAyah, setPlayingAyah] =
-    useState<number | null>(null);
-
-  const [surahPlaying, setSurahPlaying] =
-    useState(false);
-
   const [continuous, setContinuous] =
     useState(false);
 
   const [reciter, setReciter] =
-    useState<Reciter>(DEFAULT_RECITER);
+    useState<Reciter>(() => RECITERS.find((r) => r.id === readString("hafiz_reciter", "")) ?? DEFAULT_RECITER);
 
   const [progress, setProgress] =
     useState(0);
 
   const [highlight, setHighlight] =
-    useState(true);
+    useState(() => readBool("hafiz_highlight", true));
 
   const [hlColor, setHlColor] =
-    useState("#10b981");
+    useState(() => readString("hafiz_hlcolor", "#10b981"));
 
   const [paper, setPaper] =
-    useState("ivory");
+    useState(() =>
+      PAPERS.some((p) => p.id === readString("hafiz_paper", "ivory"))
+        ? readString("hafiz_paper", "ivory")
+        : "ivory"
+    );
 
-  const [activeWord, setActiveWord] =
-    useState(-1);
+  const [hlStyle, setHlStyle] =
+    useState<HighlightStyle>(() => readHighlightStyle());
+
+  const [bookmarkVersion, setBookmarkVersion] = useState(0);
+  const [toast, setToast] = useState<string | null>(null);
+  const toastTimer = useRef<number | null>(null);
+
+  const [showNav, setShowNav] = useState(false);
+  const [showHafiz, setShowHafiz] = useState(false);
+  const [jumpAyah, setJumpAyah] = useState("");
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    if (toastTimer.current) window.clearTimeout(toastTimer.current);
+    toastTimer.current = window.setTimeout(() => setToast(null), 2200);
+  };
 
   /* =========================================================
      REFS
   ========================================================= */
-
-  const audioRef =
-    useRef<HTMLAudioElement | null>(null);
 
   const pageRef =
     useRef<HTMLDivElement | null>(null);
@@ -418,6 +612,24 @@ export function MushafReader({
     useRef<Map<number, HTMLSpanElement>>(
       new Map()
     );
+
+  /* =========================================================
+     AUDIO ENGINE
+     Exact per-recording sync. Switching reciter reloads BOTH the
+     audio and its own timing map — timings are never shared.
+  ========================================================= */
+
+  const engine = useAudioEngine();
+  const hafiz = useHafiz();
+
+  // Playback state is owned by useAudioEngine (exact per-recording sync).
+  const playingAyah = engine.state.currentAyah;
+  const surahPlaying =
+    engine.state.sourceGranularity === "surah" &&
+    (engine.state.status === "playing" ||
+      engine.state.status === "loading" ||
+      engine.state.status === "paused");
+  const activeWord = engine.state.currentWord ?? -1;
 
   /* =========================================================
      DATA
@@ -436,8 +648,46 @@ export function MushafReader({
       : null;
 
   const isPlaying =
-    playingAyah !== null ||
-    surahPlaying;
+    engine.state.status === "playing" ||
+    engine.state.status === "loading";
+
+  /** Build the exact AudioSource for the current reciter + surah. */
+  const buildSource = useCallback(async (): Promise<AudioSource> => {
+    const supportsPerAyah = hasPerAyah(reciter);
+    const reciterForAudio = supportsPerAyah ? reciter : perAyahFallback();
+    const granularity: "ayah" | "surah" = supportsPerAyah ? "ayah" : "surah";
+    const syncStatus = baseSyncStatus(reciter.id, surahNum, granularity);
+
+    // Load exact word timings ONLY if a verified source exists for THIS reciter.
+    let timings = null;
+    let resolvedStatus = syncStatus;
+    if (supportsPerAyah) {
+      const loaded = await loadTimings(reciter.id, surahNum);
+      if (loaded) {
+        timings = loaded.timings;
+        resolvedStatus = loaded.status;
+      }
+    }
+
+    const getUrl = (ayah: number) => {
+      if (granularity === "ayah") {
+        const a = surah.ayahs.find((x) => x.numberInSurah === ayah);
+        if (!a) return null;
+        return ayahUrl(reciterForAudio, surahNum, a.numberInSurah, a.globalNumber);
+      }
+      return surahUrl(reciter, surahNum);
+    };
+
+    return {
+      reciterId: reciter.id,
+      surahId: surahNum,
+      getUrl,
+      granularity,
+      timings,
+      syncStatus: resolvedStatus,
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reciter.id, surahNum]);
 
   /* =========================================================
      AUDIO
@@ -447,285 +697,59 @@ export function MushafReader({
     n: number,
     chain: boolean
   ) => {
-    const ayah =
-      surah.ayahs.find(
-        (a) =>
-          a.numberInSurah === n
-      );
-
-    if (
-      !ayah ||
-      !audioRef.current
-    ) {
-      return;
-    }
-
-    const reciterToUse =
-      hasPerAyah(reciter)
-        ? reciter
-        : perAyahFallback();
-
-    const url = ayahUrl(
-      reciterToUse,
-      surahNum,
-      ayah.numberInSurah,
-      ayah.globalNumber
-    );
-
-    if (!url) {
-      return;
-    }
-
-    if (!chain) {
-      setSurahPlaying(false);
-    }
-
-    setContinuous(chain);
-    setPlayingAyah(n);
-    setActiveWord(-1);
-
-    const audio =
-      audioRef.current;
-
-    audio.pause();
-    audio.src = url;
-    audio.currentTime = 0;
-
-    audio.play().catch(() => {
-      setPlayingAyah(null);
-    });
+    void (async () => {
+      const source = await buildSource();
+      await engine.loadSource(source, n, { autoPlay: true });
+      if (chain) {
+        // per-ayah chain is handled by the engine's onEnded advancing; for
+        // full-surah streams we start at ayah 1 and let timings drive position.
+      }
+    })();
   };
 
   const playFullSurah = () => {
-    const firstAyah =
-      surah.ayahs[0];
-
-    if (!firstAyah) {
-      return;
-    }
-
-    setSurahPlaying(true);
-
-    playAyah(
-      firstAyah.numberInSurah,
-      true
-    );
+    void (async () => {
+      const source = await buildSource();
+      if (source.granularity === "surah") {
+        await engine.loadSource(source, 1, { autoPlay: true });
+      } else {
+        await engine.loadSource(source, 1, { autoPlay: true });
+      }
+    })();
   };
 
   const stopAudio = () => {
-    const audio =
-      audioRef.current;
-
-    if (audio) {
-      audio.pause();
-      audio.currentTime = 0;
-      audio.removeAttribute("src");
-      audio.load();
-    }
-
-    setPlayingAyah(null);
-    setSurahPlaying(false);
-    setContinuous(false);
-    setActiveWord(-1);
+    engine.stopRepeat();
+    void engine.pause();
   };
 
   /* =========================================================
-     WORD HIGHLIGHT
+     ENGINE -> UI STATE SYNC
+     The engine is the sole source of playback truth (exact
+     position). We mirror it into existing state used for styling.
   ========================================================= */
 
-  const onTimeUpdate = () => {
-    const audio =
-      audioRef.current;
-
-    if (
-      !audio ||
-      !highlight ||
-      playingAyah == null ||
-      !audio.duration ||
-      Number.isNaN(audio.duration)
-    ) {
-      return;
+  // Controlled auto-scroll: keep active ayah comfortably in view.
+  useEffect(() => {
+    if (!engine.state.autoScroll) return;
+    if (engine.state.status !== "playing") return;
+    const ayah = engine.state.currentAyah;
+    if (ayah == null) return;
+    const el = ayahRefs.current.get(ayah);
+    if (el && typeof el.scrollIntoView === "function") {
+      el.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "center" });
     }
+  }, [engine.state.currentAyah, engine.state.autoScroll, engine.state.status]);
 
-    const ayah =
-      surah.ayahs.find(
-        (x) =>
-          x.numberInSurah ===
-          playingAyah
-      );
-
-    if (
-      !ayah ||
-      ayah.words.length === 0
-    ) {
-      return;
-    }
-
-    const duration =
-      audio.duration;
-
-    const time = Math.max(
-      0,
-      audio.currentTime -
-        duration * 0.02
-    );
-
-    const weights =
-      ayah.words.map(
-        (word) =>
-          Math.max(
-            2,
-            word.t.replace(
-              /[^\u0600-\u06FF]/g,
-              ""
-            ).length
-          )
-      );
-
-    const total =
-      weights.reduce(
-        (sum, value) =>
-          sum + value,
-        0
-      );
-
-    if (total <= 0) {
-      return;
-    }
-
-    const target =
-      (time /
-        (duration * 0.96)) *
-      total;
-
-    let accumulated = 0;
-    let index = 0;
-
-    for (
-      let i = 0;
-      i < weights.length;
-      i++
-    ) {
-      accumulated +=
-        weights[i];
-
-      if (
-        target <= accumulated
-      ) {
-        index = i;
-        break;
-      }
-
-      index = i;
-    }
-
-    setActiveWord(
-      Math.min(
-        ayah.words.length - 1,
-        index
-      )
-    );
-  };
-
-  const seekToWord = (
-    ayah: (typeof surah.ayahs)[number],
-    wordIndex: number
-  ) => {
-    const audio =
-      audioRef.current;
-
-    if (
-      !audio ||
-      playingAyah !==
-        ayah.numberInSurah ||
-      !audio.duration ||
-      Number.isNaN(audio.duration)
-    ) {
-      return;
-    }
-
-    const weights =
-      ayah.words.map(
-        (word) =>
-          Math.max(
-            2,
-            word.t.replace(
-              /[^\u0600-\u06FF]/g,
-              ""
-            ).length
-          )
-      );
-
-    const total =
-      weights.reduce(
-        (sum, value) =>
-          sum + value,
-        0
-      );
-
-    if (total <= 0) {
-      return;
-    }
-
-    let before = 0;
-
-    for (
-      let i = 0;
-      i < wordIndex;
-      i++
-    ) {
-      before +=
-        weights[i];
-    }
-
-    audio.currentTime =
-      (before / total) *
-      audio.duration *
-      0.96;
-
-    setActiveWord(
-      wordIndex
-    );
-
-    if (audio.paused) {
-      audio.play().catch(() => {});
-    }
-  };
-
-  /* =========================================================
-     AUDIO ENDED
-  ========================================================= */
-
-  const onEnded = () => {
-    setActiveWord(-1);
-
-    if (
-      continuous &&
-      playingAyah != null
-    ) {
-      const next =
-        playingAyah + 1;
-
-      const exists =
-        surah.ayahs.some(
-          (a) =>
-            a.numberInSurah ===
-            next
-        );
-
-      if (exists) {
-        playAyah(
-          next,
-          true
-        );
-        return;
-      }
-    }
-
-    setPlayingAyah(null);
-    setSurahPlaying(false);
-    setContinuous(false);
-  };
+  // Reload the source whenever reciter or surah changes while something is playing.
+  useEffect(() => {
+    if (engine.state.status === "idle") return;
+    void (async () => {
+      const source = await buildSource();
+      await engine.loadSource(source, engine.state.currentAyah ?? 1, { autoPlay: engine.state.status === "playing" });
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reciter.id, surahNum]);
 
   /* =========================================================
      SAVE LAST READ
@@ -741,116 +765,12 @@ export function MushafReader({
     surah.meta.nameAr,
   ]);
 
-  /* =========================================================
-     LOAD SETTINGS
-  ========================================================= */
-
+  // Remember the last ayah the learner opened/listened to, for "متابعة القراءة".
   useEffect(() => {
-    try {
-      const savedReciter =
-        localStorage.getItem(
-          "hafiz_reciter"
-        );
-
-      if (savedReciter) {
-        const found =
-          RECITERS.find(
-            (x) =>
-              x.id ===
-              savedReciter
-          );
-
-        if (found) {
-          setReciter(found);
-        }
-      }
-
-      const savedFont =
-        localStorage.getItem(
-          "hafiz_font"
-        );
-
-      if (
-        savedFont &&
-        FONTS.some(
-          (x) =>
-            x.id ===
-            savedFont
-        )
-      ) {
-        setFont(savedFont);
-      }
-
-      const savedSize =
-        localStorage.getItem(
-          "hafiz_fontsize"
-        );
-
-      if (savedSize) {
-        const parsed =
-          Number(savedSize);
-
-        if (
-          !Number.isNaN(
-            parsed
-          )
-        ) {
-          setFontSize(
-            Math.max(
-              24,
-              Math.min(
-                64,
-                parsed
-              )
-            )
-          );
-        }
-      }
-
-      const savedHighlight =
-        localStorage.getItem(
-          "hafiz_highlight"
-        );
-
-      if (
-        savedHighlight !== null
-      ) {
-        setHighlight(
-          savedHighlight ===
-            "1"
-        );
-      }
-
-      const savedColor =
-        localStorage.getItem(
-          "hafiz_hlcolor"
-        );
-
-      if (savedColor) {
-        setHlColor(
-          savedColor
-        );
-      }
-
-      const savedPaper =
-        localStorage.getItem(
-          "hafiz_paper"
-        );
-
-      if (
-        savedPaper &&
-        PAPERS.some(
-          (p) =>
-            p.id ===
-            savedPaper
-        )
-      ) {
-        setPaper(savedPaper);
-      }
-    } catch {
-      // localStorage unavailable
-    }
-  }, []);
+    const ayah = playingAyah ?? selected ?? 1;
+    const ref = surah.ayahs.find((a) => a.numberInSurah === ayah);
+    savePosition({ surah: surahNum, ayah, page: ref?.page });
+  }, [playingAyah, selected, surahNum, surah.ayahs]);
 
   /* =========================================================
      FONT
@@ -874,41 +794,80 @@ export function MushafReader({
      FONT SIZE
   ========================================================= */
 
-  const changeSize = (
-    delta: number
-  ) => {
-    setFontSize(
-      (current) => {
-        const next =
-          Math.max(
-            24,
-            Math.min(
-              64,
-              current + delta
-            )
-          );
-
-        try {
-          localStorage.setItem(
-            "hafiz_fontsize",
-            String(next)
-          );
-        } catch {}
-
-        return next;
-      }
-    );
+  const changeSize = (delta: number) => {
+    setFontSize((current) => {
+      const next = Math.max(FONT_SIZE.min, Math.min(FONT_SIZE.max, current + delta));
+      writeFontSize(next);
+      return next;
+    });
   };
 
   const resetFontSize = () => {
-    setFontSize(34);
+    setFontSize(FONT_SIZE.def);
+    writeFontSize(FONT_SIZE.def);
+  };
 
-    try {
-      localStorage.setItem(
-        "hafiz_fontsize",
-        "34"
-      );
-    } catch {}
+  const changeLineHeight = (delta: number) => {
+    setLineHeight((cur) => {
+      const next = Math.round(Math.max(LINE_HEIGHT.min, Math.min(LINE_HEIGHT.max, cur + delta)) * 10) / 10;
+      writeLineHeight(next);
+      return next;
+    });
+  };
+
+  const changeWordSpacing = (delta: number) => {
+    setWordSpacing((cur) => {
+      const next = Math.max(WORD_SPACING.min, Math.min(WORD_SPACING.max, cur + delta));
+      writeWordSpacing(next);
+      return next;
+    });
+  };
+
+  const changeReadingWidth = (delta: number) => {
+    setReadingWidth((cur) => {
+      const next = Math.max(READING_WIDTH.min, Math.min(READING_WIDTH.max, cur + delta));
+      writeReadingWidth(next);
+      return next;
+    });
+  };
+
+  const chooseHighlightStyle = (s: HighlightStyle) => {
+    setHlStyle(s);
+    writeHighlightStyle(s);
+  };
+
+  const onToggleBookmark = (n: number, page?: number) => {
+    const { added } = toggleBookmark({ surah: surahNum, ayah: n, page });
+    setBookmarkVersion((v) => v + 1);
+    showToast(added ? "تمت إضافة العلامة المرجعية" : "أُزيلت العلامة المرجعية");
+  };
+
+  const onCopy = async (text: string, n: number) => {
+    const ok = await copyAyah(text, surah.meta.nameAr, n);
+    showToast(ok ? "تم نسخ الآية" : "تعذّر النسخ");
+  };
+
+  /** Parse Western or Eastern-Arabic digits from user input. */
+  const parseAyahInput = (raw: string): number => {
+    const map: Record<string, string> = { "٠": "0", "١": "1", "٢": "2", "٣": "3", "٤": "4", "٥": "5", "٦": "6", "٧": "7", "٨": "8", "٩": "9" };
+    const normalized = raw.replace(/[٠-٩]/g, (d) => map[d] ?? d).replace(/[^\d]/g, "");
+    return Number(normalized);
+  };
+
+  const jumpToAyah = (n: number) => {
+    if (!Number.isInteger(n) || n < 1 || n > surah.ayahs.length) {
+      showToast(`الآيات من ١ إلى ${surah.ayahs.length.toLocaleString("ar-EG")}`);
+      return;
+    }
+    setShowNav(false);
+    setTafsirAyah(null);
+    setSelected(n);
+    // Wait a tick for selection/state, then scroll the ayah into view.
+    window.setTimeout(() => {
+      const el = ayahRefs.current.get(n);
+      el?.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "center" });
+      el?.focus?.({ preventScroll: true });
+    }, 60);
   };
 
   /* =========================================================
@@ -1195,9 +1154,12 @@ export function MushafReader({
 
   const mushafTextStyle: MushafTextStyle =
     {
-      "--mushaf-font-size":
-        `${fontSize}px`,
-      lineHeight: 2.5,
+      "--mushaf-font-size": `${fontSize}px`,
+      "--mushaf-line-height": String(lineHeight),
+      "--mushaf-word-spacing": `${wordSpacing}px`,
+      "--mushaf-reading-width": `${readingWidth}px`,
+      lineHeight,
+      wordSpacing: `${wordSpacing}px`,
     };
 
   /* =========================================================
@@ -1206,16 +1168,11 @@ export function MushafReader({
 
   return (
     <div
-      className="relative min-h-screen"
+      className={`relative min-h-screen ${paper === "night" ? "reader-dark" : ""}`}
       onClick={closeMenus}
     >
-      <audio
-        ref={audioRef}
-        onEnded={onEnded}
-        onTimeUpdate={
-          onTimeUpdate
-        }
-      />
+      {/* Audio playback is managed by the useAudioEngine hook (single
+          HTMLAudioElement), which owns exact per-recording timings. */}
 
       {/* =====================================================
           PROGRESS
@@ -1247,6 +1204,7 @@ export function MushafReader({
       >
         <div
           className="
+            mushaf-toolbar
             rounded-[24px]
             border border-emerald-100
             bg-white/95
@@ -1348,6 +1306,40 @@ export function MushafReader({
                 <IconList className="h-4 w-4" />
                 <span>
                   آية بآية
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setView(
+                    "continuous"
+                  )
+                }
+                className={`
+                  flex flex-1
+                  items-center
+                  justify-center
+                  gap-1.5
+                  rounded-xl
+                  px-3 py-2
+                  text-xs
+                  font-bold
+                  transition-all
+                  sm:flex-none
+                  sm:text-sm
+                  ${
+                    view ===
+                    "continuous"
+                      ? "bg-white text-emerald-700 shadow-sm"
+                      : "text-slate-500 hover:text-emerald-700"
+                  }
+                `}
+                aria-pressed={view === "continuous"}
+              >
+                <IconScroll className="h-4 w-4" />
+                <span>
+                  متواصل
                 </span>
               </button>
             </div>
@@ -1482,6 +1474,34 @@ export function MushafReader({
             </button>
           </div>
 
+          {/* HAFIZ SMART SESSION — the primary memorization action. */}
+          <button
+            type="button"
+            onClick={() => {
+              setShowHafiz((v) => !v);
+              setShowNav(false);
+              setShowAppearance(false);
+              setShowFonts(false);
+              setShowReciters(false);
+            }}
+            className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-l from-emerald-500 to-ocean-500 px-3 py-2.5 text-sm font-bold text-white shadow-sm transition active:scale-[0.99]"
+          >
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 2a7 7 0 00-7 7c0 3 2 5 2 7h10c0-2 2-4 2-7a7 7 0 00-7-7z" /><path d="M9 21h6" />
+            </svg>
+            ابدأ جلسة ذكية
+          </button>
+
+          {showHafiz && (
+            <div className="mt-2" onClick={(e) => e.stopPropagation()}>
+              <HafizPanel
+                teacher={hafiz}
+                surah={surah}
+                onListenAyah={(n) => playAyah(n, false)}
+              />
+            </div>
+          )}
+
           {/* =================================================
               ROW 2
           ================================================= */}
@@ -1490,10 +1510,117 @@ export function MushafReader({
             className="
               mt-2
               grid
-              grid-cols-3
+              grid-cols-2
               gap-2
+              sm:grid-cols-4
             "
           >
+            {/* NAVIGATION */}
+
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowNav((v) => !v);
+                  setShowAppearance(false);
+                  setShowFonts(false);
+                  setShowReciters(false);
+                }}
+                className={`
+                  flex w-full
+                  items-center
+                  justify-center
+                  gap-1.5
+                  rounded-2xl
+                  border
+                  px-2 py-2.5
+                  text-xs
+                  font-bold
+                  transition
+                  ${
+                    showNav
+                      ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+                      : "border-slate-100 bg-white text-slate-600 hover:border-emerald-200 hover:text-emerald-700"
+                  }
+                `}
+                aria-haspopup="dialog"
+                aria-expanded={showNav}
+              >
+                <IconTarget className="h-4 w-4" />
+                <span>انتقال</span>
+                <IconChevron className="h-3 w-3" />
+              </button>
+
+              {showNav && (
+                <div
+                  className="
+                    absolute
+                    right-0
+                    top-full
+                    z-[200]
+                    mt-2
+                    w-[min(300px,calc(100vw-24px))]
+                    overflow-hidden
+                    rounded-3xl
+                    border border-slate-100
+                    bg-white
+                    p-3
+                    shadow-[0_20px_60px_rgba(15,23,42,0.18)]
+                  "
+                  onClick={(e) => e.stopPropagation()}
+                  role="dialog"
+                  aria-label="الانتقال إلى آية"
+                >
+                  <div className="mb-3 flex items-center justify-between">
+                    <div>
+                      <div className="text-sm font-black text-slate-900">الانتقال إلى آية</div>
+                      <div className="mt-0.5 text-[10px] text-slate-400">
+                        {surah.meta.nameAr} · ١–{surah.ayahs.length.toLocaleString("ar-EG")}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowNav(false)}
+                      className="grid h-8 w-8 place-items-center rounded-xl bg-slate-50 text-slate-500 hover:bg-slate-100"
+                      aria-label="إغلاق"
+                    >
+                      <IconClose />
+                    </button>
+                  </div>
+
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const n = parseAyahInput(jumpAyah);
+                      jumpToAyah(n);
+                    }}
+                    className="flex gap-2"
+                  >
+                    <input
+                      inputMode="numeric"
+                      autoFocus
+                      value={jumpAyah}
+                      onChange={(e) => setJumpAyah(e.target.value)}
+                      placeholder="رقم الآية"
+                      dir="ltr"
+                      className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-center text-lg font-bold text-slate-900 outline-none focus:border-emerald-500"
+                      aria-label="رقم الآية"
+                    />
+                    <button type="submit" className="rounded-xl btn-primary px-5 py-2.5 text-sm font-bold">
+                      اذهب
+                    </button>
+                  </form>
+
+                  <div className="mt-3 flex items-center justify-between text-[11px] text-slate-500">
+                    <span>الجزء {surah.meta.juz.toLocaleString("ar-EG")} · الصفحة {surah.ayahs[0]?.page.toLocaleString("ar-EG") ?? "—"}</span>
+                    <Link href="/mushaf" className="font-bold text-emerald-700 hover:underline">
+                      فهرس السور
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* APPEARANCE */}
 
             <div className="relative">
@@ -1741,6 +1868,69 @@ export function MushafReader({
                         </div>
                       </div>
                     )}
+
+                    {/* Highlight style */}
+                    <div className="mt-3 rounded-2xl bg-slate-50 p-3">
+                      <div className="mb-2 text-[10px] font-bold text-slate-500">
+                        نمط التظليل
+                      </div>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {([
+                          ["background", "خلفية"],
+                          ["underline", "تسطير"],
+                          ["frame", "إطار"],
+                        ] as [HighlightStyle, string][]).map(([id, label]) => (
+                          <button
+                            key={id}
+                            type="button"
+                            onClick={() => chooseHighlightStyle(id)}
+                            className={`rounded-lg px-2 py-2 text-[11px] font-bold transition ${
+                              hlStyle === id
+                                ? "bg-emerald-600 text-white"
+                                : "bg-white text-slate-600 hover:bg-emerald-50"
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Typography spacing */}
+                    <div className="mt-3 rounded-2xl bg-slate-50 p-3">
+                      <div className="mb-2 text-[10px] font-bold text-slate-500">
+                        إعدادات القراءة
+                      </div>
+                      <div className="space-y-2">
+                        <SettingStepper
+                          label="ارتفاع السطر"
+                          value={lineHeight.toFixed(1)}
+                          onDec={() => changeLineHeight(-0.1)}
+                          onInc={() => changeLineHeight(0.1)}
+                          onReset={() => { setLineHeight(LINE_HEIGHT.def); writeLineHeight(LINE_HEIGHT.def); }}
+                          decLabel="تقليل ارتفاع السطر"
+                          incLabel="زيادة ارتفاع السطر"
+                        />
+                        <SettingStepper
+                          label="تباعد الكلمات"
+                          value={`${wordSpacing}px`}
+                          onDec={() => changeWordSpacing(-1)}
+                          onInc={() => changeWordSpacing(1)}
+                          onReset={() => { setWordSpacing(WORD_SPACING.def); writeWordSpacing(WORD_SPACING.def); }}
+                          decLabel="تقليل تباعد الكلمات"
+                          incLabel="زيادة تباعد الكلمات"
+                        />
+                        <SettingStepper
+                          label="عرض القراءة"
+                          value={`${readingWidth}px`}
+                          onDec={() => changeReadingWidth(-40)}
+                          onInc={() => changeReadingWidth(40)}
+                          onReset={() => { setReadingWidth(READING_WIDTH.def); writeReadingWidth(READING_WIDTH.def); }}
+                          decLabel="تضييق عرض القراءة"
+                          incLabel="توسيع عرض القراءة"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -2003,9 +2193,10 @@ export function MushafReader({
         className={`
           mushaf-page
           paper-${paper}
+          hl-style-${hlStyle}
           relative z-10
           mx-auto
-          max-w-5xl
+          w-full
           overflow-hidden
           px-4 py-6
           sm:px-8 sm:py-10
@@ -2017,6 +2208,12 @@ export function MushafReader({
               : ""
           }
         `}
+        style={
+          {
+            maxWidth: "var(--mushaf-reading-width, 1024px)",
+            "--reader-hl": hlColor,
+          } as CSSProperties
+        }
       >
         {/* WATERMARK */}
 
@@ -2152,7 +2349,7 @@ export function MushafReader({
                         ${
                           playingAyah ===
                           ayah.numberInSurah
-                            ? "ayah-playing"
+                            ? `ayah-playing ayah-${hlStyle}`
                             : selected ===
                               ayah.numberInSurah
                             ? "bg-[rgba(59,130,246,0.12)]"
@@ -2179,8 +2376,8 @@ export function MushafReader({
                               ) => {
                                 event.stopPropagation();
 
-                                seekToWord(
-                                  ayah,
+                                engine.seekToWord(
+                                  ayah.numberInSurah,
                                   wordIndex
                                 );
                               }}
@@ -2395,6 +2592,98 @@ export function MushafReader({
                 )
               )}
             </p>
+          </div>
+        )}
+
+        {/* ===================================================
+            CONTINUOUS SCROLL
+            Calm, one-ayah-per-row reading flow. Same verified text
+            and audio as the page mode, optimized for long reading.
+        =================================================== */}
+
+        {view === "continuous" && (
+          <div className="mushaf-content relative z-10" dir="rtl">
+            <div
+              className="mushaf-continuous mx-auto"
+              style={mushafTextStyle}
+            >
+              {surah.ayahs.map((ayah) => {
+                // bookmarkVersion only exists to force a re-render after toggling.
+                const bookmarked = isBookmarked(surahNum, ayah.numberInSurah);
+                void bookmarkVersion;
+                return (
+                  <article
+                    key={ayah.numberInSurah}
+                    ref={(el) => {
+                      if (el) ayahRefs.current.set(ayah.numberInSurah, el as unknown as HTMLSpanElement);
+                      else ayahRefs.current.delete(ayah.numberInSurah);
+                    }}
+                    className={`mushaf-continuous-ayah ${playingAyah === ayah.numberInSurah ? "is-playing" : ""}`}
+                  >
+                    <div
+                      className={`mushaf-continuous-text ${font}`}
+                      onClick={() => onAyahClick({ stopPropagation: () => {} } as unknown as MouseEvent, ayah.numberInSurah)}
+                    >
+                      {highlight && playingAyah === ayah.numberInSurah
+                        ? ayah.words.map((word, wi) => (
+                            <span
+                              key={wi}
+                              className="cursor-pointer"
+                              style={
+                                wi === activeWord
+                                  ? { color: hlColor, background: `${hlColor}22`, borderRadius: 6, padding: "0 2px" }
+                                  : undefined
+                              }
+                            >
+                              {word.t}{" "}
+                            </span>
+                          ))
+                        : ayah.text}
+                      <AyahMarker n={ayah.numberInSurah} active={playingAyah === ayah.numberInSurah} />
+                    </div>
+
+                    <div className="mushaf-continuous-actions" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        onClick={() => playAyah(ayah.numberInSurah, false)}
+                        className="mushaf-action-chip"
+                        aria-label={`استماع للآية ${ayah.numberInSurah}`}
+                      >
+                        🔊
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onToggleBookmark(ayah.numberInSurah, ayah.page)}
+                        className="mushaf-action-chip"
+                        aria-label="علامة مرجعية"
+                        aria-pressed={bookmarked}
+                      >
+                        <IconBookmark className="h-4 w-4" filled={bookmarked} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onCopy(ayah.text, ayah.numberInSurah)}
+                        className="mushaf-action-chip"
+                        aria-label="نسخ الآية"
+                      >
+                        <IconCopy className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    {tafsirAyah === ayah.numberInSurah && (
+                      <div className="ayah-tafsir-inline mt-3" contentEditable={false}>
+                        <span className="ayah-tafsir-head">
+                          <span className="ayah-tafsir-badge">{toDigits(ayah.numberInSurah)}</span>
+                          <span className="font-display text-sm font-bold text-ink-900">التفسير الميسّر</span>
+                          <button type="button" onClick={() => { setTafsirAyah(null); setSelected(null); }} className="ayah-tafsir-close">✕</button>
+                        </span>
+                        <span className="ayah-tafsir-body">{ayah.tafsir || "التفسير غير متوفّر لهذه الآية حالياً."}</span>
+                      </div>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
           </div>
         )}
 
@@ -2732,6 +3021,18 @@ export function MushafReader({
             </div>
           </div>
         )}
+
+      {/* Exact-sync transport (Play/Pause/Prev/Next/Repeat/Speed/Seek/Sleep/AutoScroll).
+          Owned by useAudioEngine; hidden until a source is loaded. */}
+      {engine.state.status !== "idle" && (
+        <AudioControls engine={engine} />
+      )}
+
+      {toast && (
+        <div className="mushaf-toast" role="status" aria-live="polite">
+          {toast}
+        </div>
+      )}
     </div>
   );
 }

@@ -11,40 +11,38 @@ const TIMES = [
 ];
 
 export function ReminderSettings() {
-  const [enabled, setEnabled] = useState(false);
-  const [time, setTime] = useState("05:30");
-  const [perm, setPerm] = useState<NotificationPermission>("default");
+  const [enabled, setEnabled] = useState(
+    () => typeof window !== "undefined" && window.localStorage.getItem("hafiz_reminder_on") === "1"
+  );
+  const [time, setTime] = useState(() => {
+    if (typeof window === "undefined") return "05:30";
+    return window.localStorage.getItem("hafiz_reminder_time") || "05:30";
+  });
+  const [perm, setPerm] = useState<NotificationPermission>(
+    () => (typeof Notification !== "undefined" ? Notification.permission : "default")
+  );
   const [msg, setMsg] = useState("");
 
   useEffect(() => {
-    try {
-      setEnabled(localStorage.getItem("hafiz_reminder_on") === "1");
-      setTime(localStorage.getItem("hafiz_reminder_time") || "05:30");
-    } catch { /* ignore */ }
-    if (typeof Notification !== "undefined") setPerm(Notification.permission);
-    scheduleTick();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Lightweight in-tab scheduler: fires once per day at the chosen time while the app is open,
-  // and the service worker can show a reminder even in the background PWA.
-  const scheduleTick = () => {
     if (typeof window === "undefined") return;
-    window.setInterval(() => {
+    // Lightweight in-tab scheduler: fires once per day at the chosen time while the app is open,
+    // and the service worker can show a reminder even in the background PWA.
+    const intervalId = window.setInterval(() => {
       try {
-        if (localStorage.getItem("hafiz_reminder_on") !== "1") return;
-        const t = localStorage.getItem("hafiz_reminder_time") || "05:30";
+        if (window.localStorage.getItem("hafiz_reminder_on") !== "1") return;
+        const t = window.localStorage.getItem("hafiz_reminder_time") || "05:30";
         const now = new Date();
         const hhmm = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-        const lastFired = localStorage.getItem("hafiz_reminder_last");
+        const lastFired = window.localStorage.getItem("hafiz_reminder_last");
         const todayKey = now.toISOString().slice(0, 10);
         if (hhmm === t && lastFired !== todayKey && Notification.permission === "granted") {
-          localStorage.setItem("hafiz_reminder_last", todayKey);
+          window.localStorage.setItem("hafiz_reminder_last", todayKey);
           navigator.serviceWorker?.ready.then((reg) => reg.active?.postMessage({ type: "review-reminder" }));
         }
       } catch { /* ignore */ }
     }, 60000);
-  };
+    return () => window.clearInterval(intervalId);
+  }, []);
 
   const enable = async () => {
     if (typeof Notification === "undefined") {

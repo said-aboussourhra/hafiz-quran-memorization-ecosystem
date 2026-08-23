@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { pickIntroVerse, type IntroVerse } from "@/lib/introVerses";
 
 const SESSION_KEY = "hafiz_intro_seen_v7";
@@ -8,8 +8,28 @@ const CONTINUE_AT = 9000; // fallback: reveal "continue" even if audio can't aut
 
 type Phase = "hidden" | "running" | "noor" | "fadeout";
 
+const emptySubscribe = () => () => {};
+
+/** true on the client after mount, false on the server and during the first client render. */
+function useIsMounted(): boolean {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false,
+  );
+}
+
+function wasIntroSeen(): boolean {
+  try {
+    return window.sessionStorage.getItem(SESSION_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
 export function Intro() {
-  const [mounted, setMounted] = useState(false);
+  const isMounted = useIsMounted();
+  // Before mount we must render null to avoid hydration mismatches (sessionStorage is client-only).
   const [phase, setPhase] = useState<Phase>("hidden");
   const [glow, setGlow] = useState(false);
   const [showContinue, setShowContinue] = useState(false);
@@ -19,37 +39,6 @@ export function Intro() {
   const transitionedRef = useRef(false);
   const playedRef = useRef(false);
   const timersRef = useRef<number[]>([]);
-
-  useEffect(() => {
-    setMounted(true);
-    let seen = false;
-    try {
-      seen = sessionStorage.getItem(SESSION_KEY) === "1";
-    } catch {
-      seen = false;
-    }
-    if (seen) {
-      setPhase("hidden");
-      return;
-    }
-    setVerse(pickIntroVerse());
-    setPhase("running");
-    document.body.style.overflow = "hidden";
-
-    startAudio();
-    const onInteract = () => startAudio();
-    const events: (keyof WindowEventMap)[] = ["pointerdown", "touchstart", "keydown", "click"];
-    events.forEach((e) => window.addEventListener(e, onInteract, { passive: true } as AddEventListenerOptions));
-
-    timersRef.current.push(window.setTimeout(() => setShowContinue(true), CONTINUE_AT));
-
-    return () => {
-      timersRef.current.forEach((t) => window.clearTimeout(t));
-      events.forEach((e) => window.removeEventListener(e, onInteract));
-      document.body.style.overflow = "";
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const startAudio = () => {
     if (playedRef.current) return;
@@ -69,6 +58,35 @@ export function Intro() {
       () => {}
     );
   };
+
+  useEffect(() => {
+    if (!isMounted) return;
+    // This runs once on mount (client only). Session storage is safe to read here.
+    if (wasIntroSeen()) return;
+
+    // Defer initial state updates out of the synchronous effect body so React can
+    // paint the (null) first frame without a cascading render. This is a mount-only
+    // initialization path (the effect has empty deps), not a derived-state sync.
+    queueMicrotask(() => {
+      setVerse(pickIntroVerse());
+      setPhase("running");
+    });
+    document.body.style.overflow = "hidden";
+
+    startAudio();
+    const onInteract = () => startAudio();
+    const events: (keyof WindowEventMap)[] = ["pointerdown", "touchstart", "keydown", "click"];
+    events.forEach((e) => window.addEventListener(e, onInteract, { passive: true } as AddEventListenerOptions));
+
+    const timers = timersRef.current;
+    timers.push(window.setTimeout(() => setShowContinue(true), CONTINUE_AT));
+
+    return () => {
+      timers.forEach((t) => window.clearTimeout(t));
+      events.forEach((e) => window.removeEventListener(e, onInteract));
+      document.body.style.overflow = "";
+    };
+  }, [isMounted]);
 
   const proceed = () => {
     if (transitionedRef.current) return;
@@ -94,7 +112,7 @@ export function Intro() {
 
   const finish = () => {
     try {
-      sessionStorage.setItem(SESSION_KEY, "1");
+      window.sessionStorage.setItem(SESSION_KEY, "1");
     } catch {
       /* ignore */
     }
@@ -102,7 +120,7 @@ export function Intro() {
     setPhase("hidden");
   };
 
-  if (!mounted || phase === "hidden" || !verse) return null;
+  if (!isMounted || phase === "hidden" || !verse) return null;
 
   return (
     <div className={`intro-root ${phase === "noor" ? "noor" : ""} ${phase === "fadeout" ? "fade-out" : ""} ${glow ? "glow-burst" : ""}`} role="presentation">

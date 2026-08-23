@@ -1,8 +1,41 @@
 // Professional Arabic TTS via server API (Azure Neural), with graceful fallback.
+// NOTE: This module is used ONLY for UI narration (names, adhkar, instructions).
+// Quran recitation is always served from verified reciter audio sources — never TTS.
 
 let currentAudio: HTMLAudioElement | null = null;
 const cache = new Map<string, string>(); // text -> object URL
 let apiAvailable: boolean | null = null; // null = unknown, false = use fallback
+let lastWarnedAt = 0; // throttle "service unavailable" notices
+
+/** Non-blocking, polite notice shown when no audio service is available. */
+function notifyAudioUnavailable() {
+  if (typeof window === "undefined") return;
+  const now = Date.now();
+  if (now - lastWarnedAt < 8000) return; // at most once every 8s
+  lastWarnedAt = now;
+  // Use a lightweight inline toast so we don't depend on any component/context.
+  const id = "__hafiz_tts_notice";
+  let el = document.getElementById(id);
+  if (!el) {
+    el = document.createElement("div");
+    el.id = id;
+    el.setAttribute("role", "status");
+    el.dir = "rtl";
+    el.style.cssText =
+      "position:fixed;z-index:9999;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%);" +
+      "max-width:min(92vw,420px);padding:10px 16px;border-radius:14px;font:600 13px/1.6 system-ui,Segoe UI,Tahoma,sans-serif;" +
+      "background:#0f2a2c;color:#e9fbf6;box-shadow:0 8px 30px rgba(0,0,0,.18);opacity:0;transition:opacity .25s ease;";
+    document.body.appendChild(el);
+  }
+  el.textContent =
+    "الخدمة الصوتية غير متاحة مؤقتًا. يمكنك المتابعة بالقراءة والاستماع إلى تلاوة القرآن.";
+  requestAnimationFrame(() => {
+    el && (el.style.opacity = "1");
+  });
+  window.setTimeout(() => {
+    if (el) el.style.opacity = "0";
+  }, 4500);
+}
 
 /* ===== Browser fallback (only used if the API isn't configured) ===== */
 let cachedVoice: SpeechSynthesisVoice | null | undefined;
@@ -71,7 +104,12 @@ async function fetchTTS(text: string): Promise<string | null> {
       apiAvailable = false; // not configured — use fallback from now on
       return null;
     }
-    if (!res.ok) return null;
+    if (!res.ok) {
+      // 502/503 etc.: neural service failed. Use the browser fallback for this
+      // call, but keep the server available flag unknown so we retry next time
+      // (the failure may be transient).
+      return null;
+    }
     apiAvailable = true;
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
@@ -82,20 +120,36 @@ async function fetchTTS(text: string): Promise<string | null> {
   }
 }
 
+// Whether the browser itself can synthesize speech.
+function browserSynthesisAvailable(): boolean {
+  return typeof window !== "undefined" && "speechSynthesis" in window;
+}
+
 // Speak Arabic text with the professional voice; fall back to browser TTS.
+// If nothing is available, the Quran and memorization experience remains usable;
+// we only show a short, non-blocking notice.
 export async function speakArabic(text: string, opts?: { rate?: number }) {
   stopSpeaking();
   if (apiAvailable === false) {
-    fallbackSpeak(text, opts?.rate);
+    if (browserSynthesisAvailable()) {
+      fallbackSpeak(text, opts?.rate);
+    } else {
+      notifyAudioUnavailable();
+    }
     return;
   }
   const url = await fetchTTS(text);
   if (url) {
     const audio = new Audio(url);
     currentAudio = audio;
-    audio.play().catch(() => fallbackSpeak(text, opts?.rate));
-  } else {
+    audio.play().catch(() => {
+      if (browserSynthesisAvailable()) fallbackSpeak(text, opts?.rate);
+      else notifyAudioUnavailable();
+    });
+  } else if (browserSynthesisAvailable()) {
     fallbackSpeak(text, opts?.rate);
+  } else {
+    notifyAudioUnavailable();
   }
 }
 
@@ -106,8 +160,9 @@ export async function speakSequence(parts: string[], _rate = 0.85) {
 }
 
 export function speechSupported(): boolean {
-  // Always true — the API works everywhere, and browser fallback covers the rest.
-  return true;
+  if (typeof window === "undefined") return false;
+  // Server neural TTS (when configured) or the browser's own speech synthesis.
+  return apiAvailable === true || browserSynthesisAvailable();
 }
 
 /* ===== Speech recognition (unchanged) ===== */

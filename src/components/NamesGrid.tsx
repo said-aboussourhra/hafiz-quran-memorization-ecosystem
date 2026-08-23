@@ -6,11 +6,10 @@ import { initSpeech, speakSequence, stopSpeaking, speechSupported } from "@/lib/
 
 export function NamesGrid() {
   const [speaking, setSpeaking] = useState<number | null>(null);
-  const [supported, setSupported] = useState(true);
+  const [supported] = useState(() => speechSupported());
 
   useEffect(() => {
     initSpeech();
-    setSupported(speechSupported());
   }, []);
 
   const say = (i: number, name: string, meaning: string) => {

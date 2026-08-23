@@ -11,21 +11,20 @@ import Image from "next/image";
 const NAV = [
   { href: "/", label: "الرئيسية" },
   { href: "/mushaf", label: "المصحف" },
+  { href: "/reciters", label: "القرّاء" },
   { href: "/memorize", label: "الحفظ" },
   { href: "/review", label: "المراجعة" },
-  { href: "/plan", label: "خطة الحفظ" },
+  { href: "/journey", label: "رحلة الحفظ" },
+  { href: "/certificates", label: "الشهادات" },
   { href: "/search", label: "بحث" },
-  { href: "/names", label: "أسماء الله" },
-  { href: "/adhkar", label: "الأذكار" },
-  { href: "/universe", label: "كون القرآن" },
   { href: "/dashboard", label: "حسابي" },
 ];
 
 const MOBILE = [
   { href: "/", label: "الرئيسية", icon: "home" },
-  { href: "/memorize", label: "الحفظ", icon: "book" },
+  { href: "/journey", label: "رحلتي", icon: "stars" },
   { href: "/mushaf", label: "المصحف", icon: "quran" },
-  { href: "/review", label: "المراجعة", icon: "search" },
+  { href: "/memorize", label: "الحفظ", icon: "book" },
   { href: "/dashboard", label: "حسابي", icon: "trophy" },
 ];
 

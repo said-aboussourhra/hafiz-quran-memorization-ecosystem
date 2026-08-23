@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/db";
+import { requireDb } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { buildSessionCookie, hashPassword } from "@/lib/auth";
@@ -23,6 +23,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: "صيغة البريد الإلكتروني غير صحيحة." }, { status: 400 });
     }
 
+    const db = await requireDb();
     const [existing] = await db.select().from(users).where(eq(users.email, email));
     if (existing) {
       return NextResponse.json({ ok: false, error: "هذا البريد مسجّل مسبقاً." }, { status: 409 });

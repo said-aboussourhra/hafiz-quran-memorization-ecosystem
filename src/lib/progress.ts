@@ -1,4 +1,4 @@
-import { db } from "@/db";
+import { requireDb } from "@/db";
 import { progress, activity, type Progress } from "@/db/schema";
 import { and, eq, sql } from "drizzle-orm";
 import { SURAHS, TOTAL_AYAHS, getSurah } from "./surahs";
@@ -9,6 +9,7 @@ function dayKey(d: Date): string {
 
 // Record today's activity (upsert count) — called when a memorization session saves.
 export async function logActivity(userId: number, amount = 1) {
+  const db = await requireDb();
   const day = dayKey(new Date());
   const existing = await db.select().from(activity).where(and(eq(activity.userId, userId), eq(activity.day, day)));
   if (existing.length > 0) {
@@ -19,6 +20,7 @@ export async function logActivity(userId: number, amount = 1) {
 }
 
 export async function getActivityDays(userId: number): Promise<Map<string, number>> {
+  const db = await requireDb();
   const rows = await db.select().from(activity).where(eq(activity.userId, userId));
   const map = new Map<string, number>();
   for (const r of rows) map.set(r.day, r.count);
@@ -115,6 +117,7 @@ export async function getBadges(userId: number | null) {
 }
 
 export async function getUserProgress(userId: number): Promise<Map<number, Progress>> {
+  const db = await requireDb();
   const rows = await db.select().from(progress).where(eq(progress.userId, userId));
   const map = new Map<number, Progress>();
   for (const r of rows) map.set(r.surahNumber, r);
@@ -247,6 +250,7 @@ export async function recordSurahMemorized(input: {
 }) {
   const meta = getSurah(input.surahNumber);
   if (!meta) throw new Error("invalid surah");
+  const db = await requireDb();
   const now = new Date();
   const full = input.memorizedAyahs >= meta.ayahCount;
   const status = input.retention >= 90 && full ? "mastered" : full ? "memorized" : "learning";
@@ -286,6 +290,7 @@ export async function recordSurahMemorized(input: {
 
 // SM-2 spaced-repetition grading. quality: 0=again, 3=hard, 4=good, 5=easy
 export async function gradeReview(userId: number, surahNumber: number, quality: number) {
+  const db = await requireDb();
   const [p] = await db
     .select()
     .from(progress)
