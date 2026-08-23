@@ -492,3 +492,19 @@ export const FILTERS: { id: ReciterFilter; label: string; dot: string; match: (r
   },
   { id: "all", label: "الكل", dot: "", match: () => true },
 ];
+
+// ============================================================
+// COMPATIBILITY ALIASES (for older imports)
+// ============================================================
+
+/**
+ * @deprecated استخدم `RECITERS` بدلاً من ذلك
+ * هذا المرادف موجود للتوافق مع الكود القديم
+ */
+export const RECITERS_CATALOG = RECITERS;
+
+/**
+ * @deprecated استخدم `Reciter` بدلاً من ذلك
+ * هذا المرادف موجود للتوافق مع الكود القديم
+ */
+export type ReciterProfile = Reciter;
