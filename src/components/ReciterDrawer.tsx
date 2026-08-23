@@ -2,18 +2,18 @@
 
 import React, { useState } from "react";
 import {
-  RECITERS_CATALOG,
+  RECITERS,
   filterReciters,
-  type ReciterProfile,
+  type Reciter,
   type SyncLevel,
 } from "@/lib/reciterRegistry";
 
 interface ReciterDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  selectedReciter: ReciterProfile;
-  onSelectReciter: (reciter: ReciterProfile) => void;
-  onStartMemorizeWithReciter?: (reciter: ReciterProfile) => void;
+  selectedReciter: Reciter;
+  onSelectReciter: (reciter: Reciter) => void;
+  onStartMemorizeWithReciter?: (reciter: Reciter) => void;
 }
 
 const CATEGORIES = [
@@ -25,6 +25,71 @@ const CATEGORIES = [
   { id: "modern", label: "أصوات معاصرة" },
 ];
 
+// ✅ دالة مساعدة لتصفية القراء حسب الفئة
+function filterByCategory(reciters: Reciter[], category: string): Reciter[] {
+  if (category === "all") return reciters;
+  
+  const categoryMap: Record<string, string[]> = {
+    haramain: ["saudi", "haram"],
+    egyptian: ["egypt"],
+    murattal: ["murattal"],
+    mujawwad: ["mujawwad"],
+    modern: ["kuwait", "algeria", "yemen"],
+  };
+
+  const tags = categoryMap[category] || [];
+  if (tags.length === 0) return reciters;
+  
+  return reciters.filter((r) => r.tags.some((tag) => tags.includes(tag)));
+}
+
+// ✅ دالة للحصول على شارة التزامن
+function getSyncBadge(level: SyncLevel | undefined) {
+  switch (level) {
+    case "WORD_VERIFIED":
+      return {
+        icon: "🟢",
+        text: "كلمة بكلمة (دقيق)",
+        cls: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      };
+    case "WORD_AUTO":
+      return {
+        icon: "🟡",
+        text: "كلمة بكلمة (تلقائي)",
+        cls: "bg-amber-50 text-amber-700 border-amber-200",
+      };
+    case "AYAH_SYNC":
+      return {
+        icon: "🔵",
+        text: "آية بآية",
+        cls: "bg-blue-50 text-blue-700 border-blue-200",
+      };
+    case "AUDIO_ONLY":
+    default:
+      return {
+        icon: "⚪",
+        text: "صوت فقط",
+        cls: "bg-gray-50 text-gray-600 border-gray-200",
+      };
+  }
+}
+
+// ✅ دالة للحصول على مستوى المزامنة النصي
+function getSyncLevelText(level: SyncLevel | undefined): string {
+  switch (level) {
+    case "WORD_VERIFIED":
+      return "🟢 كلمة بكلمة";
+    case "WORD_AUTO":
+      return "🟡 كلمة بكلمة (تلقائي)";
+    case "AYAH_SYNC":
+      return "🔵 آية بآية";
+    case "AUDIO_ONLY":
+      return "⚪ صوت فقط";
+    default:
+      return "غير محدد";
+  }
+}
+
 export function ReciterDrawer({
   isOpen,
   onClose,
@@ -35,41 +100,31 @@ export function ReciterDrawer({
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
   const [syncFilter, setSyncFilter] = useState<SyncLevel | undefined>(undefined);
-  const [previewReciter, setPreviewReciter] = useState<ReciterProfile | null>(null);
+  const [previewReciter, setPreviewReciter] = useState<Reciter | null>(null);
 
   if (!isOpen) return null;
 
-  const filtered = filterReciters(query, category, syncFilter);
-
-  const getSyncBadge = (level: SyncLevel) => {
-    switch (level) {
-      case "WORD_VERIFIED":
-        return {
-          icon: "🟢",
-          text: "كلمة بكلمة (دقيق)",
-          cls: "bg-emerald-50 text-emerald-700 border-emerald-200",
-        };
-      case "WORD_AUTO":
-        return {
-          icon: "🟡",
-          text: "كلمة بكلمة (تلقائي)",
-          cls: "bg-amber-50 text-amber-700 border-amber-200",
-        };
-      case "AYAH_SYNC":
-        return {
-          icon: "🟡",
-          text: "آية بآية",
-          cls: "bg-blue-50 text-blue-700 border-blue-200",
-        };
-      case "AUDIO_ONLY":
-      default:
-        return {
-          icon: "⚪",
-          text: "صوت فقط",
-          cls: "bg-gray-50 text-gray-600 border-gray-200",
-        };
-    }
-  };
+  // ✅ تصفية القراء
+  let filtered = filterReciters(RECITERS, "all");
+  
+  // تصفية حسب الفئة
+  filtered = filterByCategory(filtered, category);
+  
+  // تصفية حسب البحث
+  if (query.trim()) {
+    filtered = filtered.filter(
+      (r) =>
+        r.nameArabic.includes(query) ||
+        (r.nameEnglish?.includes(query) ?? false) ||
+        r.style.includes(query) ||
+        (r.riwaya?.includes(query) ?? false)
+    );
+  }
+  
+  // تصفية حسب مستوى المزامنة
+  if (syncFilter) {
+    filtered = filtered.filter((r) => r.defaultSyncLevel === syncFilter);
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
@@ -132,7 +187,7 @@ export function ReciterDrawer({
           </div>
 
           {/* Sync Level Filter */}
-          <div className="flex items-center gap-2 text-xs text-ink-500 pt-1">
+          <div className="flex items-center gap-2 text-xs text-ink-500 pt-1 flex-wrap">
             <span className="font-semibold">المزامنة:</span>
             <button
               onClick={() => setSyncFilter(undefined)}
@@ -162,7 +217,17 @@ export function ReciterDrawer({
                   : "bg-blue-50 text-blue-700 hover:bg-blue-100"
               }`}
             >
-              🟡 آية بآية
+              🔵 آية بآية
+            </button>
+            <button
+              onClick={() => setSyncFilter("AUDIO_ONLY")}
+              className={`px-2 py-0.5 rounded-md ${
+                syncFilter === "AUDIO_ONLY"
+                  ? "bg-gray-700 text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              ⚪ صوت فقط
             </button>
           </div>
         </div>
@@ -178,6 +243,8 @@ export function ReciterDrawer({
             filtered.map((reciter) => {
               const isSelected = selectedReciter.id === reciter.id;
               const badge = getSyncBadge(reciter.defaultSyncLevel);
+              // ✅ استخدام `|| 0` لتجنب undefined
+              const surahCount = reciter.availableSurahs?.length ?? 0;
 
               return (
                 <div
@@ -204,12 +271,12 @@ export function ReciterDrawer({
                         </span>
                       </div>
                       <p className="text-xs text-ink-500 mt-0.5">{reciter.style}</p>
-                      <div className="flex items-center gap-3 text-[11px] text-ink-500 mt-1">
-                        <span>الرواية: {reciter.riwayah}</span>
+                      <div className="flex items-center gap-3 text-[11px] text-ink-500 mt-1 flex-wrap">
+                        <span>الرواية: {reciter.riwaya || reciter.riwayah || "غير محددة"}</span>
                         <span>·</span>
-                        <span>{reciter.availableSurahs.length} سورة متاحة</span>
+                        <span>{surahCount} سورة متاحة</span>
                         <span>·</span>
-                        <span>{reciter.audioQuality}</span>
+                        <span>{reciter.audioQuality || "متوسطة"}</span>
                       </div>
                     </div>
                   </div>
@@ -269,7 +336,7 @@ export function ReciterDrawer({
                   {previewReciter.style}
                 </p>
                 <p className="mt-4 text-sm text-ink-700 leading-relaxed max-w-md mx-auto">
-                  {previewReciter.bioArabic}
+                  {previewReciter.bioArabic || previewReciter.bio || "لا توجد سيرة متاحة حالياً"}
                 </p>
               </div>
 
@@ -277,27 +344,25 @@ export function ReciterDrawer({
                 <div className="rounded-2xl bg-cream-50 p-3 border border-emerald-500/10">
                   <div className="text-xs text-ink-500">الرواية</div>
                   <div className="mt-1 text-sm font-bold text-ink-900">
-                    {previewReciter.riwayah}
+                    {previewReciter.riwaya || previewReciter.riwayah || "غير محددة"}
                   </div>
                 </div>
                 <div className="rounded-2xl bg-cream-50 p-3 border border-emerald-500/10">
                   <div className="text-xs text-ink-500">السور المتاحة</div>
                   <div className="mt-1 text-sm font-bold text-ink-900">
-                    {previewReciter.availableSurahs.length} سورة
+                    {previewReciter.availableSurahs?.length ?? 0} سورة
                   </div>
                 </div>
                 <div className="rounded-2xl bg-cream-50 p-3 border border-emerald-500/10">
                   <div className="text-xs text-ink-500">جودة الصوت</div>
                   <div className="mt-1 text-sm font-bold text-ink-900">
-                    {previewReciter.audioQuality}
+                    {previewReciter.audioQuality || "متوسطة"}
                   </div>
                 </div>
                 <div className="rounded-2xl bg-cream-50 p-3 border border-emerald-500/10">
                   <div className="text-xs text-ink-500">مستوى المزامنة</div>
                   <div className="mt-1 text-sm font-bold text-emerald-700">
-                    {previewReciter.defaultSyncLevel === "WORD_VERIFIED"
-                      ? "🟢 كلمة بكلمة"
-                      : "🟡 آية بآية"}
+                    {getSyncLevelText(previewReciter.defaultSyncLevel)}
                   </div>
                 </div>
               </div>
