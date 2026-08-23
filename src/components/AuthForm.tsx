@@ -32,10 +32,13 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
         body: JSON.stringify(payload),
       });
       const data = await res.json();
-      if (!data.ok) {
+      
+      // ✅ التصحيح: استخدم success بدلاً من ok
+      if (!data.success) {
         setError(data.error || "حدث خطأ، حاول مجدداً.");
         return;
       }
+      
       // hard navigation guarantees the server layout re-reads the session
       // so the guest buttons disappear and the account view appears.
       window.location.assign("/dashboard");
