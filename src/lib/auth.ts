@@ -58,11 +58,17 @@ export async function getCurrentUser(): Promise<User | null> {
   if (!token) return null;
   const id = verifyToken(token);
   if (!id) return null;
+  // Cookie is valid. Do NOT treat a transient DB error (or first-run missing
+  // tables) as "logged out" — that would bounce valid users back to /login.
   if (!isDbAvailable() || !db) return null;
   try {
+    // Ensure tables exist on first hit (idempotent), then look the user up.
+    const { ensureSchema } = await import("@/db/ensure");
+    await ensureSchema();
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user ?? null;
-  } catch {
+  } catch (err) {
+    console.error("[auth] getCurrentUser lookup failed:", err);
     return null;
   }
 }
