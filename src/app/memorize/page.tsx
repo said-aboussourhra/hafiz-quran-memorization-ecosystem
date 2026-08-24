@@ -29,7 +29,7 @@ export default async function MemorizePage({ searchParams }: { searchParams: Pro
             <p className="text-xs tracking-[0.3em] text-gold-600">جلسة حفظ</p>
             <h1 className="mt-2 font-arabic text-4xl text-ink-900">{meta.nameAr}</h1>
           </header>
-          <MemorizeFlow surah={content} isLoggedIn={!!user} userName={user?.name ?? null} />
+          <MemorizeFlow surah={content} isLoggedIn={!!user} userName={user?.name ?? null} userId={user?.id ?? null} />
         </div>
       );
     }

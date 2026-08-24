@@ -12,6 +12,42 @@ import { Certificate } from "@/components/Certificate";
 type Phase = "setup" | "method" | "done";
 type Method = "listen" | "repeat" | "voice" | "liverecite" | "hide" | "dictation" | "write" | "arrange" | "complete";
 
+/**
+ * The canonical memorization journey the learner travels through.
+ * Each screen maps to one step so the UI can always answer "ماذا أفعل الآن؟".
+ * Order: READ → LISTEN → REPEAT → HIDE → RECITE → CHECK → RETRY → MASTER.
+ */
+const JOURNEY: { id: string; label: string; icon: string; methods: Method[] }[] = [
+  { id: "read", label: "اقرأ", icon: "📖", methods: ["listen"] },
+  { id: "listen", label: "استمع", icon: "🔊", methods: ["listen", "dictation"] },
+  { id: "repeat", label: "كرّر", icon: "🔁", methods: ["repeat"] },
+  { id: "hide", label: "أخفِ", icon: "🙈", methods: ["hide"] },
+  { id: "recite", label: "سمّع", icon: "🎙️", methods: ["voice", "liverecite", "write", "arrange", "complete"] },
+  { id: "check", label: "تحقّق", icon: "✅", methods: ["dictation", "write", "arrange", "complete"] },
+  { id: "master", label: "أتقن", icon: "🌟", methods: [] },
+];
+
+function journeyStepFor(method: Method | null, phase: Phase): number {
+  if (phase === "done") return JOURNEY.length - 1;
+  if (phase === "setup" || !method) return 0;
+  for (let i = 0; i < JOURNEY.length; i++) {
+    if (JOURNEY[i].methods.includes(method)) return i;
+  }
+  return 0;
+}
+
+const STEP_GUIDANCE: Record<Method, string> = {
+  listen: "استمع للآية بتركيز، وتتبّع الكلمات بعينيك.",
+  repeat: "كرّر الآية مع الشيخ حتى تطمئن إليها.",
+  voice: "اقرأ الآية بصوتك، وسنصحّح نطقك مقابل الرسم العثماني.",
+  liverecite: "انطق الآية فتُكتب أمامك كلمة كلمة، ونُنبّهك عند أي خطأ.",
+  hide: "أخفِ النص واسترجع الآية من حفظك، ثم اكشف لتتأكد.",
+  dictation: "استمع للآية ثم اكتبها، وسيُصحَّح لك كلمة بكلمة.",
+  write: "اكتب الآية من حفظك، والتشكيل غير مطلوب.",
+  arrange: "رتّب كلمات الآية بالترتيب الصحيح.",
+  complete: "اختر الكلمة الصحيحة لكل فراغ.",
+};
+
 const METHODS: { id: Method; label: string; icon: string; desc: string; scored: boolean }[] = [
   { id: "listen", label: "استماع", icon: "🔊", desc: "استمع للمقطع بصوت الشيخ", scored: false },
   { id: "repeat", label: "تكرار", icon: "🔁", desc: "كرّر معي كل آية حتى ترسخ", scored: false },
@@ -40,7 +76,7 @@ function shuffle<T>(arr: T[]): T[] {
 
 type Word = { t: string; i: number };
 
-export function MemorizeFlow({ surah, isLoggedIn, userName }: { surah: SurahContent; isLoggedIn: boolean; userName?: string | null }) {
+export function MemorizeFlow({ surah, isLoggedIn, userName, userId }: { surah: SurahContent; isLoggedIn: boolean; userName?: string | null; userId?: number | null }) {
   const router = useRouter();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const surahNum = surah.meta.number;
@@ -167,6 +203,8 @@ export function MemorizeFlow({ surah, isLoggedIn, userName }: { surah: SurahCont
   const nextAyah = (recordedAccuracy?: number) => {
     if (recordedAccuracy != null) {
       setScores((s) => [...s, recordedAccuracy]);
+      // Random encouragement runs inside an event handler, never during render.
+      // eslint-disable-next-line react-hooks/purity
       if (recordedAccuracy >= PASS) showToast(ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)]);
     }
     const ni = idx + 1;
@@ -311,10 +349,62 @@ export function MemorizeFlow({ surah, isLoggedIn, userName }: { surah: SurahCont
   const allBlanksAnswered = blankIdx.length > 0 && blankAnswers.every((a) => a !== null);
 
   const scoredCount = scores.filter((s) => s >= PASS).length;
+  const currentStep = journeyStepFor(method, phase);
+  const ayahProgressPct = sessionAyahs.length ? Math.round(((idx + (phase === "done" ? 1 : 0)) / sessionAyahs.length) * 100) : 0;
 
   return (
-    <div className="relative rounded-3xl card-warm p-6 sm:p-8">
+    <div className="relative rounded-3xl card-warm p-5 sm:p-8">
       <audio ref={audioRef} />
+
+      {/* Persistent header: surah + journey stepper, so the learner always knows where they are */}
+      <div className="mb-5">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="min-w-0">
+            <p className="text-xs tracking-[0.25em] text-gold-600">جلسة حفظ</p>
+            <h3 className="truncate font-arabic text-xl font-bold text-ink-900" style={{ fontFamily: "var(--font-quran)" }}>
+              سورة {surah.meta.nameAr}
+            </h3>
+          </div>
+          {phase !== "setup" && (
+            <div className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+              {phase === "done" ? "اكتملت الجلسة" : `الآية ${Math.min(idx + 1, sessionAyahs.length).toLocaleString("ar-EG")} / ${sessionAyahs.length.toLocaleString("ar-EG")}`}
+            </div>
+          )}
+        </div>
+
+        {phase !== "setup" && (
+          <div className="mt-4">
+            <ol className="flex items-center gap-1 overflow-x-auto pb-1" aria-label="مراحل الحفظ">
+              {JOURNEY.map((s, i) => {
+                const state = i < currentStep ? "done" : i === currentStep ? "active" : "todo";
+                return (
+                  <li key={s.id} className="flex shrink-0 items-center" aria-current={state === "active" ? "step" : undefined}>
+                    <span
+                      className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold transition sm:text-xs ${
+                        state === "active"
+                          ? "bg-emerald-600 text-white shadow-sm"
+                          : state === "done"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "text-ink-400"
+                      }`}
+                      title={s.label}
+                    >
+                      <span aria-hidden="true">{state === "done" ? "✓" : s.icon}</span>
+                      <span className="hidden sm:inline">{s.label}</span>
+                    </span>
+                    {i < JOURNEY.length - 1 && (
+                      <span className={`mx-0.5 h-px w-3 sm:w-5 ${i < currentStep ? "bg-emerald-400" : "bg-sand-300"}`} aria-hidden="true" />
+                    )}
+                  </li>
+                );
+              })}
+            </ol>
+            <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-sand-300/60" aria-hidden="true">
+              <div className="h-full rounded-full bg-gradient-to-l from-emerald-500 to-ocean-500 transition-all duration-500" style={{ width: `${ayahProgressPct}%` }} />
+            </div>
+          </div>
+        )}
+      </div>
 
       {toast && (
         <div className="pointer-events-none absolute inset-x-0 -top-3 z-30 flex justify-center px-4">
@@ -409,6 +499,14 @@ export function MemorizeFlow({ surah, isLoggedIn, userName }: { surah: SurahCont
       {/* ACTIVE METHOD */}
       {phase === "method" && method && cur && (
         <div>
+          {/* "ماذا أفعل الآن؟" guidance — tells the learner exactly what to do in this step */}
+          <div className="mb-4 flex items-start gap-2 rounded-2xl bg-cream-100/70 px-4 py-3 text-sm text-ink-700" role="note">
+            <span className="mt-0.5 text-base" aria-hidden="true">💡</span>
+            <span>
+              <span className="font-bold text-ink-900">الخطوة الحالية: </span>
+              {STEP_GUIDANCE[method]}
+            </span>
+          </div>
           <div className="mb-5 flex items-center justify-between">
             <button onClick={() => { setMethod(null); }} className="text-sm text-ink-500 hover:text-ink-900">← الطرق</button>
             <div className="text-center">
@@ -831,6 +929,7 @@ export function MemorizeFlow({ surah, isLoggedIn, userName }: { surah: SurahCont
                 surahName={surah.meta.nameAr}
                 ayahCount={totalAyahs}
                 accuracy={scores.length ? (scores.reduce((s, v) => s + v, 0) / scores.length) * 100 : 90}
+                userId={userId}
               />
             </div>
           )}

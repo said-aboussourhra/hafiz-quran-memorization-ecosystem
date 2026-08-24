@@ -12,16 +12,16 @@ const DHIKR_POOL = [
 ];
 
 export function PersonalDhikr({ name }: { name: string }) {
-  const [supported, setSupported] = useState(false);
+  const [supported] = useState(() => speechSupported());
   const [speaking, setSpeaking] = useState(false);
-  const [dhikr, setDhikr] = useState(DHIKR_POOL[0]);
+  const [dhikr] = useState(() => {
+    // pick a dhikr of the day (stable per day)
+    const day = Math.floor(Date.now() / 86400000);
+    return DHIKR_POOL[day % DHIKR_POOL.length];
+  });
 
   useEffect(() => {
     initSpeech();
-    setSupported(speechSupported());
-    // pick a dhikr of the day (stable per day)
-    const day = Math.floor(Date.now() / 86400000);
-    setDhikr(DHIKR_POOL[day % DHIKR_POOL.length]);
   }, []);
 
   const repeatWithMe = () => {

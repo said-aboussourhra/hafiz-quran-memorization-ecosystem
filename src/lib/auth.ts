@@ -1,6 +1,6 @@
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
-import { db } from "@/db";
+import { db, ensureSchema, isDbAvailable } from "@/db";
 import { users, type User } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
@@ -44,6 +44,7 @@ export function buildSessionCookie(userId: number) {
     sameSite: "lax" as const,
     path: "/",
     maxAge: 60 * 60 * 24 * 30,
+    secure: process.env.NODE_ENV === "production",
   };
 }
 
@@ -57,6 +58,16 @@ export async function getCurrentUser(): Promise<User | null> {
   if (!token) return null;
   const id = verifyToken(token);
   if (!id) return null;
-  const [user] = await db.select().from(users).where(eq(users.id, id));
-  return user ?? null;
+  // Cookie is valid. Do NOT treat a transient DB error (or first-run missing
+  // tables) as "logged out" — that would bounce valid users back to /login.
+  if (!isDbAvailable() || !db) return null;
+  try {
+    // Ensure tables exist on first hit (idempotent), then look the user up.
+    await ensureSchema();
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user ?? null;
+  } catch (err) {
+    console.error("[auth] getCurrentUser lookup failed:", err);
+    return null;
+  }
 }

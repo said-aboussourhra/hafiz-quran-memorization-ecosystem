@@ -546,7 +546,68 @@ body::before {
 /* Paper color variants */
 .mushaf-page.paper-green { background: radial-gradient(70% 45% at 50% 0%, rgba(5,150,105,0.08), transparent 70%), radial-gradient(120% 95% at 50% 0%, #f2fbf6 0%, #e6f6ee 55%, #dcf1e6 100%); outline-color: rgba(5,150,105,0.5); }
 .mushaf-page.paper-blue { background: radial-gradient(70% 45% at 50% 0%, rgba(37,99,235,0.08), transparent 70%), radial-gradient(120% 95% at 50% 0%, #f2f7fd 0%, #e6f0fb 55%, #dbe9f8 100%); outline-color: rgba(37,99,235,0.5); }
+.mushaf-page.paper-white { background: #ffffff; outline-color: rgba(184,144,47,0.4); }
 .mushaf-page.paper-plain { background: #ffffff; outline-color: rgba(184,144,47,0.4); }
+
+/* ---- Night (dark) theme ---- */
+.mushaf-page.paper-night {
+  background:
+    radial-gradient(70% 45% at 50% 0%, rgba(16,185,129,0.06), transparent 70%),
+    radial-gradient(120% 95% at 50% 0%, #14231f 0%, #0e1a17 55%, #0a1311 100%);
+  outline-color: rgba(16,185,129,0.35);
+  box-shadow:
+    0 40px 90px -30px rgba(0,0,0,0.6),
+    0 14px 40px -22px rgba(0,0,0,0.5);
+}
+.mushaf-page.paper-night .mushaf-text,
+.mushaf-page.paper-night .mushaf-continuous-text { color: #d7ece4; }
+.mushaf-page.paper-night .mushaf-watermark { opacity: 0.18; }
+.mushaf-page.paper-night::before { border-color: rgba(16,185,129,0.30); }
+.mushaf-page.paper-night::after { border-color: rgba(96,165,250,0.20); }
+
+/* Reader dark chrome (toolbar + panels) */
+.reader-dark .mushaf-toolbar {
+  background: rgba(14, 26, 23, 0.92) !important;
+  border-color: rgba(16,185,129,0.18) !important;
+}
+.reader-dark .mushaf-toolbar button {
+  color: #cfe9df;
+}
+.reader-dark .mushaf-toolbar .bg-\[\#f4f8f5\],
+.reader-dark .mushaf-toolbar .bg-\[\#f7f5ec\] {
+  background: rgba(255,255,255,0.06) !important;
+}
+.reader-dark .mushaf-toolbar .bg-white {
+  background: rgba(255,255,255,0.08) !important;
+  color: #e6f4ee;
+}
+.reader-dark .mushaf-toolbar .text-slate-500,
+.reader-dark .mushaf-toolbar .text-slate-600,
+.reader-dark .mushaf-toolbar .text-slate-700,
+.reader-dark .mushaf-toolbar .text-slate-800,
+.reader-dark .mushaf-toolbar .text-slate-900 {
+  color: #cfe0da !important;
+}
+.reader-dark .mushaf-toolbar .border-slate-100 {
+  border-color: rgba(255,255,255,0.10) !important;
+}
+.reader-dark .mushaf-page .ayah-tafsir-inline,
+.reader-dark .mushaf-page .ayah-inline-actions .ayah-chip {
+  background: rgba(255,255,255,0.06) !important;
+  color: #d7ece4 !important;
+  border-color: rgba(255,255,255,0.10) !important;
+}
+.reader-dark .mushaf-page .mushaf-continuous-ayah {
+  border-bottom-color: rgba(16,185,129,0.14);
+}
+.reader-dark .mushaf-action-chip {
+  background: rgba(255,255,255,0.07);
+  border-color: rgba(255,255,255,0.12);
+  color: #d7ece4;
+}
+@media (forced-colors: active) {
+  .mushaf-page.paper-night { outline: 2px solid CanvasText; }
+}
 /* faint Islamic geometric watermark */
 .mushaf-page > .mushaf-text,
 .mushaf-page > * { position: relative; z-index: 1; }
@@ -1886,4 +1947,300 @@ html, body { max-width: 100%; overflow-x: hidden; }
     padding: 1.5rem !important;
     min-height: 380px !important;
   }
+}
+
+/* =====================================================================
+   HAFIZ — MUSHAAF READER · PHASE 2
+   Continuous mode, reading-width control, reduced motion, safe-area
+   mobile controls, and high-contrast support.
+   ===================================================================== */
+
+/* Apply typography CSS variables set by the reader (font size / line
+   height / word spacing / reading width). */
+.mushaf-text,
+.mushaf-continuous-text {
+  font-size: var(--mushaf-font-size, 34px);
+  line-height: var(--mushaf-line-height, 2.5);
+  word-spacing: var(--mushaf-word-spacing, 0);
+}
+
+.mushaf-page .mushaf-content {
+  max-width: var(--mushaf-reading-width, 1024px);
+  margin-inline: auto;
+}
+
+/* ---- Continuous mode ---- */
+.mushaf-continuous {
+  max-width: var(--mushaf-reading-width, 1024px);
+  margin-inline: auto;
+  padding: 4px 2px 40px;
+}
+.mushaf-continuous-ayah {
+  position: relative;
+  padding: 14px 8px;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.10);
+  border-radius: 14px;
+  transition: background-color .25s ease;
+}
+.mushaf-continuous-ayah + .mushaf-continuous-ayah {
+  margin-top: 6px;
+}
+.mushaf-continuous-ayah.is-playing {
+  background:
+    linear-gradient(90deg, rgba(16,185,129,0.08), rgba(37,99,235,0.05));
+  box-shadow: inset 3px 0 0 0 var(--reader-hl, #10b981);
+}
+.mushaf-continuous-text {
+  color: inherit;
+  cursor: pointer;
+}
+.mushaf-continuous-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+  opacity: 0;
+  transform: translateY(2px);
+  transition: opacity .2s ease, transform .2s ease;
+}
+.mushaf-continuous-ayah:hover .mushaf-continuous-actions,
+.mushaf-continuous-ayah:focus-within .mushaf-continuous-actions,
+.mushaf-continuous-ayah.is-playing .mushaf-continuous-actions {
+  opacity: 1;
+  transform: none;
+}
+.mushaf-action-chip {
+  display: inline-grid;
+  place-items: center;
+  min-height: 38px;
+  min-width: 38px;
+  padding: 0 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 42, 44, 0.08);
+  background: #ffffff;
+  color: #1e3d40;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform .12s ease, background-color .15s ease, border-color .15s ease;
+}
+.mushaf-action-chip:hover {
+  border-color: rgba(16, 185, 129, 0.45);
+  background: rgba(16, 185, 129, 0.08);
+}
+.mushaf-action-chip:active { transform: scale(0.96); }
+.mushaf-action-chip[aria-pressed="true"] {
+  background: rgba(16, 185, 129, 0.16);
+  border-color: rgba(16, 185, 129, 0.55);
+  color: #047857;
+}
+
+/* ---- Highlight styles ---- */
+.ayah-playing.ayah-underline {
+  background: transparent !important;
+  box-shadow: inset 0 -3px 0 0 var(--reader-hl, #10b981);
+  border-radius: 4px;
+}
+.ayah-playing.ayah-frame {
+  background: transparent !important;
+  outline: 2px solid var(--reader-hl, #10b981);
+  outline-offset: 4px;
+  border-radius: 10px;
+}
+
+/* ---- Reader toast (bookmarks / copy) ---- */
+.mushaf-toast {
+  position: fixed;
+  z-index: 220;
+  left: 50%;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: rgba(7, 26, 28, 0.92);
+  color: #e9fbf6;
+  font: 600 13px/1.4 var(--font-ui), system-ui, sans-serif;
+  box-shadow: 0 10px 30px rgba(0,0,0,.18);
+  animation: mushaf-toast-in .2s ease;
+}
+@keyframes mushaf-toast-in {
+  from { opacity: 0; transform: translate(-50%, 6px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ---- Reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .mushaf-continuous-ayah,
+  .mushaf-continuous-actions,
+  .mushaf-action-chip,
+  .mushaf-toast {
+    transition: none !important;
+    animation: none !important;
+  }
+  .mushaf-continuous-actions {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ---- High contrast / forced colors ---- */
+@media (forced-colors: active) {
+  .mushaf-action-chip {
+    border: 1px solid ButtonText;
+    background: Canvas;
+    color: ButtonText;
+  }
+  .mushaf-continuous-ayah.is-playing {
+    outline: 2px solid Highlight;
+  }
+}
+
+/* ---- Mobile: keep the reader toolbar reachable and overflow-free ---- */
+@media (max-width: 640px) {
+  .mushaf-continuous-actions {
+    opacity: 1;
+    transform: none;
+  }
+  .mushaf-action-chip {
+    min-height: 42px;
+    min-width: 42px;
+  }
+  /* Prevent any accidental horizontal overflow from long controls */
+  .mushaf-page, .mushaf-continuous, .mushaf-text {
+    max-width: 100% !important;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE POLISH — mobile-first, high-end feel across devices
+   Scoped tightly so the Mushaf reader keeps its own layout rules.
+   ============================================================ */
+
+/* Prevent accidental horizontal scroll anywhere on small screens */
+html, body { overflow-x: hidden; }
+body { -webkit-tap-highlight-color: transparent; }
+
+/* Buttons & chips: comfortable, finger-friendly, never cramped */
+@media (max-width: 640px) {
+  .btn-primary,
+  .btn-ghost {
+    min-height: 46px;
+    border-radius: 16px;
+  }
+  .chip {
+    padding: 0.42rem 0.8rem;
+    font-size: 0.78rem;
+  }
+
+  /* Tighten the large display headings that were sized for desktop */
+  h1.font-display { letter-spacing: -0.01em; }
+
+  /* Cards feel airier on phones with slightly gentler rounding & padding */
+  .card { border-radius: 20px; }
+
+  /* Footer */
+  footer { padding-bottom: calc(7rem + env(safe-area-inset-bottom)) !important; }
+}
+
+/* Header — compact but premium on phones */
+@media (max-width: 640px) {
+  header .h-11.w-11 { height: 38px !important; width: 38px !important; border-radius: 12px; }
+  header .text-2xl.font-black.shine-text,
+  header .text-2xl.font-bold.shine-text { font-size: 1.3rem !important; }
+  header .text-\[10px\] { display: none; } /* hide the tagline on the smallest screens */
+  header .px-5 { padding-right: 1rem !important; padding-left: 1rem !important; }
+  header .py-3 { padding-top: 0.6rem !important; padding-bottom: 0.6rem !important; }
+}
+
+/* Floating bottom navigation — proportionate on phones, with safe area */
+@media (max-width: 640px) {
+  nav.fixed.inset-x-0.bottom-0 {
+    padding-right: 0.65rem;
+    padding-left: 0.65rem;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
+  }
+  nav.fixed.inset-x-0.bottom-0 .max-w-md {
+    border-radius: 1.35rem;
+    padding-top: 0.45rem;
+    padding-bottom: 0.35rem;
+  }
+  /* The central elevated action */
+  nav.fixed.inset-x-0.bottom-0 a[class*="-top-6"] {
+    top: -1.1rem;
+  }
+  nav.fixed.inset-x-0.bottom-0 a[class*="-top-6"] > span:first-child {
+    width: 3rem !important;
+    height: 3rem !important;
+    box-shadow: 0 8px 18px -5px rgba(5,150,105,.55), 0 0 0 4px #ffffff !important;
+  }
+  nav.fixed.inset-x-0.bottom-0 svg { width: 20px; height: 20px; }
+}
+
+/* Extra-small phones (≤380px): keep nav labels readable without overflow */
+@media (max-width: 380px) {
+  nav.fixed.inset-x-0.bottom-0 .min-w-\[52px\] { min-width: 44px; }
+  nav.fixed.inset-x-0.bottom-0 span.text-\[10px\] { font-size: 9px; }
+}
+
+/* Tablets & small laptops: give section rhythm a touch more breathing room */
+@media (min-width: 641px) and (max-width: 1024px) {
+  main { padding-top: 1.25rem; }
+}
+
+/* Respect users who prefer less motion site-wide */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================================
+   MUSHAF TOOLBAR MENUS — responsive bottom sheet / desktop popover
+   ============================================================ */
+.mushaf-menu-panel { width: 100%; }
+@media (min-width: 641px) {
+  .mushaf-menu-panel { width: var(--mushaf-menu-w, 310px); }
+}
+
+/* Make the toolbar wrap comfortably on phones and the controls easy to tap */
+@media (max-width: 640px) {
+  .mushaf-toolbar { border-radius: 20px; padding: 0.5rem; }
+  .mushaf-toolbar button { min-height: 42px; }
+  /* Give the zoom stepper a touch-friendly footprint */
+  .mushaf-toolbar .grid.h-9 { height: 40px; width: 40px; }
+}
+
+/* ============================================================
+   PREMIUM CARD & COLOR POLISH
+   ============================================================ */
+:root {
+  /* richer, deeper emerald → sapphire brand */
+  --grad-brand: linear-gradient(135deg, #059669 0%, #0d9488 38%, #2563eb 100%);
+  --grad-brand-soft: linear-gradient(135deg, rgba(5,150,105,.12), rgba(37,99,235,.12));
+}
+body {
+  background:
+    radial-gradient(1100px 720px at 90% -10%, rgba(59,130,246,0.10), transparent 60%),
+    radial-gradient(950px 700px at 4% -6%, rgba(16,185,129,0.12), transparent 58%),
+    radial-gradient(700px 700px at 50% 120%, rgba(13,148,136,0.08), transparent 60%),
+    var(--bg-page);
+}
+.card {
+  background: linear-gradient(180deg, #ffffff, #f8fcfb);
+  border-radius: var(--radius);
+  box-shadow:
+    0 1px 2px rgba(7,26,28,.04),
+    0 12px 30px -16px rgba(13,148,136,.22);
+}
+.card:hover {
+  box-shadow:
+    0 1px 2px rgba(7,26,28,.05),
+    0 22px 50px -22px rgba(37,99,235,.35);
+}
+.btn-primary {
+  background: linear-gradient(120deg, #10b981 0%, #0d9488 45%, #2563eb 100%);
 }

@@ -11,21 +11,20 @@ import Image from "next/image";
 const NAV = [
   { href: "/", label: "الرئيسية" },
   { href: "/mushaf", label: "المصحف" },
+  { href: "/reciters", label: "القرّاء" },
   { href: "/memorize", label: "الحفظ" },
   { href: "/review", label: "المراجعة" },
-  { href: "/plan", label: "خطة الحفظ" },
+  { href: "/journey", label: "رحلة الحفظ" },
+  { href: "/certificates", label: "الشهادات" },
   { href: "/search", label: "بحث" },
-  { href: "/names", label: "أسماء الله" },
-  { href: "/adhkar", label: "الأذكار" },
-  { href: "/universe", label: "كون القرآن" },
   { href: "/dashboard", label: "حسابي" },
 ];
 
 const MOBILE = [
   { href: "/", label: "الرئيسية", icon: "home" },
-  { href: "/memorize", label: "الحفظ", icon: "book" },
+  { href: "/journey", label: "رحلتي", icon: "stars" },
   { href: "/mushaf", label: "المصحف", icon: "quran" },
-  { href: "/review", label: "المراجعة", icon: "search" },
+  { href: "/memorize", label: "الحفظ", icon: "book" },
   { href: "/dashboard", label: "حسابي", icon: "trophy" },
 ];
 
@@ -151,7 +150,7 @@ export function SiteChrome({ children, userName }: { children: ReactNode; userNa
         )}
       </header>
 
-      <main key={pathname} className="page-enter mx-auto w-full max-w-7xl px-5 pb-8 pt-6">{children}</main>
+      <main key={pathname} className="page-enter mx-auto w-full max-w-7xl px-4 pb-10 pt-4 sm:px-5 sm:pb-8 sm:pt-6">{children}</main>
 
       {/* ===== التذييل مع الشعار ===== */}
       <footer className="relative mt-8 overflow-hidden border-t hairline bg-white/60 pb-28 pt-12 backdrop-blur lg:pb-12">

@@ -1,9 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 type LastRead = { surah: number; name: string } | null;
+
+function readLastRead(): LastRead {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem("hafiz_last_read");
+    return raw ? (JSON.parse(raw) as LastRead) : null;
+  } catch {
+    return null;
+  }
+}
 
 export function saveLastRead(surah: number, name: string) {
   try {
@@ -14,16 +24,7 @@ export function saveLastRead(surah: number, name: string) {
 }
 
 export function LastReadCard() {
-  const [last, setLast] = useState<LastRead>(null);
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("hafiz_last_read");
-      if (raw) setLast(JSON.parse(raw));
-    } catch {
-      setLast(null);
-    }
-  }, []);
+  const [last] = useState<LastRead>(readLastRead);
 
   if (!last) return null;
 

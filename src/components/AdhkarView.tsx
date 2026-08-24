@@ -5,12 +5,11 @@ import { ADHKAR } from "@/lib/adhkar";
 import { initSpeech, speakArabic, stopSpeaking, speechSupported } from "@/lib/speak";
 
 export function AdhkarView() {
-  const [supported, setSupported] = useState(true);
+  const [supported] = useState(() => speechSupported());
   const [speaking, setSpeaking] = useState<string | null>(null);
 
   useEffect(() => {
     initSpeech();
-    setSupported(speechSupported());
   }, []);
 
   const say = (key: string, text: string) => {

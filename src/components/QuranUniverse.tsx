@@ -27,19 +27,25 @@ export function QuranUniverse({
 
   const points = useMemo(() => {
     const golden = Math.PI * (3 - Math.sqrt(5));
-    let maxR = 0;
     const raw = surahs.map((s, i) => {
       const r = Math.sqrt(i + 0.5);
       const theta = i * golden;
-      maxR = Math.max(maxR, r);
-      return { s, x: r * Math.cos(theta), y: r * Math.sin(theta) };
+      return { s, r, x: r * Math.cos(theta), y: r * Math.sin(theta) };
     });
+    const maxR = raw.reduce((m, p) => Math.max(m, p.r), 0) || 1;
+    // Keep all points within a safe circle (44% radius) so they never touch the
+    // container edges / cause overflow on any viewport.
     return raw.map((p) => ({
-      ...p,
+      s: p.s,
       left: 50 + (p.x / maxR) * 44,
       top: 50 + (p.y / maxR) * 44,
     }));
   }, [surahs]);
+
+  const hoverPoint = useMemo(
+    () => (hover ? points.find((p) => p.s.number === hover.number) : null),
+    [hover, points],
+  );
 
   const isDim = (s: UniverseSurah) => {
     if (filter === "all") return false;
@@ -47,6 +53,12 @@ export function QuranUniverse({
     if (filter === "learning") return s.status !== "learning";
     if (filter === "remaining") return s.status !== "not_started";
     return false;
+  };
+
+  // Touch-friendly tap: toggle the info card on mobile (no hover there).
+  const onNodeActivate = (s: UniverseSurah) => {
+    if (!interactive) return;
+    setHover((cur) => (cur?.number === s.number ? null : s));
   };
 
   return (
@@ -70,7 +82,10 @@ export function QuranUniverse({
         </div>
       )}
 
-      <div className="sky relative w-full overflow-hidden rounded-3xl border hairline" style={{ height }}>
+      <div
+        className="sky relative w-full max-w-full overflow-hidden rounded-3xl border hairline"
+        style={{ height: "clamp(320px, 70vh, 1000px)", maxHeight: height }}
+      >
         <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
           <div className="animate-spin-slow h-40 w-40 rounded-full border border-gold-500/20" />
           <div className="absolute inset-0 grid place-items-center">
@@ -102,27 +117,44 @@ export function QuranUniverse({
               style={{ left: `${left}%`, top: `${top}%` }}
               onMouseEnter={() => interactive && setHover(s)}
               onMouseLeave={() => interactive && setHover(null)}
+              onClick={(e) => {
+                // On touch devices, show the info card instead of navigating on first tap.
+                if (typeof window !== "undefined" && window.matchMedia("(hover: none)").matches) {
+                  e.preventDefault();
+                  onNodeActivate(s);
+                }
+              }}
             >
-              {interactive ? <Link href={`/mushaf/${s.number}`} aria-label={s.nameAr}>{node}</Link> : node}
+              {interactive ? (
+                <Link href={`/mushaf/${s.number}`} aria-label={s.nameAr} className="block touch-manipulation">
+                  {node}
+                </Link>
+              ) : (
+                node
+              )}
             </div>
           );
         })}
 
-        {hover && (
+        {hover && hoverPoint && (
           <div
-            className="pointer-events-none absolute z-30 w-52 -translate-x-1/2 rounded-2xl bg-white p-3 text-center shadow-lg"
+            className="pointer-events-none absolute z-30 w-44 -translate-x-1/2 rounded-2xl bg-white p-3 text-center shadow-lg sm:w-52"
             style={{
-              left: `${points.find((p) => p.s.number === hover.number)!.left}%`,
-              top: `calc(${points.find((p) => p.s.number === hover.number)!.top}% - 90px)`,
+              left: `${hoverPoint.left}%`,
+              top: `calc(${hoverPoint.top}% - 90px)`,
             }}
           >
-            <div className="font-arabic text-xl text-ink-900">{hover.nameAr}</div>
+            <div className="font-arabic text-lg text-ink-900 sm:text-xl">{hover.nameAr}</div>
             <div className="text-[11px] text-ink-500">{hover.meaning}</div>
+            <div className="mt-1 text-[10px] text-ink-400">
+              {hover.ayahCount.toLocaleString("ar-EG")} آية · {hover.revelation === "meccan" ? "مكية" : "مدنية"}
+            </div>
             <div className="mt-2 text-[11px]">
               <span className="rounded-full px-2 py-0.5" style={{ background: `${(STATUS[hover.status as keyof typeof STATUS] ?? STATUS.not_started).color}22`, color: (STATUS[hover.status as keyof typeof STATUS] ?? STATUS.not_started).color }}>
                 {(STATUS[hover.status as keyof typeof STATUS] ?? STATUS.not_started).label}
               </span>
             </div>
+            <div className="mt-1 hidden text-[10px] text-emerald-600 sm:block">انقر للفتح في المصحف</div>
           </div>
         )}
       </div>
