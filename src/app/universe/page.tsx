@@ -35,7 +35,7 @@ export default async function UniversePage() {
           { v: memorized, l: "نجوم محفوظة", c: "#3aa384" },
           { v: learning, l: "نجوم قيد الحفظ", c: "#3b82f6" },
         ].map((s) => (
-          <div key={s.l} className="card rounded-2xl p-5 text-center">
+          <div key={s.l} className="card-premium shine rounded-2xl p-5 text-center">
             <div className="font-display text-3xl font-bold" style={{ color: s.c }}>{s.v.toLocaleString("ar-EG")}</div>
             <div className="mt-1 text-xs text-ink-500">{s.l}</div>
           </div>
@@ -52,7 +52,7 @@ export default async function UniversePage() {
             .map(([juz, info]) => {
               const pct = Math.round((info.done / info.total) * 100);
               return (
-                <div key={juz} className="card rounded-2xl p-4">
+                <div key={juz} className="card-premium rounded-2xl p-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-ink-900">الجزء {juz}</span>
                     <span className="text-xs text-gold-600">{pct}٪</span>

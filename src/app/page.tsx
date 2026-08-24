@@ -36,10 +36,10 @@ export default async function HomePage() {
 
         <div className="mx-auto max-w-3xl pt-6 text-center sm:pt-10">
           <div className="rise relative mx-auto inline-grid h-20 w-20 place-items-center sm:h-28 sm:w-28">
-            <span className="orbit absolute inset-0 rounded-full border border-dashed border-emerald-500/30" />
-            <span className="absolute inset-3 rounded-full border border-ocean-500/20" />
-            <span className="pointer-events-none absolute -inset-4 -z-10 rounded-full breathe" style={{ background: "radial-gradient(circle, rgba(16,185,129,0.22), transparent 70%)" }} />
-            <span className="font-arabic text-3xl shine-text sm:text-4xl">﷽</span>
+            <span className="orbit absolute inset-0 rounded-full" style={{ border: "1px dashed rgba(201,164,74,.4)" }} />
+            <span className="absolute inset-3 rounded-full border border-emerald-500/25" />
+            <span className="pointer-events-none absolute -inset-5 -z-10 rounded-full breathe" style={{ background: "radial-gradient(circle, rgba(201,164,74,0.18), rgba(16,185,129,0.12) 50%, transparent 70%)" }} />
+            <span className="font-arabic text-3xl text-aurora sm:text-4xl">﷽</span>
           </div>
           <div className="rise mx-auto mt-4 flex max-w-[15rem] items-center justify-center gap-2 sm:mt-6 sm:max-w-xs sm:gap-3" style={{ animationDelay: "40ms" }}>
             <span className="h-px flex-1 bg-gradient-to-l from-emerald-500/50 to-transparent" />
@@ -89,11 +89,10 @@ export default async function HomePage() {
           { v: "٣٠", l: "جزءاً", icon: "✦" },
           { v: user ? `${stats.completionPct}٪` : "ابدأ", l: user ? "نسبة إتمامك" : "رحلتك الآن", icon: "🌙" },
         ].map((s, i) => (
-          <div key={s.l} className="pop lift card relative overflow-hidden rounded-2xl p-5 text-center" style={{ animationDelay: `${i * 90}ms` }}>
-            <div className="absolute inset-x-0 top-0 h-1" style={{ background: "linear-gradient(90deg,#10b981,#3b82f6)" }} />
-            <div className="mb-1 text-lg opacity-60">{s.icon}</div>
-            <div className="font-display text-2xl font-bold shine-text sm:text-3xl">{s.v}</div>
-            <div className="mt-1 text-xs text-ink-500">{s.l}</div>
+          <div key={s.l} className="pop lift card-premium shine relative overflow-hidden p-5 text-center sm:p-6" style={{ animationDelay: `${i * 90}ms` }}>
+            <div className="mx-auto mb-2 grid h-10 w-10 place-items-center rounded-2xl text-lg text-white shadow-md sm:h-11 sm:w-11" style={{ background: i % 2 ? "var(--grad-sapphire)" : "var(--grad-gold)" }}>{s.icon}</div>
+            <div className="font-display text-2xl font-extrabold stat-num sm:text-3xl">{s.v}</div>
+            <div className="mt-1 text-[11px] font-semibold text-ink-500 sm:text-xs">{s.l}</div>
           </div>
         ))}
       </section>
@@ -112,12 +111,12 @@ export default async function HomePage() {
       <section>
         <div className="text-center">
           <p className="eyebrow justify-center">فضل قراءة القرآن</p>
-          <h2 className="mt-3 font-display text-2xl font-bold text-ink-900 sm:text-3xl">ثمارٌ لا تنقطع لحامل القرآن</h2>
+          <h2 className="mt-3 font-display section-title text-ink-900">ثمارٌ لا تنقطع لحامل القرآن</h2>
           <p className="mx-auto mt-3 max-w-xl text-ink-500">آيات وأحاديث صحيحة تذكّرك بعظيم الأجر في كل حرف تقرؤه.</p>
         </div>
         <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {VIRTUES.slice(0, 6).map((v, i) => (
-            <div key={i} className="lift group relative overflow-hidden rounded-3xl card p-5 sm:p-7">
+            <div key={i} className="lift group shine card-premium relative overflow-hidden p-5 sm:p-7">
               <span className="absolute -left-3 -top-5 text-7xl text-emerald-500/10">”</span>
               <span className={`inline-block rounded-full px-3 py-1 text-[11px] font-semibold ${v.kind === "ayah" ? "bg-emerald-700/10 text-emerald-700" : "bg-ocean-600/10 text-ocean-700"}`}>
                 {v.kind === "ayah" ? "آية كريمة" : "حديث شريف"}
@@ -133,13 +132,13 @@ export default async function HomePage() {
       <section>
         <div className="text-center">
           <p className="eyebrow justify-center">لماذا حافظ</p>
-          <h2 className="mt-3 font-display text-2xl font-bold text-ink-900 sm:text-3xl">كل ما تحتاجه لحفظ القرآن في مكان واحد</h2>
+          <h2 className="mt-3 font-display section-title text-ink-900">كل ما تحتاجه لحفظ القرآن في مكان واحد</h2>
         </div>
         <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map((f) => (
-            <div key={f.title} className="lift group relative overflow-hidden rounded-3xl card p-5 sm:p-7">
+            <div key={f.title} className="lift group shine card-premium relative overflow-hidden p-5 sm:p-7">
               <div className="absolute -left-6 -top-6 font-arabic text-7xl text-emerald-500/10 transition group-hover:text-ocean-500/15">{f.glyph}</div>
-              <div className="grid h-12 w-12 place-items-center rounded-2xl text-2xl text-white shadow-md" style={{ background: "linear-gradient(135deg,#10b981,#3b82f6)" }}>{f.glyph}</div>
+              <div className="icon-badge emerald h-12 w-12 text-2xl">{f.glyph}</div>
               <h3 className="mt-4 font-display text-xl font-bold text-ink-900">{f.title}</h3>
               <p className="mt-3 text-sm leading-relaxed text-ink-700">{f.body}</p>
             </div>
@@ -151,7 +150,7 @@ export default async function HomePage() {
       <section>
         <div className="text-center">
           <p className="eyebrow justify-center">أدوات إضافية</p>
-          <h2 className="mt-3 font-display text-2xl font-bold text-ink-900 sm:text-3xl">المزيد في رحلتك القرآنية</h2>
+          <h2 className="mt-3 font-display section-title text-ink-900">المزيد في رحلتك القرآنية</h2>
         </div>
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
           {[
@@ -162,8 +161,8 @@ export default async function HomePage() {
             { href: "/adhkar", icon: "📿", title: "الأذكار", body: "أذكار الصباح والمساء وبعد الصلاة" },
             { href: "/universe", icon: "✺", title: "كون القرآن", body: "تابع رحلتك بصرياً في سماءٍ من نور" },
           ].map((c) => (
-            <Link key={c.href} href={c.href} className="lift group rounded-3xl card p-5 text-center sm:p-7">
-              <div className="mx-auto grid h-14 w-14 place-items-center rounded-full text-2xl text-white shadow-lg transition group-hover:scale-110 sm:h-16 sm:w-16 sm:text-3xl" style={{ background: "linear-gradient(135deg,#10b981,#3b82f6)" }}>{c.icon}</div>
+            <Link key={c.href} href={c.href} className="lift group shine card-premium rounded-3xl p-5 text-center sm:p-7">
+              <div className="icon-badge circle mx-auto h-14 w-14 text-2xl transition group-hover:scale-110 sm:h-16 sm:w-16 sm:text-3xl">{c.icon}</div>
               <h3 className="mt-4 font-display text-lg font-bold text-ink-900">{c.title}</h3>
               <p className="mt-2 text-sm text-ink-500">{c.body}</p>
             </Link>
@@ -172,17 +171,18 @@ export default async function HomePage() {
       </section>
 
       {/* CTA */}
-      <section className="relative overflow-hidden rounded-3xl card-warm p-10 text-center sm:p-16">
-        <div className="aurora breathe" style={{ top: "-80px", left: "20%", width: "300px", height: "300px", background: "radial-gradient(circle,#10b981,transparent 70%)" }} />
-        <div className="aurora" style={{ bottom: "-90px", right: "15%", width: "280px", height: "280px", background: "radial-gradient(circle,#3b82f6,transparent 70%)", animationDelay: "2s" }} />
+      <section className="card-gold shine relative overflow-hidden rounded-[1.75rem] p-8 text-center sm:rounded-3xl sm:p-16">
+        <span className="ribbon hidden sm:inline-block">مجاني</span>
+        <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-emerald-400/20 blur-3xl" />
+        <div className="pointer-events-none absolute -left-10 bottom-0 h-44 w-44 rounded-full bg-blue-400/20 blur-3xl" />
         <div className="shimmer absolute inset-x-0 top-0 h-px" />
-        <h2 className="relative font-display text-3xl font-bold text-ink-900 sm:text-4xl">
-          ابدأ اليوم رحلة <span className="shine-text">حفظ كتاب الله</span>
+        <h2 className="relative font-display text-2xl font-extrabold text-ink-900 sm:text-4xl">
+          ابدأ اليوم رحلة <span className="text-aurora">حفظ كتاب الله</span>
         </h2>
-        <p className="relative mx-auto mt-4 max-w-lg text-ink-700">اقرأ المصحف كاملاً بالتفسير الميسّر، واحفظ بطرق ذهنية مع اختبارات تثبّت حفظك.</p>
-        <div className="relative mt-8 flex flex-wrap justify-center gap-3">
-          <Link href="/mushaf" className="rounded-2xl btn-primary px-8 py-4 font-bold">تصفّح المصحف</Link>
-          {!user && <Link href="/signup" className="rounded-2xl btn-ghost px-8 py-4 font-bold">إنشاء حساب</Link>}
+        <p className="relative mx-auto mt-4 max-w-lg text-sm leading-relaxed text-ink-700 sm:text-base">اقرأ المصحف كاملاً بالتفسير الميسّر، واحفظ بطرق ذهنية مع اختبارات تثبّت حفظك.</p>
+        <div className="relative mt-8 flex w-full flex-col gap-3 px-4 sm:w-auto sm:flex-row sm:justify-center sm:px-0">
+          <Link href="/mushaf" className="rounded-2xl btn-primary px-8 py-4 text-sm font-bold sm:text-base">تصفّح المصحف</Link>
+          {!user && <Link href="/signup" className="rounded-2xl btn-ghost px-8 py-4 text-sm font-bold sm:text-base">إنشاء حساب</Link>}
         </div>
       </section>
 

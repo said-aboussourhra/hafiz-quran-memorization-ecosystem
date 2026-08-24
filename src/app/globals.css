@@ -2244,3 +2244,161 @@ body {
 .btn-primary {
   background: linear-gradient(120deg, #10b981 0%, #0d9488 45%, #2563eb 100%);
 }
+
+/* ============================================================
+   HIGH-END DESIGN SYSTEM — gold + emerald + sapphire
+   No dark mode here; this enriches the light spiritual theme.
+   ============================================================ */
+:root {
+  --gold-300: #f1dca0;
+  --gold-400: #e3c275;
+  --gold-500: #c9a44a;
+  --gold-600: #a77f2e;
+  --grad-gold: linear-gradient(135deg, #f6e7b8 0%, #d4af5a 45%, #a77f2e 100%);
+  --grad-emerald-deep: linear-gradient(135deg, #065f46 0%, #047857 38%, #0d9488 100%);
+  --grad-sapphire: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%);
+  --grad-aurora: linear-gradient(135deg, #10b981 0%, #0d9488 35%, #2563eb 75%, #c9a44a 100%);
+  --hairline-gold: rgba(201,164,74,.28);
+  --shadow-gold: 0 1px 2px rgba(7,26,28,.04), 0 18px 40px -22px rgba(201,164,74,.45);
+  --shadow-premium: 0 1px 2px rgba(7,26,28,.05), 0 30px 70px -34px rgba(5,150,105,.45), 0 10px 30px -20px rgba(37,99,235,.25);
+}
+
+/* ----- Gradient text helpers ----- */
+.text-gold {
+  background: linear-gradient(120deg, #d4af5a 0%, #c9a44a 40%, #a77f2e 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.text-aurora {
+  background: linear-gradient(120deg, #10b981 0%, #0d9488 35%, #2563eb 75%, #c9a44a 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* ----- Premium surface: gradient hairline + soft inner glow ----- */
+.card-premium {
+  position: relative;
+  border-radius: 24px;
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(201,164,74,.10), transparent 55%),
+    radial-gradient(120% 140% at 0% 100%, rgba(16,185,129,.10), transparent 55%),
+    linear-gradient(180deg, #ffffff, #f8fcfb);
+  box-shadow: var(--shadow-premium);
+  isolation: isolate;
+}
+.card-premium::before {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  padding: 1.2px; /* gradient border thickness */
+  background: linear-gradient(135deg, rgba(201,164,74,.55), rgba(16,185,129,.35) 40%, rgba(37,99,235,.4));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  pointer-events: none; z-index: 1;
+}
+.card-premium::after {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(201,164,74,0.030) 0 1px, transparent 1px 20px),
+    repeating-linear-gradient(-45deg, rgba(16,185,129,0.028) 0 1px, transparent 1px 20px);
+  opacity: .7; pointer-events: none; z-index: 0;
+}
+.card-premium > * { position: relative; z-index: 2; }
+
+/* Warm gold-tinted card */
+.card-gold {
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(241,220,160,.55), transparent 55%),
+    linear-gradient(180deg, #fffdf6, #fbf3df);
+  border: 1px solid var(--hairline-gold);
+  box-shadow: var(--shadow-gold);
+}
+
+/* Emerald glass panel */
+.card-glass {
+  background: linear-gradient(180deg, rgba(255,255,255,.82), rgba(235,245,243,.62));
+  border: 1px solid rgba(16,185,129,.18);
+  box-shadow: 0 10px 30px -18px rgba(5,150,105,.4), inset 0 1px 0 rgba(255,255,255,.7);
+  backdrop-filter: blur(12px);
+}
+
+/* ----- Icon badges with gradient + ring + shine ----- */
+.icon-badge {
+  position: relative;
+  display: grid; place-items: center;
+  color: #fff;
+  border-radius: 18px;
+  background: var(--grad-aurora);
+  box-shadow: 0 10px 24px -10px rgba(5,150,105,.6), inset 0 1px 0 rgba(255,255,255,.35);
+}
+.icon-badge.circle { border-radius: 999px; }
+.icon-badge.gold { background: var(--grad-gold); box-shadow: 0 10px 24px -10px rgba(167,127,46,.6), inset 0 1px 0 rgba(255,255,255,.45); }
+.icon-badge.sapphire { background: var(--grad-sapphire); box-shadow: 0 10px 24px -10px rgba(37,99,235,.6), inset 0 1px 0 rgba(255,255,255,.35); }
+.icon-badge.emerald { background: var(--grad-emerald-deep); box-shadow: 0 10px 24px -10px rgba(4,120,87,.6), inset 0 1px 0 rgba(255,255,255,.35); }
+
+/* Shine sweep on hover (add to a container with overflow-hidden) */
+.shine { position: relative; overflow: hidden; }
+.shine::after {
+  content: ""; position: absolute; top: 0; inset-inline-start: -70%;
+  width: 45%; height: 100%;
+  background: linear-gradient(110deg, transparent, rgba(255,255,255,.55), transparent);
+  transform: skewX(-18deg); transition: inset-inline-start .7s var(--ease-premium);
+  pointer-events: none;
+}
+.shine:hover::after { inset-inline-start: 130%; }
+
+/* Gold dividers with center medallion */
+.divider-gold {
+  position: relative; height: 1px; margin: 1.5rem 0;
+  background: linear-gradient(90deg, transparent, rgba(201,164,74,.5), transparent);
+}
+.divider-gold::after {
+  content: ""; position: absolute; left: 50%; top: 50%;
+  width: 9px; height: 9px; border-radius: 999px;
+  transform: translate(-50%,-50%) rotate(45deg);
+  background: var(--grad-gold);
+  box-shadow: 0 0 0 4px var(--bg-page);
+}
+
+/* Eyebrow label upgrade */
+.eyebrow {
+  display: inline-flex; align-items: center; gap: .55rem;
+  padding: .35rem .9rem; border-radius: 999px;
+  font-size: .72rem; font-weight: 800; letter-spacing: .02em;
+  color: var(--gold-600);
+  background: linear-gradient(180deg, rgba(241,220,160,.25), rgba(201,164,74,.12));
+  border: 1px solid var(--hairline-gold);
+}
+.eyebrow::before { content: ""; width: 6px; height: 6px; border-radius: 999px; background: var(--grad-gold); }
+
+/* Section title scale: smaller on phones, elegant on desktop */
+.section-title {
+  font-size: 1.55rem; line-height: 1.35; font-weight: 800; letter-spacing: -.01em;
+}
+@media (min-width: 640px) { .section-title { font-size: 2rem; } }
+
+/* Stat number glow */
+.stat-num {
+  background: linear-gradient(120deg, #047857, #0d9488 45%, #2563eb);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  text-shadow: 0 1px 0 rgba(255,255,255,.6);
+}
+
+/* CTA ribbon for hero blocks */
+.ribbon {
+  position: absolute; inset-inline-end: -34px; top: 18px;
+  transform: rotate(35deg);
+  padding: .25rem 2.5rem; font-size: .68rem; font-weight: 900; letter-spacing: .08em;
+  color: #fff; background: var(--grad-gold);
+  box-shadow: 0 6px 18px -8px rgba(167,127,46,.7);
+}
+
+/* Subtle floating animation for decorative blobs (used inline) */
+@keyframes floatY { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+.float-slow { animation: floatY 7s ease-in-out infinite; }
+
+/* Mobile tightening for the new premium elements */
+@media (max-width: 640px) {
+  .card-premium { border-radius: 20px; }
+  .icon-badge { border-radius: 15px; }
+}

@@ -63,8 +63,9 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
       <div className="aurora breathe" style={{ top: "-40px", right: "0", width: "220px", height: "220px", background: "radial-gradient(circle,#10b981,transparent 70%)" }} />
       <div className="aurora" style={{ bottom: "-40px", left: "0", width: "200px", height: "200px", background: "radial-gradient(circle,#3b82f6,transparent 70%)", animationDelay: "2s" }} />
 
-      <div className="card-in relative overflow-hidden rounded-3xl border border-white/60 bg-white/85 p-6 shadow-2xl backdrop-blur sm:p-8">
-        <div className="absolute inset-x-0 top-0 h-1.5" style={{ background: "linear-gradient(90deg,#10b981,#059669,#3b82f6)" }} />
+      <div className="card-premium card-in relative overflow-hidden p-6 sm:p-8">
+        <div className="absolute inset-x-0 top-0 h-1.5" style={{ background: "var(--grad-aurora)" }} />
+        <span className="ribbon hidden sm:inline-block">{mode === "signup" ? "مجاني" : "أهلاً"}</span>
 
         <div className="text-center">
           <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl text-white shadow-lg" style={{ background: "linear-gradient(135deg,#10b981,#3b82f6)" }}>

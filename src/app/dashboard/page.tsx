@@ -152,26 +152,20 @@ export default async function DashboardPage() {
       ================================================================= */}
 
       <section
-        className="relative overflow-hidden rounded-3xl p-5 sm:rounded-[2rem] sm:p-8"
+        className="relative overflow-hidden rounded-[1.6rem] p-5 sm:rounded-[2rem] sm:p-8"
         style={{
           background:
-            "linear-gradient(135deg,#0d7a6b 0%,#059669 45%,#1d4ed8 100%)",
+            "linear-gradient(135deg,#064e3b 0%,#0d7a6b 38%,#0d9488 62%,#1d4ed8 100%)",
         }}
       >
+        {/* gold ornamental glows */}
         <div
-          className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full"
-          style={{
-            background:
-              "radial-gradient(circle,rgba(255,255,255,0.18),transparent 70%)",
-          }}
+          className="pointer-events-none absolute -right-12 -top-12 h-56 w-56 rounded-full opacity-60 blur-2xl sm:-right-16 sm:-top-16 sm:h-64 sm:w-64"
+          style={{ background: "radial-gradient(circle,rgba(241,220,160,0.45),transparent 70%)" }}
         />
-
         <div
-          className="pointer-events-none absolute -left-10 bottom-0 h-52 w-52 rounded-full"
-          style={{
-            background:
-              "radial-gradient(circle,rgba(255,255,255,0.12),transparent 70%)",
-          }}
+          className="pointer-events-none absolute -left-8 bottom-0 h-44 w-44 rounded-full opacity-50 blur-2xl sm:-left-10 sm:h-52 sm:w-52"
+          style={{ background: "radial-gradient(circle,rgba(96,165,250,0.45),transparent 70%)" }}
         />
 
         <div className="relative flex flex-col items-center gap-6 sm:flex-row sm:justify-between">
@@ -317,17 +311,15 @@ export default async function DashboardPage() {
         ].map((item) => (
           <div
             key={item.label}
-            className="lift card rounded-2xl p-4 text-center"
+            className="lift card-premium shine rounded-2xl p-4 text-center"
           >
-            <div className="text-2xl">
-              {item.icon}
+            <div className="mx-auto mb-1 grid h-9 w-9 place-items-center rounded-xl text-lg shadow sm:h-10 sm:w-10" style={{ background: "var(--grad-aurora)" }}>
+              <span>{item.icon}</span>
             </div>
-
-            <div className="mt-1 font-display text-2xl font-black shine-text">
+            <div className="font-display text-2xl font-extrabold stat-num">
               {item.value}
             </div>
-
-            <div className="text-[11px] text-ink-500">
+            <div className="text-[11px] font-semibold text-ink-500">
               {item.label}
             </div>
           </div>
@@ -339,7 +331,7 @@ export default async function DashboardPage() {
       ================================================================= */}
 
       <section className="grid gap-4 lg:grid-cols-3">
-        <div className="card rounded-3xl p-6 lg:col-span-2">
+        <div className="card-premium rounded-3xl p-5 sm:p-6 lg:col-span-2">
           <div className="mb-2 flex items-center justify-between">
             <h2 className="font-display text-lg font-bold text-ink-900">
               نشاط هذا الأسبوع
@@ -473,7 +465,7 @@ export default async function DashboardPage() {
           )}
         </div>
 
-        <div className="lift card rounded-3xl p-6">
+        <div className="lift shine card-premium rounded-3xl p-5 sm:p-6">
           <div className="flex items-center gap-2 text-lg">
             🎯
             <span className="font-display font-bold text-ink-900">
@@ -501,7 +493,7 @@ export default async function DashboardPage() {
           </Link>
         </div>
 
-        <div className="lift card rounded-3xl p-6">
+        <div className="lift shine card-premium rounded-3xl p-5 sm:p-6">
           <div className="flex items-center gap-2 text-lg">
             🏆
             <span className="font-display font-bold text-ink-900">
@@ -553,7 +545,7 @@ export default async function DashboardPage() {
       ================================================================= */}
 
       {inProgress.length > 0 && (
-        <section className="card rounded-3xl p-6">
+        <section className="card-premium rounded-3xl p-5 sm:p-6">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="font-display text-lg font-bold text-ink-900">
               قيد الحفظ الآن
@@ -654,7 +646,7 @@ export default async function DashboardPage() {
           JUZ PROGRESS
       ================================================================= */}
 
-      <section className="card rounded-3xl p-6">
+      <section className="card-premium rounded-3xl p-5 sm:p-6">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-display text-lg font-bold text-ink-900">
             تقدّم الأجزاء
@@ -721,7 +713,7 @@ export default async function DashboardPage() {
           HEATMAP
       ================================================================= */}
 
-      <section className="card rounded-3xl p-6">
+      <section className="card-premium rounded-3xl p-5 sm:p-6">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-display text-lg font-bold text-ink-900">
             تقويم المواظبة
