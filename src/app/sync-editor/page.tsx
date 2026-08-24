@@ -1,6 +1,7 @@
 "use client";
+/* eslint-disable react-hooks/set-state-in-effect */
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { RECITERS, type Reciter } from "@/lib/reciterRegistry";
 import { SURAHS } from "@/lib/surahs";
 import {
@@ -16,10 +17,7 @@ export default function SyncEditorPage() {
   const [selectedSurah, setSelectedSurah] = useState<number>(1);
   const [selectedAyah, setSelectedAyah] = useState<number>(1);
 
-  const [timingMap, setTimingMap] = useState<AyahTimingMap | null>(null);
-  const [words, setWords] = useState<WordTimestamp[]>([]);
   const [activeWordIdx, setActiveWordIdx] = useState<number>(-1);
-  const [audioUrl, setAudioUrl] = useState<string>("");
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [duration, setDuration] = useState<number>(0);
@@ -31,20 +29,29 @@ export default function SyncEditorPage() {
   const reciter = RECITERS.find((r) => r.id === selectedReciterId) || RECITERS[0];
   const surahMeta = SURAHS.find((s) => s.number === selectedSurah) || SURAHS[0];
 
-  // Load timings whenever reciter, surah, or ayah changes
-  useEffect(() => {
+  // Build a fresh selection key so the editable words state below resets whenever
+  // the reciter/surah/ayah changes (avoids setState-in-effect cascading renders).
+  const selectionKey = `${reciter.id}:${selectedSurah}:${selectedAyah}`;
+  const { audioUrl, initialWords, initialIssues } = useMemo(() => {
     const pad3 = (n: number) => String(n).padStart(3, "0");
-    // ✅ استخدام everyayahFolder مع fallback آمن
-    const folder = (reciter as any).everyayahFolder || "Alafasy_128kbps";
+    const folder = (reciter as { everyayahFolder?: string }).everyayahFolder || "Alafasy_128kbps";
     const url = `https://everyayah.com/data/${folder}/${pad3(selectedSurah)}${pad3(selectedAyah)}.mp3`;
-    setAudioUrl(url);
-
     const map = getAyahTimingMap(reciter.id, selectedSurah, selectedAyah, 4);
-    setTimingMap(map);
-    setWords(map.words);
-    const val = validateTimestamps(map.words);
-    setValidationIssues(val.issues);
-  }, [reciter, selectedSurah, selectedAyah]);
+    return {
+      audioUrl: url,
+      initialWords: map.words,
+      initialIssues: validateTimestamps(map.words).issues,
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectionKey]);
+
+  // Editable word timestamps — reset only when the selection identity changes.
+  const [words, setWords] = useState<WordTimestamp[]>(initialWords);
+  useEffect(() => {
+    setWords(initialWords);
+    setValidationIssues(initialIssues);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectionKey]);
 
   const handleTimeUpdate = () => {
     if (!audioRef.current) return;

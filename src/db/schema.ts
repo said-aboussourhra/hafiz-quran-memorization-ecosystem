@@ -9,9 +9,11 @@ import {
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 120 }).notNull(),
-  email: varchar("email", { length: 200 }).notNull().unique(),
-  passwordHash: varchar("password_hash", { length: 256 }).notNull(),
-  passwordSalt: varchar("password_salt", { length: 64 }).notNull(),
+  email: varchar("email", { length: 200 }),
+  passwordHash: varchar("password_hash", { length: 256 }),
+  passwordSalt: varchar("password_salt", { length: 64 }),
+  // تاريخ الازدياد (YYYY-MM-DD) — يُستخدم مع الاسم لتسهيل الدخول.
+  birthDate: varchar("birth_date", { length: 10 }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

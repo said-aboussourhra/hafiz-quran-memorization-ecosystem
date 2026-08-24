@@ -52,6 +52,7 @@ import { useAudioEngine } from "@/lib/audio/useAudioEngine";
 import { AudioControls } from "@/components/AudioControls";
 import { useHafiz } from "@/lib/hafiz/useHafiz";
 import { HafizPanel } from "@/components/hafiz/HafizPanel";
+import { MushafMenu } from "@/components/MushafMenu";
 import { baseSyncStatus, loadTimings } from "@/lib/audio/timings";
 import type { AudioSource } from "@/lib/audio/types";
 
@@ -1551,26 +1552,8 @@ export function MushafReader({
                 <IconChevron className="h-3 w-3" />
               </button>
 
-              {showNav && (
-                <div
-                  className="
-                    absolute
-                    right-0
-                    top-full
-                    z-[200]
-                    mt-2
-                    w-[min(300px,calc(100vw-24px))]
-                    overflow-hidden
-                    rounded-3xl
-                    border border-slate-100
-                    bg-white
-                    p-3
-                    shadow-[0_20px_60px_rgba(15,23,42,0.18)]
-                  "
-                  onClick={(e) => e.stopPropagation()}
-                  role="dialog"
-                  aria-label="الانتقال إلى آية"
-                >
+              <MushafMenu open={showNav} onClose={() => setShowNav(false)} side="right" width={300}>
+                <div role="dialog" aria-label="الانتقال إلى آية">
                   <div className="mb-3 flex items-center justify-between">
                     <div>
                       <div className="text-sm font-black text-slate-900">الانتقال إلى آية</div>
@@ -1618,7 +1601,7 @@ export function MushafReader({
                     </Link>
                   </div>
                 </div>
-              )}
+              </MushafMenu>
             </div>
 
             {/* APPEARANCE */}
@@ -1656,34 +1639,8 @@ export function MushafReader({
                 <IconChevron className="h-3 w-3" />
               </button>
 
-              {showAppearance && (
-                <div
-                  className="
-                    absolute
-                    right-0
-                    top-full
-                    z-[200]
-                    mt-2
-                    w-[min(310px,calc(100vw-24px))]
-                    overflow-hidden
-                    rounded-3xl
-                    border border-slate-100
-                    bg-white
-                    p-3
-                    shadow-[0_20px_60px_rgba(15,23,42,0.18)]
-                  "
-                  onClick={(e) =>
-                    e.stopPropagation()
-                  }
-                >
-                  <div
-                    className="
-                      mb-3
-                      flex
-                      items-center
-                      justify-between
-                    "
-                  >
+              <MushafMenu open={showAppearance} onClose={() => setShowAppearance(false)} side="right" width={310}>
+                  <div className="mb-3 flex items-center justify-between">
                     <div>
                       <div className="text-sm font-black text-slate-900">
                         مظهر المصحف
@@ -1932,8 +1889,7 @@ export function MushafReader({
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
+              </MushafMenu>
             </div>
 
             {/* FONT */}
@@ -1971,25 +1927,7 @@ export function MushafReader({
                 <IconChevron className="h-3 w-3" />
               </button>
 
-              {showFonts && (
-                <div
-                  className="
-                    absolute
-                    right-0
-                    top-full
-                    z-[200]
-                    mt-2
-                    w-[min(280px,calc(100vw-24px))]
-                    overflow-hidden
-                    rounded-3xl
-                    border border-slate-100
-                    bg-white
-                    shadow-[0_20px_60px_rgba(15,23,42,0.18)]
-                  "
-                  onClick={(e) =>
-                    e.stopPropagation()
-                  }
-                >
+              <MushafMenu open={showFonts} onClose={() => setShowFonts(false)} side="right" width={280}>
                   <div className="border-b border-slate-100 px-4 py-3">
                     <div className="text-sm font-black text-slate-900">
                       نوع الخط
@@ -2054,8 +1992,7 @@ export function MushafReader({
                       )
                     )}
                   </div>
-                </div>
-              )}
+              </MushafMenu>
             </div>
 
             {/* RECITER */}
@@ -2095,35 +2032,8 @@ export function MushafReader({
                 <IconChevron className="h-3 w-3" />
               </button>
 
-              {showReciters && (
-                <div
-                  className="
-                    absolute
-                    left-0
-                    top-full
-                    z-[200]
-                    mt-2
-                    w-[min(300px,calc(100vw-24px))]
-                    overflow-hidden
-                    rounded-3xl
-                    border border-slate-100
-                    bg-white
-                    shadow-[0_20px_60px_rgba(15,23,42,0.18)]
-                  "
-                  onClick={(e) =>
-                    e.stopPropagation()
-                  }
-                >
-                  <div
-                    className="
-                      sticky top-0
-                      z-10
-                      border-b
-                      border-slate-100
-                      bg-white
-                      px-4 py-3
-                    "
-                  >
+              <MushafMenu open={showReciters} onClose={() => setShowReciters(false)} side="left" width={300}>
+                  <div className="sticky top-0 z-10 border-b border-slate-100 bg-white px-4 py-3">
                     <div className="text-sm font-black text-slate-900">
                       القارئ
                     </div>
@@ -2177,8 +2087,7 @@ export function MushafReader({
                       )
                     )}
                   </div>
-                </div>
-              )}
+              </MushafMenu>
             </div>
           </div>
         </div>
@@ -2212,6 +2121,12 @@ export function MushafReader({
           {
             maxWidth: "var(--mushaf-reading-width, 1024px)",
             "--reader-hl": hlColor,
+            "--mushaf-font-size": `${fontSize}px`,
+            "--mushaf-line-height": String(lineHeight),
+            "--mushaf-word-spacing": `${wordSpacing}px`,
+            fontSize: `${fontSize}px`,
+            lineHeight,
+            wordSpacing: `${wordSpacing}px`,
           } as CSSProperties
         }
       >

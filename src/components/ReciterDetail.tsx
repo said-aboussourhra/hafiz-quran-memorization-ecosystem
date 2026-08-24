@@ -17,6 +17,15 @@ import {
   setDefaultReciter,
   pushRecentReciter,
 } from "@/lib/reciterPrefs";
+import { YouTubeEmbed } from "@/components/YouTubeEmbed";
+
+/** Normalize a YouTube handle/URL into a safe https link. */
+function youtubeChannelUrl(handleOrUrl: string): string {
+  const v = handleOrUrl.trim();
+  if (/^https?:\/\//i.test(v)) return v;
+  const handle = v.startsWith("@") ? v : `@${v}`;
+  return `https://www.youtube.com/${handle}`;
+}
 
 const STYLE_LABEL: Record<string, string> = {
   murattal: "مرتل",
@@ -211,6 +220,48 @@ export function ReciterDetail({ id }: { id: string }) {
           setIsDefault(true);
         }}
       />
+
+      {/* Official YouTube channel + verified sample (outbound only; no rehosting) */}
+      {reciter.youtubeChannel && (
+        <section className="rounded-3xl card p-5 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="font-display text-lg font-bold text-ink-900">القناة الرسمية</h2>
+              <p className="mt-1 text-xs text-ink-500">
+                تابع أحدث تلاوات {reciter.nameArabic} على يوتيوب.
+              </p>
+            </div>
+            <a
+              href={youtubeChannelUrl(reciter.youtubeChannel)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-2xl bg-red-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-red-700"
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+                <path d="M23 12s0-3.5-.45-5.18a2.78 2.78 0 0 0-1.96-1.97C18.91 4.4 12 4.4 12 4.4s-6.91 0-8.59.45A2.78 2.78 0 0 0 1.45 6.82C1 8.5 1 12 1 12s0 3.5.45 5.18a2.78 2.78 0 0 0 1.96 1.97C5.09 19.6 12 19.6 12 19.6s6.91 0 8.59-.45a2.78 2.78 0 0 0 1.96-1.97C23 15.5 23 12 23 12ZM9.75 15.5v-7l6 3.5-6 3.5Z" />
+              </svg>
+              زيارة القناة
+            </a>
+          </div>
+          {reciter.youtubeSample && (
+            <div className="mt-4">
+              <p className="mb-2 text-xs font-semibold text-ink-500">نموذج تلاوة موثّق</p>
+              <YouTubeEmbed
+                videoId={reciter.youtubeSample.videoId}
+                title={reciter.youtubeSample.title}
+              />
+              <p className="mt-2 text-center text-[11px] text-ink-400">
+                {reciter.youtubeSample.title}
+              </p>
+            </div>
+          )}
+          {available.length === 0 && (
+            <p className="mt-4 rounded-2xl bg-amber-50 px-4 py-3 text-center text-xs text-amber-800">
+              لا تتوفّر مكتبة تسجيلات كاملة داخل التطبيق بعد؛ استخدم القناة الرسمية للاستماع إلى التلاوات.
+            </p>
+          )}
+        </section>
+      )}
 
       {/* Quality / sync panel */}
       <div className="grid gap-4 sm:grid-cols-3">

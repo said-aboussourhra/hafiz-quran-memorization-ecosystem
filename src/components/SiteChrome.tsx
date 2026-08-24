@@ -150,7 +150,7 @@ export function SiteChrome({ children, userName }: { children: ReactNode; userNa
         )}
       </header>
 
-      <main key={pathname} className="page-enter mx-auto w-full max-w-7xl px-5 pb-8 pt-6">{children}</main>
+      <main key={pathname} className="page-enter mx-auto w-full max-w-7xl px-4 pb-10 pt-4 sm:px-5 sm:pb-8 sm:pt-6">{children}</main>
 
       {/* ===== التذييل مع الشعار ===== */}
       <footer className="relative mt-8 overflow-hidden border-t hairline bg-white/60 pb-28 pt-12 backdrop-blur lg:pb-12">

@@ -1,6 +1,6 @@
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
-import { db, isDbAvailable } from "@/db";
+import { db, ensureSchema, isDbAvailable } from "@/db";
 import { users, type User } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
@@ -63,7 +63,6 @@ export async function getCurrentUser(): Promise<User | null> {
   if (!isDbAvailable() || !db) return null;
   try {
     // Ensure tables exist on first hit (idempotent), then look the user up.
-    const { ensureSchema } = await import("@/db/ensure");
     await ensureSchema();
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user ?? null;

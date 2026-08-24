@@ -31,6 +31,9 @@ function syncTier(r: Reciter): { dot: string; label: string } {
   const recs = getAvailableSurahs(r.id).length;
   if (r.defaultSource === "everyayah") return { dot: "#10b981", label: "كلمة بكلمة" };
   if (recs > 0) return { dot: "#94a3b8", label: "صوت فقط" };
+  if (r.defaultSource === "youtube" || r.youtubeChannel) {
+    return { dot: "#ef4444", label: "قناة يوتيوب" };
+  }
   return { dot: "#cbd5e1", label: "غير متاح" };
 }
 
@@ -63,7 +66,10 @@ function ReciterCard({
   onDefault: () => void;
 }) {
   const tier = syncTier(reciter);
-  const unavailable = recCount === 0;
+  // A reciter is playable in-app only when it has full-surah/ayah recordings.
+  // A verified YouTube channel still has a useful detail page (sample + link).
+  const hasYoutube = !!(reciter.youtubeChannel || reciter.youtubeSample);
+  const unavailable = recCount === 0 && !hasYoutube;
   return (
     <div className={`group relative overflow-hidden rounded-3xl card p-5 transition ${unavailable ? "opacity-70" : "hover:-translate-y-0.5 hover:shadow-lg"}`}>
       <div className="flex items-start gap-4">
@@ -95,7 +101,11 @@ function ReciterCard({
             </span>
           </div>
           <p className="mt-2 text-[11px] text-ink-500">
-            {recCount > 0 ? `${recCount.toLocaleString("ar-EG")} تسجيلاً متاحاً` : "لا توجد تسجيلات متاحة حالياً"}
+            {recCount > 0
+              ? `${recCount.toLocaleString("ar-EG")} تسجيلاً متاحاً`
+              : hasYoutube
+                ? "قناة رسمية ونموذج تلاوة على يوتيوب"
+                : "لا توجد تسجيلات متاحة حالياً"}
           </p>
         </div>
       </div>
@@ -103,15 +113,14 @@ function ReciterCard({
       <div className="mt-4 flex flex-wrap items-center gap-2">
         <Link
           href={`/reciters/${reciter.id}`}
-          className={`flex-1 rounded-xl px-4 py-2.5 text-center text-sm font-semibold ${unavailable ? "btn-ghost" : "btn-primary"}`}
-          aria-disabled={unavailable}
+          className={`flex-1 rounded-xl px-4 py-2.5 text-center text-sm font-semibold ${recCount > 0 ? "btn-primary" : "btn-ghost"}`}
         >
-          {unavailable ? "التفاصيل" : "استمع"}
+          {recCount > 0 ? "استمع" : "التفاصيل"}
         </Link>
         <button
           type="button"
-          onClick={unavailable ? undefined : onDefault}
-          disabled={unavailable}
+          onClick={recCount === 0 ? undefined : onDefault}
+          disabled={recCount === 0}
           aria-pressed={isDefault}
           className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${
             isDefault ? "bg-emerald-600 text-white" : "btn-ghost"

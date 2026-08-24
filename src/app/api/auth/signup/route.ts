@@ -1,40 +1,45 @@
 import { NextResponse } from "next/server";
-import { requireDb } from "@/db";
-import { ensureSchema } from "@/db/ensure";
+import { requireDb, ensureSchema } from "@/db";
 import { users } from "@/db/schema";
-import { eq } from "drizzle-orm";
-import { buildSessionCookie, hashPassword } from "@/lib/auth";
+import { and, eq } from "drizzle-orm";
+import { buildSessionCookie } from "@/lib/auth";
+import { normalizeName, isValidBirthDate } from "@/lib/identity";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const name = String(body.name ?? "").trim().slice(0, 120);
-    const email = String(body.email ?? "").trim().toLowerCase().slice(0, 200);
-    const password = String(body.password ?? "");
+    const name = normalizeName(body.name);
+    const birthDate = String(body.birthDate ?? "").trim();
 
-    if (!name || !email || password.length < 6) {
-      return NextResponse.json({ ok: false, error: "يرجى إدخال اسم وبريد وكلمة مرور (٦ أحرف على الأقل)." }, { status: 400 });
+    if (!name) {
+      return NextResponse.json({ ok: false, error: "يرجى إدخال الاسم الكامل." }, { status: 400 });
     }
     if (!/^[\u0600-\u06FF\s]+$/.test(name)) {
       return NextResponse.json({ ok: false, error: "يرجى كتابة الاسم بالحروف العربية فقط." }, { status: 400 });
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return NextResponse.json({ ok: false, error: "صيغة البريد الإلكتروني غير صحيحة." }, { status: 400 });
+    if (name.trim().split(/\s+/).length < 2) {
+      return NextResponse.json({ ok: false, error: "يرجى إدخال الاسم الكامل (الاسم واللقب على الأقل)." }, { status: 400 });
+    }
+    if (!isValidBirthDate(birthDate)) {
+      return NextResponse.json({ ok: false, error: "تاريخ الازدياد غير صحيح." }, { status: 400 });
     }
 
     await ensureSchema();
     const db = await requireDb();
-    const [existing] = await db.select().from(users).where(eq(users.email, email));
+
+    const [existing] = await db
+      .select()
+      .from(users)
+      .where(and(eq(users.name, name), eq(users.birthDate, birthDate)));
     if (existing) {
-      return NextResponse.json({ ok: false, error: "هذا البريد مسجّل مسبقاً." }, { status: 409 });
+      return NextResponse.json({ ok: false, error: "يوجد حساب بهذا الاسم وتاريخ الازدياد. يمكنك تسجيل الدخول." }, { status: 409 });
     }
 
-    const { hash, salt } = hashPassword(password);
     const [created] = await db
       .insert(users)
-      .values({ name, email, passwordHash: hash, passwordSalt: salt })
+      .values({ name, birthDate })
       .returning();
 
     const res = NextResponse.json({ ok: true, user: { id: created.id, name: created.name } });

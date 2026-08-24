@@ -85,6 +85,16 @@ export interface Reciter {
   audioQuality?: "high" | "medium" | "low"; // ✅ إضافة
   /** Default sync level for this reciter */
   defaultSyncLevel?: SyncLevel; // ✅ إضافة
+  /**
+   * Official, verified YouTube channel handle/URL (e.g. "@mohoobada").
+   * Used for a safe outbound link only — we never fabricate recordings.
+   */
+  youtubeChannel?: string | null;
+  /**
+   * One verified YouTube sample video (id + Arabic title), shown via the
+   * privacy-first YouTubeEmbed. This is a sample, NOT a full surah library.
+   */
+  youtubeSample?: { videoId: string; title: string; surah?: number } | null;
 }
 
 /** A single available recording (one reciter × one surah × one source). */
@@ -474,21 +484,29 @@ export const RECITERS: Reciter[] = [
   {
     id: "mohamed_abbada",
     nameArabic: "محمد عبادة",
-    nameEnglish: "Mohamed Abbada",
+    nameEnglish: "Mohamed Obada",
     image: null,
-    bio: null,
-    bioArabic: null,
+    bio: "قارئ إماراتي، عُرف بتلاوته المرتلة المؤثرة وإمامة المصلين في الشارقة.",
+    bioArabic: "قارئ إماراتي، عُرف بتلاوته المرتلة المؤثرة وإمامة المصلين في الشارقة.",
     style: "murattal",
-    riwaya: null,
-    riwayah: null,
-    verified: false,
-    defaultSource: null,
-    verifiedSources: [],
-    tags: [],
+    riwaya: "حفص عن عاصم",
+    riwayah: "حفص عن عاصم",
+    // Verified official YouTube channel + one confirmed sample video.
+    // We do NOT claim a full-surah audio library until a reachable source is wired.
+    verified: true,
+    defaultSource: "youtube",
+    verifiedSources: ["youtube.com/@mohoobada"],
+    tags: ["uae"],
     everyayahFolder: null,
     availableSurahs: [],
-    audioQuality: "low",
+    audioQuality: "high",
     defaultSyncLevel: "none",
+    youtubeChannel: "@mohoobada",
+    youtubeSample: {
+      videoId: "lpdjdMxbjkk",
+      title: "سورة الأعراف — الشيخ محمد عبادة (رمضان 1445هـ)",
+      surah: 7,
+    },
   },
 ];
 
