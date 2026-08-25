@@ -110,6 +110,15 @@ export interface AudioSource {
   /** Exact timings for this recording, if available. */
   timings: RecordingTimings | null;
   syncStatus: SyncStatus;
+  /**
+   * Optional: relative per-word weights (e.g. derived from word text length)
+   * for each ayah. When no verified timing map exists for a per-ayah source,
+   * the engine uses these weights to distribute the REAL audio duration of
+   * each ayah file across its words — producing honest WORD_AUTO estimates
+   * (labelled "كلمات (تلقائي)") instead of staying dark. Never guesses when
+   * the reciter has no per-ayah audio.
+   */
+  getWordWeights?: (ayah: number) => number[] | null;
   /** Internal: currently-loaded ayah for per-ayah granularity. */
   currentAyahForGranularity?: number;
 }

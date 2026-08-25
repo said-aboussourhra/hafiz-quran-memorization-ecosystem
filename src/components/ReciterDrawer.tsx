@@ -1,12 +1,28 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import {
   RECITERS,
   filterReciters,
   type Reciter,
   type SyncLevel,
 } from "@/lib/reciterRegistry";
+
+/** صورة القارئ داخل إطار ذهبي، مع احتياطي الحرف الأول. */
+function ReciterThumb({ reciter, className = "h-12 w-12 rounded-2xl text-lg" }: { reciter: Reciter; className?: string }) {
+  return (
+    <span className={`reciter-photo-ring block shrink-0 ${className}`} aria-hidden="true">
+      {reciter.image ? (
+        <Image src={reciter.image} alt="" width={96} height={96} className="reciter-photo" />
+      ) : (
+        <span className="grid h-full w-full place-items-center font-bold text-white" style={{ background: "linear-gradient(135deg,#10b981,#2563eb)", fontFamily: "var(--font-quran)" }}>
+          {reciter.nameArabic.charAt(0)}
+        </span>
+      )}
+    </span>
+  );
+}
 
 interface ReciterDrawerProps {
   isOpen: boolean;
@@ -256,9 +272,7 @@ export function ReciterDrawer({
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-emerald-600 to-ocean-700 text-lg font-bold text-white shadow-sm">
-                      {reciter.nameArabic.charAt(0)}
-                    </div>
+                    <ReciterThumb reciter={reciter} />
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <h4 className="font-display text-base font-bold text-ink-900">
@@ -326,9 +340,9 @@ export function ReciterDrawer({
               </div>
 
               <div className="mt-5 text-center">
-                <div className="mx-auto grid h-20 w-20 place-items-center rounded-3xl bg-gradient-to-br from-emerald-600 to-ocean-700 text-3xl font-bold text-white shadow-lg">
-                  {previewReciter.nameArabic.charAt(0)}
-                </div>
+                <span className="mx-auto inline-block h-20 w-20">
+                  <ReciterThumb reciter={previewReciter} className="h-20 w-20 rounded-3xl" />
+                </span>
                 <h3 className="mt-3 font-display text-2xl font-bold text-ink-900">
                   {previewReciter.nameArabic}
                 </h3>

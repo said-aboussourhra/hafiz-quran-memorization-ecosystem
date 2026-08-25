@@ -1,5 +1,5 @@
 // HAFIZ service worker — offline-first for the Mushaf, tafsir & recitations.
-const APP = "hafiz-app-v2";      // app shell & static assets
+const APP = "hafiz-app-v3";      // app shell & static assets
 const QURAN = "hafiz-quran-v2";  // Quran text + tafsir (JSON)
 const AUDIO = "hafiz-audio-v2";  // recitation mp3s
 const CORE = ["/", "/mushaf", "/memorize", "/review", "/plan", "/names", "/adhkar", "/manifest.json", "/icon-192.png", "/icon-512.png"];

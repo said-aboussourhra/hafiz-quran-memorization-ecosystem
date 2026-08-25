@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ArabesqueBg, OrnamentCorners, OrnamentDivider } from "@/components/Ornament";
 import type { DailyAyah } from "@/lib/ayahOfDay";
 
 export function AyahOfDayCard({ ayah }: { ayah: DailyAyah }) {
@@ -80,15 +81,18 @@ export function AyahOfDayCard({ ayah }: { ayah: DailyAyah }) {
   return (
     <div className="mx-auto max-w-2xl">
       {/* Visual card */}
-      <div className="relative overflow-hidden rounded-[2rem] p-8 text-center sm:p-12" style={{ background: "linear-gradient(145deg,#f2fbf7,#e6eefb)", outline: "3px solid rgba(16,185,129,0.4)", outlineOffset: "-3px" }}>
+      <div className="ornate-card relative overflow-hidden rounded-[2rem] p-8 text-center sm:p-12" style={{ background: "linear-gradient(145deg,#f2fbf7,#e6eefb)", outline: "3px solid rgba(16,185,129,0.4)", outlineOffset: "-3px" }}>
+        <ArabesqueBg />
+        <OrnamentCorners />
         <span className="pointer-events-none absolute inset-3 rounded-[1.5rem] border border-gold-500/40" />
-        <p className="text-xs tracking-[0.3em] text-gold-600">آية اليوم</p>
-        <p className="mt-6 text-3xl leading-[2] text-ink-900 sm:text-4xl" style={{ fontFamily: "var(--font-quran)" }}>
+        <p className="relative text-xs tracking-[0.3em] text-gold-600">آية اليوم</p>
+        <OrnamentDivider />
+        <p className="relative mt-2 text-3xl leading-[2] text-ink-900 sm:text-4xl" style={{ fontFamily: "var(--font-quran)" }}>
           ﴿ {ayah.text} ﴾
         </p>
-        <p className="mt-5 font-display text-lg font-bold text-emerald-700">سورة {ayah.surah} · {ayah.ref}</p>
+        <p className="relative mt-5 font-display text-lg font-bold text-emerald-700">سورة {ayah.surah} · {ayah.ref}</p>
         <div className="mx-auto my-5 h-px max-w-xs" style={{ background: "linear-gradient(90deg,transparent,rgba(16,185,129,0.5),rgba(37,99,235,0.5),transparent)" }} />
-        <p className="mx-auto max-w-lg text-sm leading-relaxed text-ink-500">{ayah.tafsir}</p>
+        <p className="relative mx-auto max-w-lg text-sm leading-relaxed text-ink-500">{ayah.tafsir}</p>
       </div>
 
       <div className="mt-5 flex flex-wrap justify-center gap-3">

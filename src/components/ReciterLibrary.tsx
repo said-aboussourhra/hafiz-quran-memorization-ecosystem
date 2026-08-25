@@ -1,10 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   getAllReciters,
   getAvailableSurahs,
+  getRecording,
+  recordingUrl,
   FILTERS,
   type Reciter,
   type ReciterFilter,
@@ -27,6 +30,17 @@ const STYLE_LABEL: Record<string, string> = {
   other: "أخرى",
 };
 
+/** آية الكرسي — البقرة ٢٥٥: الآية المفضّة للاستماع السريع لأي قارئ. */
+const QUICK_LISTEN = { surah: 2, ayah: 255 };
+
+/** رابط استماع سريع لآية قرآنية بهذا القارئ (آية الكرسي)، أو بداية سورة إن لم تتوفر آيات مفردة. */
+function quickListenUrl(reciter: Reciter): string | null {
+  const rec = getRecording(reciter.id, QUICK_LISTEN.surah) ?? getRecording(reciter.id, 1);
+  if (!rec) return null;
+  if (rec.sourceType === "everyayah") return recordingUrl(rec, rec.surahId === QUICK_LISTEN.surah ? QUICK_LISTEN.ayah : 1);
+  return recordingUrl(rec);
+}
+
 function syncTier(r: Reciter): { dot: string; label: string } {
   const recs = getAvailableSurahs(r.id).length;
   if (r.defaultSource === "everyayah") return { dot: "#10b981", label: "كلمة بكلمة" };
@@ -37,16 +51,18 @@ function syncTier(r: Reciter): { dot: string; label: string } {
   return { dot: "#cbd5e1", label: "غير متاح" };
 }
 
-function ReciterAvatar({ name }: { name: string }) {
+function ReciterAvatar({ name, image, size = "md" }: { name: string; image: string | null; size?: "sm" | "md" }) {
   const initial = name.trim().charAt(0) || "ق";
   return (
-    <div
-      className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl text-2xl font-bold text-white shadow-md sm:h-20 sm:w-20"
-      style={{ background: "linear-gradient(135deg,#10b981,#2563eb)", fontFamily: "var(--font-quran)" }}
-      aria-hidden="true"
-    >
-      {initial}
-    </div>
+    <span className={`reciter-photo-ring block shrink-0 ${size === "sm" ? "h-11 w-11 rounded-xl" : "h-[4.4rem] w-[4.4rem] rounded-2xl sm:h-[5.4rem] sm:w-[5.4rem]"}`} aria-hidden="true">
+      {image ? (
+        <Image src={image} alt="" width={96} height={96} className="reciter-photo" />
+      ) : (
+        <span className={`grid h-full w-full place-items-center ${size === "sm" ? "text-sm rounded-xl" : "text-2xl rounded-[0.9rem]"} font-bold text-white`} style={{ background: "linear-gradient(135deg,#10b981,#2563eb)", fontFamily: "var(--font-quran)" }}>
+          {initial}
+        </span>
+      )}
+    </span>
   );
 }
 
@@ -55,15 +71,21 @@ function ReciterCard({
   isFav,
   isDefault,
   recCount,
+  canQuickListen,
+  quickPlaying,
   onFav,
   onDefault,
+  onQuickListen,
 }: {
   reciter: Reciter;
   isFav: boolean;
   isDefault: boolean;
   recCount: number;
+  canQuickListen: boolean;
+  quickPlaying: boolean;
   onFav: () => void;
   onDefault: () => void;
+  onQuickListen: () => void;
 }) {
   const tier = syncTier(reciter);
   // A reciter is playable in-app only when it has full-surah/ayah recordings.
@@ -71,9 +93,29 @@ function ReciterCard({
   const hasYoutube = !!(reciter.youtubeChannel || reciter.youtubeSample);
   const unavailable = recCount === 0 && !hasYoutube;
   return (
-    <div className={`group relative overflow-hidden rounded-3xl card p-5 transition ${unavailable ? "opacity-70" : "hover:-translate-y-0.5 hover:shadow-lg"}`}>
+    <div className={`group ornate-card relative overflow-hidden rounded-3xl card p-5 transition ${unavailable ? "opacity-70" : "hover:-translate-y-0.5 hover:shadow-lg"}`}>
+      <span className="corner tl" aria-hidden />
+      <span className="corner tr" aria-hidden />
       <div className="flex items-start gap-4">
-        <ReciterAvatar name={reciter.nameArabic} />
+        <span className="relative">
+          <ReciterAvatar name={reciter.nameArabic} image={reciter.image} />
+          {canQuickListen && (
+            <button
+              type="button"
+              onClick={onQuickListen}
+              aria-label={quickPlaying ? `إيقاف تلاوة ${reciter.nameArabic}` : `استمع لآية قرآنية بصوت ${reciter.nameArabic}`}
+              aria-pressed={quickPlaying}
+              title="استماع لآية الكرسي"
+              className="absolute -bottom-1.5 -left-1.5 grid h-8 w-8 place-items-center rounded-full bg-gradient-to-l from-emerald-500 to-ocean-600 text-xs text-white shadow-lg ring-2 ring-white transition hover:scale-110 active:scale-95"
+            >
+              {quickPlaying ? (
+                <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor" aria-hidden><path d="M6 5h4v14H6zM13 5h4v14h-4z" /></svg>
+              ) : (
+                <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor" aria-hidden><path d="M8 5v14l11-7z" /></svg>
+              )}
+            </button>
+          )}
+        </span>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <h3 className="truncate font-display text-lg font-bold text-ink-900" style={{ fontFamily: "var(--font-quran)" }}>
@@ -150,10 +192,41 @@ export function ReciterLibrary() {
   const [recent, setRecent] = useState<string[]>(() => getRecentReciters());
   const [defaultId, setDefaultId] = useState<string>(() => getDefaultReciterId());
 
+  // مشغّل الاستماع السريع — عنصر صوتي واحد مشترك بين كل البطاقات.
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [quickId, setQuickId] = useState<string | null>(null);
+
+  const toggleQuickListen = (r: Reciter) => {
+    let audio = audioRef.current;
+    if (!audio) {
+      audio = new Audio();
+      audio.preload = "none";
+      audioRef.current = audio;
+    }
+    if (quickId === r.id) {
+      audio.pause();
+      setQuickId(null);
+      return;
+    }
+    const url = quickListenUrl(r);
+    if (!url) return;
+    audio.pause();
+    audio.src = url;
+    setQuickId(r.id);
+    audio.onended = () => setQuickId(null);
+    audio.onerror = () => setQuickId(null);
+    audio.play().catch(() => setQuickId(null));
+  };
+
   const all = useMemo(() => getAllReciters(), []);
   const counts = useMemo(() => {
     const m = new Map<string, number>();
     for (const r of all) m.set(r.id, getAvailableSurahs(r.id).length);
+    return m;
+  }, [all]);
+  const quickOk = useMemo(() => {
+    const m = new Map<string, boolean>();
+    for (const r of all) m.set(r.id, quickListenUrl(r) != null);
     return m;
   }, [all]);
 
@@ -221,12 +294,13 @@ export function ReciterLibrary() {
               <Link
                 key={r.id}
                 href={`/reciters/${r.id}`}
-                className="flex w-40 shrink-0 items-center gap-2 rounded-2xl card p-3 transition hover:-translate-y-0.5"
+                className="flex w-44 shrink-0 items-center gap-2 rounded-2xl card p-3 transition hover:-translate-y-0.5"
               >
-                <span className="grid h-10 w-10 place-items-center rounded-xl text-sm font-bold text-white" style={{ background: "linear-gradient(135deg,#10b981,#2563eb)" }}>
-                  {r.nameArabic.charAt(0)}
+                <ReciterAvatar name={r.nameArabic} image={r.image} size="sm" />
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-semibold text-ink-900">{r.nameArabic}</span>
+                  <span className="mt-0.5 block text-[10px] text-ink-500">{STYLE_LABEL[r.style] ?? r.style}</span>
                 </span>
-                <span className="truncate text-sm font-semibold text-ink-900">{r.nameArabic}</span>
               </Link>
             ))}
           </div>
@@ -249,11 +323,14 @@ export function ReciterLibrary() {
                 isFav={favs.includes(r.id)}
                 isDefault={defaultId === r.id}
                 recCount={counts.get(r.id) ?? 0}
+                canQuickListen={quickOk.get(r.id) ?? false}
+                quickPlaying={quickId === r.id}
                 onFav={() => setFavs(toggleFavoriteReciter(r.id))}
                 onDefault={() => {
                   setDefaultReciter(r.id);
                   setDefaultId(r.id);
                 }}
+                onQuickListen={() => toggleQuickListen(r)}
               />
             ))}
           </div>
