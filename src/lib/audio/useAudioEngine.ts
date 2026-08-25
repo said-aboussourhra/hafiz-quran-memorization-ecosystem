@@ -54,6 +54,11 @@ export function useAudioEngine() {
   const [timingsVersion, setTimingsVersion] = useState(0);
   const [activeAyahForScroll, setActiveAyahForScroll] = useState<number | null>(null);
 
+  // WORD_AUTO estimates: per-ayah word timings derived from the REAL duration
+  // of each loaded ayah file (distributed across words by text-length weights).
+  // Completely separate from verified timings; cleared with every source swap.
+  const estimatedRef = useRef<RecordingTimings | null>(null);
+
   // Lazily create the single audio element.
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -61,8 +66,42 @@ export function useAudioEngine() {
     audio.preload = "metadata";
     audioRef.current = audio;
 
-    const onLoadedMeta = () =>
+    const onLoadedMeta = () => {
       setState((s) => ({ ...s, duration: audio.duration && isFinite(audio.duration) ? audio.duration : 0 }));
+
+      // ---- WORD_AUTO estimation (per-ayah files without verified timings) ----
+      const source = sourceRef.current;
+      const ayah = source?.currentAyahForGranularity;
+      if (!source || source.granularity !== "ayah" || !ayah) return;
+      const verified = source.timings?.get(ayah);
+      if (verified && verified.words.length > 0) return; // real data wins
+      if (estimatedRef.current?.has(ayah)) return; // already estimated
+      const weights = source.getWordWeights?.(ayah);
+      const dur = audio.duration;
+      if (!weights || weights.length === 0 || !isFinite(dur) || dur <= 0.4) return;
+
+      const total = weights.reduce((a, b) => a + b, 0);
+      if (total <= 0) return;
+      let cursor = 0;
+      const words = weights.map((w, idx) => {
+        const span = (w / total) * dur;
+        const t = {
+          wordNumber: idx + 1,
+          start: cursor,
+          end: Math.min(dur, cursor + span),
+        };
+        cursor += span;
+        return t;
+      });
+
+      const map = new Map(estimatedRef.current ?? []);
+      map.set(ayah, { ayah, start: 0, end: dur, words });
+      estimatedRef.current = map;
+      setState((s) =>
+        s.syncStatus === "WORD_VERIFIED" ? s : { ...s, syncStatus: "WORD_AUTO" },
+      );
+    };
+
     const onPlay = () => setState((s) => ({ ...s, status: "playing", error: null }));
     const onPause = () =>
       setState((s) => (s.status === "loading" ? s : { ...s, status: "paused" }));
@@ -114,10 +153,11 @@ export function useAudioEngine() {
       const src = sourceRef.current;
       if (!src) return { ayah: null, word: null };
 
-      // Per-ayah files: the current file IS the ayah; word comes from timings.
+      // Per-ayah files: the current file IS the ayah; word comes from timings
+      // (verified first, WORD_AUTO estimates second).
       if (src.granularity === "ayah" && src.currentAyahForGranularity) {
         const n = src.currentAyahForGranularity;
-        const t = timingsRef.current?.get(n);
+        const t = src.timings?.get(n) ?? estimatedRef.current?.get(n);
         if (t && t.words.length > 0) {
           const localTime = time; // per-ayah file starts at 0
           const word = findWordAt(t, localTime);
@@ -230,6 +270,7 @@ export function useAudioEngine() {
       // Switching source = reload audio AND timings (never carry over).
       sourceRef.current = source;
       timingsRef.current = source.timings;
+      estimatedRef.current = null;
       segmentRef.current = null;
       setTimingsVersion((v) => v + 1);
 
@@ -431,7 +472,7 @@ export function useAudioEngine() {
       const audio = audioRef.current;
       if (!source || !audio) return;
       if (!canHighlightWord) return; // no word timings → do not fake it
-      const t = source.timings?.get(ayah);
+      const t = source.timings?.get(ayah) ?? estimatedRef.current?.get(ayah);
       const wt = t?.words.find((w) => w.wordNumber === word);
       if (!t || !wt) return;
       const timeInRecording =

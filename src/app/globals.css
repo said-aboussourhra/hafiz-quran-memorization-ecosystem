@@ -391,8 +391,129 @@ body::before {
 }
 .ayah-chip-tafsir { background: #ffffff; border: 2px solid #10b981; color: #047857; }
 .ayah-chip-listen { background: linear-gradient(135deg,#10b981,#3b82f6); color: #fff; }
+.ayah-chip-bookmark { background: #fefce8; border: 2px solid #f59e0b; color: #92400e; }
+.ayah-chip-copy { background: #ffffff; border: 2px solid #64748b; color: #334155; }
 .ayah-chip-close { background: #f1f5f4; color: #64748b; padding: 0.35rem 0.55rem; }
 .ayah-chip:hover { filter: brightness(1.05); transform: translateY(-1px); }
+
+/* Clickable end-of-ayah marker — one tap plays the ayah */
+.ayah-marker-btn {
+  display: inline-grid;
+  vertical-align: middle;
+  cursor: pointer;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.18s;
+}
+.ayah-marker-btn:hover { transform: scale(1.18) rotate(6deg); filter: drop-shadow(0 3px 6px rgba(16,185,129,0.45)); }
+.ayah-marker-btn:active { transform: scale(0.95); }
+
+/* Ayah-by-ayah card — ornamental top bar + soft hover lift */
+.ayah-card { box-shadow: 0 2px 14px -8px rgba(15, 23, 42, 0.18); }
+.ayah-card:hover { transform: translateY(-2px); }
+.ayah-card-bar {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 4px;
+  border-radius: 999px;
+}
+.ayah-card-playing { background: linear-gradient(180deg, rgba(16,185,129,0.08), rgba(255,255,255,0.9) 45%); }
+
+/* ============================================================
+   GLOBAL ORNAMENTS — زخارف إسلامية عالمية
+   ============================================================ */
+.ornament-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  color: rgba(4, 120, 87, 0.55);
+}
+.ornament-divider::before,
+.ornament-divider::after {
+  content: "";
+  height: 1px;
+  width: clamp(48px, 14vw, 160px);
+  background: linear-gradient(to left, transparent, rgba(4, 120, 87, 0.45), transparent);
+}
+.ornament-divider .ornament-star {
+  color: #b8860b;
+  filter: drop-shadow(0 0 6px rgba(201, 164, 74, 0.5));
+  animation: ornamentSpin 24s linear infinite;
+}
+@keyframes ornamentSpin { to { transform: rotate(360deg); } }
+
+/* Ornamental corners for premium cards */
+.ornate-card { position: relative; }
+.ornate-card .corner {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border-color: rgba(201, 164, 74, 0.55);
+  pointer-events: none;
+}
+.ornate-card .corner.tl { top: 8px; left: 8px; border-top: 2px solid; border-left: 2px solid; border-top-left-radius: 14px; }
+.ornate-card .corner.tr { top: 8px; right: 8px; border-top: 2px solid; border-right: 2px solid; border-top-right-radius: 14px; }
+.ornate-card .corner.bl { bottom: 8px; left: 8px; border-bottom: 2px solid; border-left: 2px solid; border-bottom-left-radius: 14px; }
+.ornate-card .corner.br { bottom: 8px; right: 8px; border-bottom: 2px solid; border-right: 2px solid; border-bottom-right-radius: 14px; }
+
+/* Soft arabesque watermark pattern used behind heroes/sections */
+.arabesque-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='none' stroke='%23047857' stroke-width='1'%3E%3Cpath d='M40 0l40 40-40 40L0 40z'/%3E%3Ccircle cx='40' cy='40' r='16'/%3E%3Cpath d='M40 24l16 16-16 16-16-16z'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 80px 80px;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+}
+
+/* Hint / info banner (auth pages) */
+.hafiz-hint {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  border-radius: 1rem;
+  padding: 0.9rem 1rem;
+  background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(37,99,235,0.06));
+  border: 1px solid rgba(16,185,129,0.25);
+  font-size: 0.8rem;
+  line-height: 1.7;
+  color: #065f46;
+}
+.hafiz-hint::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #10b981, #2563eb);
+}
+
+/* Reciter photo frame */
+.reciter-photo {
+  object-fit: cover;
+  object-position: top;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #d1fae5, #dbeafe);
+}
+.reciter-photo-ring {
+  position: relative;
+  padding: 3px;
+  border-radius: 1.25rem;
+  background: conic-gradient(from 180deg, #10b981, #c9a44a, #2563eb, #10b981);
+  box-shadow: 0 6px 18px -8px rgba(16, 185, 129, 0.55);
+}
+
+@media (max-width: 480px) {
+  .ayah-chip-bookmark, .ayah-chip-copy { font-size: 0.6rem !important; padding: 2px 6px !important; }
+  .ornate-card .corner { width: 18px; height: 18px; }
+}
 
 /* Inline tafsir card, right beside the ayah */
 .ayah-tafsir-inline {
@@ -908,6 +1029,82 @@ body::before {
   100% { opacity: 1; transform: translateY(0); filter: blur(0); }
 }
 
+/* ===== مرحلة الشعار: الشعار أولاً ثم الآية ===== */
+.intro-logo-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 1.25rem;
+  transition: transform 1s cubic-bezier(0.22, 1, 0.36, 1), margin 0.8s ease;
+  animation: introFadeUp 1.6s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+}
+.intro-logo-wrap.compact {
+  transform: scale(0.78) translateY(-6px);
+  margin-bottom: 0.5rem;
+}
+.intro-logo-ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 5px;
+  border-radius: 38% 62% 55% 45% / 45% 42% 58% 55%;
+  background: conic-gradient(from 120deg, #10b981, #c9a44a, #2563eb, #10b981);
+  box-shadow:
+    0 0 0 6px rgba(255, 255, 255, 0.55),
+    0 18px 50px -12px rgba(6, 95, 70, 0.55),
+    0 0 60px rgba(201, 164, 74, 0.35);
+  animation: logoPulse 3.2s ease-in-out 1.8s infinite;
+}
+.intro-logo-ring::before {
+  content: "";
+  position: absolute;
+  inset: -14px;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(201, 164, 74, 0.6);
+  animation: logoRingSpin 22s linear infinite;
+}
+.intro-logo {
+  width: clamp(104px, 24vw, 148px);
+  height: clamp(104px, 24vw, 148px);
+  border-radius: 36% 64% 54% 46% / 46% 40% 60% 54%;
+  object-fit: cover;
+}
+@keyframes logoRingSpin { to { transform: rotate(360deg); } }
+@keyframes logoPulse {
+  0%, 100% { box-shadow: 0 0 0 6px rgba(255,255,255,0.55), 0 18px 50px -12px rgba(6,95,70,0.55), 0 0 60px rgba(201,164,74,0.35); }
+  50% { box-shadow: 0 0 0 9px rgba(255,255,255,0.75), 0 22px 60px -10px rgba(6,95,70,0.65), 0 0 90px rgba(201,164,74,0.5); }
+}
+.intro-brand {
+  margin-top: 0.9rem;
+  font-family: var(--font-arabic);
+  font-size: clamp(2rem, 7vw, 3rem);
+  font-weight: 700;
+  color: #0b3d35;
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 18px rgba(16, 185, 129, 0.35);
+}
+.intro-brand-sub {
+  font-size: clamp(0.7rem, 2.4vw, 0.95rem);
+  font-weight: 600;
+  letter-spacing: 0.35em;
+  color: #4a6664;
+}
+.intro-logo-divider {
+  margin-top: 0.65rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #c9a44a;
+}
+.intro-logo-divider::before,
+.intro-logo-divider::after {
+  content: "";
+  width: clamp(40px, 12vw, 110px);
+  height: 1px;
+  background: linear-gradient(to left, transparent, rgba(201, 164, 74, 0.85), transparent);
+}
+
 .intro-verse {
   font-family: var(--font-quran);
   color: #29200f; /* warm ink on ivory */
@@ -1155,10 +1352,6 @@ html, body { max-width: 100%; overflow-x: hidden; }
     inset: 8px;
     border-radius: 8px;
   }
-  .mushaf-text {
-    font-size: 0.85rem;
-    line-height: 1.8;
-  }
 }
 
 @media (min-width: 481px) and (max-width: 768px) {
@@ -1167,9 +1360,6 @@ html, body { max-width: 100%; overflow-x: hidden; }
   }
   .mushaf-page {
     padding: 1rem !important;
-  }
-  .mushaf-text {
-    font-size: 1rem;
   }
 }
 
@@ -1180,9 +1370,6 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .mushaf-page {
     padding: 1.5rem !important;
   }
-  .mushaf-text {
-    font-size: 1.1rem;
-  }
 }
 
 @media (min-width: 1025px) {
@@ -1191,9 +1378,6 @@ html, body { max-width: 100%; overflow-x: hidden; }
   }
   .mushaf-page {
     padding: 2rem !important;
-  }
-  .mushaf-text {
-    font-size: 1.2rem; 
   }
 }
  /* ============================================================
@@ -1252,10 +1436,6 @@ html, body { max-width: 100%; overflow-x: hidden; }
     inset: 8px;
     border-radius: 8px;
   }
-  .mushaf-text {
-    font-size: clamp(0.85rem, 4vw, 1.1rem) !important;
-    line-height: 2;
-  }
   .ayah-chip {
     font-size: 0.6rem !important;
     padding: 2px 6px !important;
@@ -1270,9 +1450,6 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .mushaf-page {
     padding: 1rem !important;
   }
-  .mushaf-text {
-    font-size: clamp(1rem, 2.5vw, 1.3rem) !important;
-  }
 }
 
 /* شاشات كبيرة */
@@ -1280,18 +1457,12 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .mushaf-page {
     padding: 1.5rem !important;
   }
-  .mushaf-text {
-    font-size: clamp(1.1rem, 2vw, 1.5rem) !important;
-  }
 }
 
 /* شاشات عريضة */
 @media (min-width: 1025px) {
   .mushaf-page {
     padding: 2rem !important;
-  }
-  .mushaf-text {
-    font-size: clamp(1.2rem, 1.8vw, 1.8rem) !important;
   }
 }/* ============================================================
    MUSHAF READER STYLES
@@ -1439,10 +1610,6 @@ html, body { max-width: 100%; overflow-x: hidden; }
     inset: 8px;
     border-radius: 8px;
   }
-  .mushaf-text {
-    font-size: clamp(0.85rem, 4vw, 1.1rem) !important;
-    line-height: 2;
-  }
   .ayah-chip {
     font-size: 0.6rem !important;
     padding: 2px 6px !important;
@@ -1456,26 +1623,17 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .mushaf-page {
     padding: 1rem !important;
   }
-  .mushaf-text {
-    font-size: clamp(1rem, 2.5vw, 1.3rem) !important;
-  }
 }
 
 @media (min-width: 769px) and (max-width: 1024px) {
   .mushaf-page {
     padding: 1.5rem !important;
   }
-  .mushaf-text {
-    font-size: clamp(1.1rem, 2vw, 1.5rem) !important;
-  }
 }
 
 @media (min-width: 1025px) {
   .mushaf-page {
     padding: 2rem !important;
-  }
-  .mushaf-text {
-    font-size: clamp(1.2rem, 1.8vw, 1.8rem) !important;
   }
 } /* ============================================================
    ACHIEVEMENT CARD - متجاوب بالكامل

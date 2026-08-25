@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import {
   useCallback,
@@ -48,6 +49,7 @@ import {
   perAyahFallback,
   type Reciter,
 } from "@/lib/reciters";
+import { getReciter as getRegistryReciter } from "@/lib/reciterRegistry";
 import { useAudioEngine } from "@/lib/audio/useAudioEngine";
 import { AudioControls } from "@/components/AudioControls";
 import { useHafiz } from "@/lib/hafiz/useHafiz";
@@ -630,7 +632,8 @@ export function MushafReader({
     (engine.state.status === "playing" ||
       engine.state.status === "loading" ||
       engine.state.status === "paused");
-  const activeWord = engine.state.currentWord ?? -1;
+  // engine words are 1-based; ayah.words indexes are 0-based → normalize once.
+  const activeWord = engine.state.currentWord != null ? engine.state.currentWord - 1 : -1;
 
   /* =========================================================
      DATA
@@ -686,6 +689,19 @@ export function MushafReader({
       granularity,
       timings,
       syncStatus: resolvedStatus,
+      // Relative word weights (text length) → lets the engine build honest
+      // WORD_AUTO estimates from each ayah file's real duration, so the
+      // word highlight works for EVERY per-ayah reciter.
+      getWordWeights: (ayah: number) => {
+        const a = surah.ayahs.find((x) => x.numberInSurah === ayah);
+        if (!a || a.words.length === 0) return null;
+        return a.words.map((w) => {
+          // Ignore harakat/diacritics when weighting so long-vowel words
+          // get proportionally more time.
+          const bare = w.t.replace(/[\u064B-\u0652\u0670\u06D6-\u06ED\u0640]/g, "");
+          return Math.pow(Math.max(2, bare.length), 0.7);
+        });
+      },
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reciter.id, surahNum]);
@@ -1513,9 +1529,43 @@ export function MushafReader({
               grid
               grid-cols-2
               gap-2
-              sm:grid-cols-4
+              sm:grid-cols-5
             "
           >
+            {/* QUICK HIGHLIGHT TOGGLE */}
+
+            <button
+              type="button"
+              onClick={toggleHighlight}
+              aria-pressed={highlight}
+              className={`
+                flex w-full
+                items-center
+                justify-center
+                gap-1.5
+                rounded-2xl
+                border
+                px-2 py-2.5
+                text-xs
+                font-bold
+                transition
+                ${
+                  highlight
+                    ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+                    : "border-slate-100 bg-white text-slate-600 hover:border-emerald-200 hover:text-emerald-700"
+                }
+              `}
+              title="تظليل الكلمات أثناء التلاوة"
+            >
+              <span
+                className="grid h-4 w-4 place-items-center rounded-full text-[9px] font-black text-white"
+                style={{ background: hlColor }}
+              >
+                ✦
+              </span>
+              <span>تظليل</span>
+            </button>
+
             {/* NAVIGATION */}
 
             <div className="relative">
@@ -2045,16 +2095,14 @@ export function MushafReader({
 
                   <div className="max-h-[45vh] overflow-y-auto p-2">
                     {RECITERS.map(
-                      (item) => (
+                      (item) => {
+                        const photo = getRegistryReciter(item.id)?.image ?? null;
+                        return (
                         <button
-                          key={
-                            item.id
-                          }
+                          key={item.id}
                           type="button"
                           onClick={() =>
-                            chooseReciter(
-                              item
-                            )
+                            chooseReciter(item)
                           }
                           className={`
                             flex w-full
@@ -2062,7 +2110,7 @@ export function MushafReader({
                             justify-between
                             gap-2
                             rounded-2xl
-                            px-3 py-3
+                            px-3 py-2.5
                             text-right
                             transition
                             ${
@@ -2073,18 +2121,39 @@ export function MushafReader({
                             }
                           `}
                         >
-                          <span className="font-bold text-slate-800">
-                            {item.name}
+                          <span className="flex min-w-0 items-center gap-2.5">
+                            {photo ? (
+                              <Image
+                                src={photo}
+                                alt=""
+                                width={40}
+                                height={40}
+                                className="h-10 w-10 shrink-0 rounded-xl object-cover object-top ring-1 ring-emerald-100"
+                              />
+                            ) : (
+                              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-emerald-500 to-ocean-600 text-sm font-bold text-white">
+                                {item.name.charAt(0)}
+                              </span>
+                            )}
+                            <span className="flex min-w-0 flex-col">
+                              <span className="truncate font-bold text-slate-800">
+                                {item.name}
+                              </span>
+                              <span className="truncate text-[10px] text-slate-400">
+                                {item.style}
+                              </span>
+                            </span>
                           </span>
 
                           {item.id ===
                             reciter.id && (
-                            <span className="grid h-6 w-6 place-items-center rounded-full bg-emerald-500 text-xs font-black text-white">
+                            <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-emerald-500 text-xs font-black text-white">
                               ✓
                             </span>
                           )}
                         </button>
-                      )
+                        );
+                      }
                     )}
                   </div>
               </MushafMenu>
@@ -2293,7 +2362,7 @@ export function MushafReader({
 
                                 engine.seekToWord(
                                   ayah.numberInSurah,
-                                  wordIndex
+                                  wordIndex + 1
                                 );
                               }}
                               className="cursor-pointer"
@@ -2325,15 +2394,27 @@ export function MushafReader({
                         ayah.text
                       )}
 
-                      <AyahMarker
-                        n={
-                          ayah.numberInSurah
-                        }
-                        active={
-                          playingAyah ===
-                          ayah.numberInSurah
-                        }
-                      />
+                      <span
+                        role="button"
+                        tabIndex={-1}
+                        title="استماع للآية"
+                        aria-label={`استماع للآية ${ayah.numberInSurah}`}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          playAyah(ayah.numberInSurah, false);
+                        }}
+                        className="ayah-marker-btn"
+                      >
+                        <AyahMarker
+                          n={
+                            ayah.numberInSurah
+                          }
+                          active={
+                            playingAyah ===
+                            ayah.numberInSurah
+                          }
+                        />
+                      </span>
                     </span>
 
                     {/* SAJDA */}
@@ -2416,6 +2497,34 @@ export function MushafReader({
                             className="ayah-chip ayah-chip-listen"
                           >
                             🔊 استماع
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              onToggleBookmark(
+                                ayah.numberInSurah,
+                                ayah.page
+                              )
+                            }
+                            className="ayah-chip ayah-chip-bookmark"
+                            title="علامة مرجعية"
+                          >
+                            🔖 علامة
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              onCopy(
+                                ayah.text,
+                                ayah.numberInSurah
+                              )
+                            }
+                            className="ayah-chip ayah-chip-copy"
+                            title="نسخ الآية"
+                          >
+                            ⧉ نسخ
                           </button>
 
                           <button
@@ -2618,19 +2727,25 @@ export function MushafReader({
                     ayah.numberInSurah
                   }
                   className={`
-                    rounded-2xl
+                    ayah-card
+                    relative
+                    overflow-hidden
+                    rounded-3xl
                     border
+                    bg-white/80
                     p-4
                     transition-all
-                    sm:p-5
+                    sm:p-6
                     ${
                       playingAyah ===
                       ayah.numberInSurah
-                        ? "border-emerald-400 bg-emerald-50/60 shadow-md"
-                        : "border-sand-300/60 bg-white/70"
+                        ? "ayah-card-playing border-emerald-400 shadow-lg"
+                        : "border-sand-300/60 hover:border-emerald-200 hover:shadow-md"
                     }
                   `}
                 >
+                  <span className="ayah-card-bar" style={{ background: "var(--grad-aurora)" }} />
+
                   <div
                     className="
                       mb-3
@@ -2641,24 +2756,30 @@ export function MushafReader({
                       gap-2
                     "
                   >
-                    <span
-                      className="
-                        grid
-                        h-8 w-8
-                        place-items-center
-                        rounded-full
-                        text-xs
-                        font-bold
-                        text-white
-                      "
-                      style={{
-                        background:
-                          "linear-gradient(135deg,#10b981,#3b82f6)",
-                      }}
-                    >
-                      {ayah.numberInSurah.toLocaleString(
-                        "ar-EG"
-                      )}
+                    <span className="flex items-center gap-2">
+                      <span
+                        className="
+                          grid
+                          h-9 w-9
+                          place-items-center
+                          rounded-full
+                          text-xs
+                          font-bold
+                          text-white
+                          shadow-md
+                        "
+                        style={{
+                          background:
+                            "linear-gradient(135deg,#10b981,#3b82f6)",
+                        }}
+                      >
+                        {ayah.numberInSurah.toLocaleString(
+                          "ar-EG"
+                        )}
+                      </span>
+                      <span className="text-[11px] font-semibold text-ink-400">
+                        صفحة {ayah.page.toLocaleString("ar-EG")}
+                      </span>
                     </span>
 
                     <div className="flex flex-wrap gap-1.5">
@@ -2685,7 +2806,7 @@ export function MushafReader({
                           hover:text-emerald-700
                         "
                       >
-                        🔊 استماع
+                        {playingAyah === ayah.numberInSurah && isPlaying ? "⏸ جارٍ التلاوة" : "🔊 استماع"}
                       </button>
 
                       <button
@@ -2712,6 +2833,59 @@ export function MushafReader({
                       >
                         📖 تفسير
                       </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onToggleBookmark(
+                            ayah.numberInSurah,
+                            ayah.page
+                          )
+                        }
+                        aria-pressed={isBookmarked(surahNum, ayah.numberInSurah)}
+                        className="
+                          rounded-xl
+                          border
+                          border-slate-100
+                          bg-white
+                          px-3 py-1.5
+                          text-xs
+                          font-bold
+                          text-slate-600
+                          shadow-sm
+                          transition
+                          hover:border-emerald-200
+                          hover:text-emerald-700
+                        "
+                      >
+                        🔖 علامة
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onCopy(
+                            ayah.text,
+                            ayah.numberInSurah
+                          )
+                        }
+                        className="
+                          rounded-xl
+                          border
+                          border-slate-100
+                          bg-white
+                          px-3 py-1.5
+                          text-xs
+                          font-bold
+                          text-slate-600
+                          shadow-sm
+                          transition
+                          hover:border-emerald-200
+                          hover:text-emerald-700
+                        "
+                      >
+                        ⧉ نسخ
+                      </button>
                     </div>
                   </div>
 
@@ -2723,7 +2897,34 @@ export function MushafReader({
                       lineHeight: 2.2,
                     }}
                   >
-                    {ayah.text}
+                    {highlight &&
+                    playingAyah ===
+                      ayah.numberInSurah ? (
+                      ayah.words.map(
+                        (word, wordIndex) => (
+                          <span
+                            key={wordIndex}
+                            onClick={() => engine.seekToWord(ayah.numberInSurah, wordIndex + 1)}
+                            className="cursor-pointer"
+                            style={
+                              wordIndex === activeWord
+                                ? {
+                                    color: hlColor,
+                                    background: `${hlColor}22`,
+                                    borderRadius: "6px",
+                                    padding: "0 2px",
+                                    transition: "color .15s, background .15s",
+                                  }
+                                : undefined
+                            }
+                          >
+                            {word.t}{" "}
+                          </span>
+                        )
+                      )
+                    ) : (
+                      ayah.text
+                    )}
                   </p>
                 </div>
               )

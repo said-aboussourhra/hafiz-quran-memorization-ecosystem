@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   getReciter,
@@ -58,13 +59,15 @@ function ReciterHero({ reciter, isFav, isDefault, availableCount, onFav, onDefau
       <div className="pointer-events-none absolute -left-10 -top-10 h-40 w-40 rounded-full bg-emerald-500/10 blur-2xl" />
       <div className="pointer-events-none absolute -bottom-12 -right-8 h-48 w-48 rounded-full bg-ocean-500/10 blur-2xl" />
       <div className="relative flex flex-col items-center gap-5 text-center sm:flex-row sm:text-right">
-        <div
-          className="grid h-24 w-24 shrink-0 place-items-center rounded-3xl text-4xl font-bold text-white shadow-lg sm:h-28 sm:w-28"
-          style={{ background: "linear-gradient(135deg,#10b981,#2563eb)", fontFamily: "var(--font-quran)" }}
-          aria-hidden="true"
-        >
-          {initial}
-        </div>
+        <span className="reciter-photo-ring block h-24 w-24 shrink-0 rounded-3xl sm:h-28 sm:w-28" aria-hidden="true">
+          {reciter.image ? (
+            <Image src={reciter.image} alt="" width={128} height={128} className="reciter-photo rounded-[1.4rem]" />
+          ) : (
+            <span className="grid h-full w-full place-items-center rounded-[1.4rem] text-4xl font-bold text-white" style={{ background: "linear-gradient(135deg,#10b981,#2563eb)", fontFamily: "var(--font-quran)" }}>
+              {initial}
+            </span>
+          )}
+        </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
             <h1 className="font-display text-2xl font-bold text-ink-900 sm:text-4xl" style={{ fontFamily: "var(--font-quran)" }}>

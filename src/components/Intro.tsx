@@ -1,10 +1,13 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { pickIntroVerse, type IntroVerse } from "@/lib/introVerses";
+import { OrnamentStar } from "@/components/Ornament";
 
-const SESSION_KEY = "hafiz_intro_seen_v7";
+const SESSION_KEY = "hafiz_intro_seen_v8";
 const CONTINUE_AT = 9000; // fallback: reveal "continue" even if audio can't autoplay (ms)
+const LOGO_PHASE_MS = 2300; // logo alone, then the verse is revealed
 
 type Phase = "hidden" | "running" | "noor" | "fadeout";
 
@@ -34,6 +37,8 @@ export function Intro() {
   const [glow, setGlow] = useState(false);
   const [showContinue, setShowContinue] = useState(false);
   const [verse, setVerse] = useState<IntroVerse | null>(null);
+  // "logo" → الشعار أولاً، ثم "verse" تظهر البسملة والآية بتدرّج.
+  const [stage, setStage] = useState<"logo" | "verse">("logo");
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const transitionedRef = useRef(false);
@@ -80,6 +85,8 @@ export function Intro() {
 
     const timers = timersRef.current;
     timers.push(window.setTimeout(() => setShowContinue(true), CONTINUE_AT));
+    // الشعار أولاً — ثم تظهر الآية.
+    timers.push(window.setTimeout(() => setStage("verse"), LOGO_PHASE_MS));
 
     return () => {
       timers.forEach((t) => window.clearTimeout(t));
@@ -146,24 +153,48 @@ export function Intro() {
       <div className="intro-burst" />
 
       <div className="intro-stage relative z-10 px-6">
-        <p className="intro-basmala text-[6vw] sm:text-[2.8rem]" style={{ fontFamily: "var(--font-quran)" }}>
-          بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-        </p>
-
-        <div className="intro-frame mx-auto mt-12 max-w-3xl">
-          <span className="intro-frame-aura" />
-          <span className="intro-frame-corner right-4 top-4 border-r-2 border-t-2" style={{ borderTopRightRadius: 12 }} />
-          <span className="intro-frame-corner left-4 top-4 border-l-2 border-t-2" style={{ borderTopLeftRadius: 12 }} />
-          <span className="intro-frame-corner right-4 bottom-4 border-r-2 border-b-2" style={{ borderBottomRightRadius: 12 }} />
-          <span className="intro-frame-corner left-4 bottom-4 border-l-2 border-b-2" style={{ borderBottomLeftRadius: 12 }} />
-          <p key={verse.audio} className="intro-verse text-[7vw] leading-[1.9] sm:text-[3.4rem]" style={{ fontFamily: "var(--font-quran)" }}>
-            {verse.text}
-          </p>
+        {/* ===== 1) الشعار أولاً ===== */}
+        <div className={`intro-logo-wrap ${stage === "verse" ? "compact" : ""}`}>
+          <span className="intro-logo-ring">
+            <Image
+              src="/HAFIZ.jpg"
+              alt="شعار حافظ"
+              width={140}
+              height={140}
+              priority
+              className="intro-logo"
+            />
+          </span>
+          <p className="intro-brand">حافظ</p>
+          <p className="intro-brand-sub">رحلتك مع القرآن</p>
+          <div className="intro-logo-divider" aria-hidden>
+            <OrnamentStar className="h-4 w-4" />
+          </div>
         </div>
 
-        <p className="intro-attribution mt-8 text-sm tracking-[0.25em] text-[#4a6664]">
-          {verse.source} · بصوت الشيخ ياسر الدوسري
-        </p>
+        {/* ===== 2) البسملة ثم الآية ===== */}
+        {stage === "verse" && (
+          <>
+            <p className="intro-basmala text-[6vw] sm:text-[2.8rem]" style={{ fontFamily: "var(--font-quran)" }}>
+              بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+            </p>
+
+            <div className="intro-frame mx-auto mt-12 max-w-3xl">
+              <span className="intro-frame-aura" />
+              <span className="intro-frame-corner right-4 top-4 border-r-2 border-t-2" style={{ borderTopRightRadius: 12 }} />
+              <span className="intro-frame-corner left-4 top-4 border-l-2 border-t-2" style={{ borderTopLeftRadius: 12 }} />
+              <span className="intro-frame-corner right-4 bottom-4 border-r-2 border-b-2" style={{ borderBottomRightRadius: 12 }} />
+              <span className="intro-frame-corner left-4 bottom-4 border-l-2 border-b-2" style={{ borderBottomLeftRadius: 12 }} />
+              <p key={verse.audio} className="intro-verse text-[7vw] leading-[1.9] sm:text-[3.4rem]" style={{ fontFamily: "var(--font-quran)" }}>
+                {verse.text}
+              </p>
+            </div>
+
+            <p className="intro-attribution mt-8 text-sm tracking-[0.25em] text-[#4a6664]">
+              {verse.source} · بصوت الشيخ ياسر الدوسري
+            </p>
+          </>
+        )}
 
         <div className={`intro-continue-wrap ${showContinue ? "show" : ""}`}>
           <button onClick={proceed} className="intro-continue" disabled={!showContinue}>

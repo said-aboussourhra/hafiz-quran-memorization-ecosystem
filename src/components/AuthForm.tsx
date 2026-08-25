@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -68,24 +69,39 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
         <span className="ribbon hidden sm:inline-block">{mode === "signup" ? "مجاني" : "أهلاً"}</span>
 
         <div className="text-center">
-          <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl text-white shadow-lg" style={{ background: "linear-gradient(135deg,#10b981,#3b82f6)" }}>
-            {mode === "signup" ? (
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="8" r="4" /><path d="M4 21c1.5-4 5-6 8-6s6.5 2 8 6" /><path d="M18 4l1.2 2.4L21.6 7.6 19.2 8.8 18 11.2 16.8 8.8 14.4 7.6 16.8 6.4z" />
-              </svg>
-            ) : (
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /><path d="M10 17l5-5-5-5" /><path d="M15 12H3" />
-              </svg>
-            )}
-          </span>
-          <h1 className="mt-5 font-display text-2xl font-bold text-ink-900">
+          {/* شعار حافظ */}
+          <Link href="/" className="group mx-auto inline-flex flex-col items-center" aria-label="حافظ — الصفحة الرئيسية">
+            <span className="grid h-20 w-20 place-items-center rounded-3xl bg-gradient-to-br from-emerald-500 to-ocean-600 p-1.5 shadow-lg transition duration-300 group-hover:scale-105 group-hover:shadow-xl">
+              <Image
+                src="/HAFIZ.jpg"
+                alt="شعار حافظ"
+                width={64}
+                height={64}
+                priority
+                className="h-full w-full rounded-2xl object-cover"
+              />
+            </span>
+            <span className="mt-3 block font-display text-xl font-black leading-none shine-text">حافظ</span>
+            <span className="mt-1 block text-[10px] font-semibold leading-none tracking-[0.15em] text-ink-500">رحلتك مع القرآن</span>
+          </Link>
+          <h1 className="mt-4 font-display text-2xl font-bold text-ink-900">
             {mode === "signup" ? "إنشاء حساب جديد" : "تسجيل الدخول"}
           </h1>
           <p className="mt-2 text-sm text-ink-500">
             {mode === "signup"
               ? "اسمك الكامل وتاريخ ازديادك يكفيان للدخول — دون بريد أو كلمة مرور."
               : "أدخل اسمك الكامل وتاريخ ازديادك للمتابعة."}
+          </p>
+        </div>
+
+        {/* تنبيه مهم لتجنّب مشاكل الدخول */}
+        <div className="hafiz-hint mt-5" role="note">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/80 text-lg shadow-sm">💡</span>
+          <p className="pt-1">
+            <strong className="font-bold">قبل أن تبدأ:</strong> اكتب{" "}
+            <strong className="font-bold">اسمك الكامل</strong> (الاسم واللقب) و{" "}
+            <strong className="font-bold">تاريخ الازدياد</strong> الصحيحين، ولا تغيّرهما لاحقاً —
+            فهما مفتاح حسابك الوحيد{mode === "signup" ? "، وستحتاجهما بنفس الشكل عند كل دخول." : " عند كل دخول."}
           </p>
         </div>
 
