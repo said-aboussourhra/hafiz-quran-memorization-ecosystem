@@ -5,9 +5,8 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { pickIntroVerse, type IntroVerse } from "@/lib/introVerses";
 import { OrnamentStar } from "@/components/Ornament";
 
-const SESSION_KEY = "hafiz_intro_seen_v8";
-const CONTINUE_AT = 9000; // fallback: reveal "continue" even if audio can't autoplay (ms)
-const LOGO_PHASE_MS = 2300; // logo alone, then the verse is revealed
+const SESSION_KEY = "hafiz_intro_seen_v10";
+const CONTINUE_REVEAL_MS = 2400; // reveal "continue" button smoothly after 2.4s
 
 type Phase = "hidden" | "running" | "noor" | "fadeout";
 
@@ -32,13 +31,10 @@ function wasIntroSeen(): boolean {
 
 export function Intro() {
   const isMounted = useIsMounted();
-  // Before mount we must render null to avoid hydration mismatches (sessionStorage is client-only).
   const [phase, setPhase] = useState<Phase>("hidden");
   const [glow, setGlow] = useState(false);
   const [showContinue, setShowContinue] = useState(false);
   const [verse, setVerse] = useState<IntroVerse | null>(null);
-  // "logo" → الشعار أولاً، ثم "verse" تظهر البسملة والآية بتدرّج.
-  const [stage, setStage] = useState<"logo" | "verse">("logo");
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const transitionedRef = useRef(false);
@@ -66,12 +62,8 @@ export function Intro() {
 
   useEffect(() => {
     if (!isMounted) return;
-    // This runs once on mount (client only). Session storage is safe to read here.
     if (wasIntroSeen()) return;
 
-    // Defer initial state updates out of the synchronous effect body so React can
-    // paint the (null) first frame without a cascading render. This is a mount-only
-    // initialization path (the effect has empty deps), not a derived-state sync.
     queueMicrotask(() => {
       setVerse(pickIntroVerse());
       setPhase("running");
@@ -84,9 +76,7 @@ export function Intro() {
     events.forEach((e) => window.addEventListener(e, onInteract, { passive: true } as AddEventListenerOptions));
 
     const timers = timersRef.current;
-    timers.push(window.setTimeout(() => setShowContinue(true), CONTINUE_AT));
-    // الشعار أولاً — ثم تظهر الآية.
-    timers.push(window.setTimeout(() => setStage("verse"), LOGO_PHASE_MS));
+    timers.push(window.setTimeout(() => setShowContinue(true), CONTINUE_REVEAL_MS));
 
     return () => {
       timers.forEach((t) => window.clearTimeout(t));
@@ -152,50 +142,65 @@ export function Intro() {
       <div className="intro-noor" />
       <div className="intro-burst" />
 
-      <div className="intro-stage relative z-10 px-6">
-        {/* ===== 1) الشعار أولاً ===== */}
-        <div className={`intro-logo-wrap ${stage === "verse" ? "compact" : ""}`}>
-          <span className="intro-logo-ring">
-            <Image
-              src="/HAFIZ.jpg"
-              alt="شعار حافظ"
-              width={140}
-              height={140}
-              priority
-              className="intro-logo"
-            />
-          </span>
-          <p className="intro-brand">حافظ</p>
-          <p className="intro-brand-sub">رحلتك مع القرآن</p>
-          <div className="intro-logo-divider" aria-hidden>
-            <OrnamentStar className="h-4 w-4" />
+      {/* ===== 1) الشعار فقط في الزاوية العلوية (~56px بإطار ذهبي رقيق) ===== */}
+      <div className="intro-corner-logo">
+        <span className="intro-corner-ring">
+          <Image
+            src="/HAFIZ.jpg"
+            alt="شعار حافظ"
+            width={56}
+            height={56}
+            priority
+            className="intro-corner-img"
+          />
+        </span>
+        <div className="intro-corner-text">
+          <span className="intro-corner-title">حافظ</span>
+          <span className="intro-corner-sub">رحلتك مع القرآن</span>
+        </div>
+      </div>
+
+      <div className="intro-stage relative z-10 w-full max-w-4xl px-5 sm:px-8">
+        {/* ===== 2) البسملة صغيرة في الوسط ===== */}
+        <p className="intro-basmala text-[5.5vw] sm:text-[2.2rem]" style={{ fontFamily: "var(--font-quran)" }}>
+          بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+        </p>
+
+        {/* ===== 3) الآية داخل إطار فخم ===== */}
+        <div className="intro-frame mx-auto mt-6 sm:mt-8 max-w-3xl">
+          <span className="intro-frame-aura" />
+
+          {/* نجمة ذهبية دوّارة أعلى الإطار */}
+          <div className="intro-frame-top" aria-hidden="true">
+            <span className="intro-star-wrap">
+              <OrnamentStar className="h-6 w-6 text-[#b8902f] intro-spinning-star" />
+            </span>
+          </div>
+
+          {/* زوايا ذهبية بأركان الإطار */}
+          <span className="intro-frame-corner right-3 top-3 sm:right-4 sm:top-4 border-r-2 border-t-2" style={{ borderTopRightRadius: 12 }} />
+          <span className="intro-frame-corner left-3 top-3 sm:left-4 sm:top-4 border-l-2 border-t-2" style={{ borderTopLeftRadius: 12 }} />
+          <span className="intro-frame-corner right-3 bottom-3 sm:right-4 sm:bottom-4 border-r-2 border-b-2" style={{ borderBottomRightRadius: 12 }} />
+          <span className="intro-frame-corner left-3 bottom-3 sm:left-4 sm:bottom-4 border-l-2 border-b-2" style={{ borderBottomLeftRadius: 12 }} />
+
+          {/* نص الآية الكريمة */}
+          <p key={verse.audio} className="intro-verse text-[6.5vw] leading-[2.1] sm:text-[3rem]" style={{ fontFamily: "var(--font-quran)" }}>
+            {verse.text}
+          </p>
+
+          {/* الزخرفة السفلية */}
+          <div className="intro-frame-bottom-decor mt-4 pt-3 border-t border-[#b8902f]/20 flex items-center justify-center gap-3" aria-hidden="true">
+            <span className="h-px w-12 sm:w-20 bg-gradient-to-l from-[#b8902f]/60 to-transparent" />
+            <OrnamentStar className="h-3.5 w-3.5 text-[#b8902f]/80" />
+            <span className="h-px w-12 sm:w-20 bg-gradient-to-r from-[#b8902f]/60 to-transparent" />
           </div>
         </div>
 
-        {/* ===== 2) البسملة ثم الآية ===== */}
-        {stage === "verse" && (
-          <>
-            <p className="intro-basmala text-[6vw] sm:text-[2.8rem]" style={{ fontFamily: "var(--font-quran)" }}>
-              بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-            </p>
+        <p className="intro-attribution mt-5 text-xs sm:text-sm tracking-[0.2em] text-[#4a6664]">
+          {verse.source} · بصوت الشيخ ياسر الدوسري
+        </p>
 
-            <div className="intro-frame mx-auto mt-12 max-w-3xl">
-              <span className="intro-frame-aura" />
-              <span className="intro-frame-corner right-4 top-4 border-r-2 border-t-2" style={{ borderTopRightRadius: 12 }} />
-              <span className="intro-frame-corner left-4 top-4 border-l-2 border-t-2" style={{ borderTopLeftRadius: 12 }} />
-              <span className="intro-frame-corner right-4 bottom-4 border-r-2 border-b-2" style={{ borderBottomRightRadius: 12 }} />
-              <span className="intro-frame-corner left-4 bottom-4 border-l-2 border-b-2" style={{ borderBottomLeftRadius: 12 }} />
-              <p key={verse.audio} className="intro-verse text-[7vw] leading-[1.9] sm:text-[3.4rem]" style={{ fontFamily: "var(--font-quran)" }}>
-                {verse.text}
-              </p>
-            </div>
-
-            <p className="intro-attribution mt-8 text-sm tracking-[0.25em] text-[#4a6664]">
-              {verse.source} · بصوت الشيخ ياسر الدوسري
-            </p>
-          </>
-        )}
-
+        {/* ===== 4) زر «متابعة» أسفل الآية ===== */}
         <div className={`intro-continue-wrap ${showContinue ? "show" : ""}`}>
           <button onClick={proceed} className="intro-continue" disabled={!showContinue}>
             متابعة

@@ -962,13 +962,142 @@ body::before {
 /* decorative top ornament */
 .intro-frame-top {
   position: absolute;
-  top: -14px; left: 50%;
+  top: -16px;
+  left: 50%;
   transform: translateX(-50%);
   color: #b8902f;
-  font-size: 1.4rem;
   background: #fbf5e6;
-  padding: 0 12px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(184, 144, 47, 0.3);
+  box-shadow: 0 2px 10px rgba(184, 144, 47, 0.15);
   z-index: 3;
+}
+.intro-star-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.intro-spinning-star {
+  animation: introStarSpin 12s linear infinite;
+  transform-origin: center;
+}
+@keyframes introStarSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Corner logo in Intro (~56px with subtle gold ring) */
+.intro-corner-logo {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  animation: introFadeUp 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.intro-corner-ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 2.5px;
+  border-radius: 18px;
+  background: conic-gradient(from 120deg, #10b981, #c9a44a, #2563eb, #10b981);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.8),
+    0 4px 14px -3px rgba(6, 95, 70, 0.35),
+    0 0 18px rgba(201, 164, 74, 0.25);
+}
+.intro-corner-img {
+  width: 56px;
+  height: 56px;
+  border-radius: 15px;
+  object-fit: cover;
+}
+.intro-corner-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.intro-corner-title {
+  font-family: var(--font-arabic);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0b3d35;
+}
+.intro-corner-sub {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: #4a6664;
+}
+@media (max-width: 640px) {
+  .intro-corner-logo {
+    top: 1rem;
+    right: 1rem;
+  }
+  .intro-corner-img {
+    width: 44px;
+    height: 44px;
+  }
+  .intro-corner-sub {
+    display: none;
+  }
+}
+
+/* Floating auth hint toast animation */
+.auth-hint-enter {
+  animation: authHintSlideDown 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.auth-hint-exit {
+  animation: authHintSlideUp 0.4s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+}
+
+@keyframes authHintSlideDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-40px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes authHintSlideUp {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-40px) scale(0.95);
+  }
+}
+
+@media (min-width: 640px) {
+  @keyframes authHintSlideDown {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, -40px) scale(0.95);
+    }
+    100% {
+      opacity: 1;
+      transform: translate(-50%, 0) scale(1);
+    }
+  }
+  @keyframes authHintSlideUp {
+    0% {
+      opacity: 1;
+      transform: translate(-50%, 0) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -40px) scale(0.95);
+    }
+  }
 }
 
 /* Radiant glow burst on "continue" (no lightning) */
