@@ -2969,3 +2969,282 @@ body {
 .reciter-avail-surah { background: rgba(37, 99, 235, 0.12); color: #1d4ed8; }
 .reciter-avail-none { background: rgba(100, 116, 139, 0.14); color: #64748b; }
 .reciter-row-unavailable { opacity: 0.55; }
+
+/* ============================================================
+   AYAH OF THE DAY — crown jewel arcs (gold on royal night)
+   ============================================================ */
+.aod-corner {
+  width: 40px;
+  height: 40px;
+  font-size: 40px;
+  background: linear-gradient(135deg, #f6e3a1 0%, #c9a44a 50%, #34d399 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 10px rgba(246,227,161,.55));
+  z-index: 5;
+}
+.aod-card:hover .aod-corner { transform: scale(1.12); }
+.aod-card:hover .rc-tl { transform: translate(-3px,-3px) scale(1.25) rotate(-8deg); }
+.aod-card:hover .rc-tr { transform: translate(3px,-3px) scale(1.25) rotate(8deg); }
+.aod-card:hover .rc-bl { transform: translate(-3px,3px) scale(1.25) rotate(8deg); }
+.aod-card:hover .rc-br { transform: translate(3px,3px) scale(1.25) rotate(-8deg); }
+
+/* ============================================================
+   ROYAL OPEN BOOK — المصحف ككتاب حقيقي مفتوح
+   Leather cover + inner page + central spine/gutter
+   ============================================================ */
+.book-open {
+  position: relative;
+  border-radius: clamp(18px, 2.4vw, 34px);
+  padding: clamp(14px, 2vw, 26px);
+  background:
+    radial-gradient(140% 90% at 50% 0%, #17513f 0%, #0d3a2d 45%, #082a22 100%);
+  border: 2px solid #0a1f19;
+  box-shadow:
+    0 50px 100px -40px rgba(4, 30, 24, .75),
+    0 24px 50px -26px rgba(4, 30, 24, .6),
+    inset 0 2px 3px rgba(255, 255, 255, .12),
+    inset 0 -3px 8px rgba(0, 0, 0, .5);
+  isolation: isolate;
+}
+/* gold ruled edge along the leather cover */
+.book-open::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: clamp(12px, 1.8vw, 26px);
+  border: 1.5px solid rgba(201, 164, 74, .55);
+  box-shadow: inset 0 0 0 1px rgba(201, 164, 74, .18);
+  pointer-events: none;
+  z-index: 2;
+}
+/* corner flourishes on the cover */
+.book-open::after {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border-radius: clamp(10px, 1.6vw, 22px);
+  border: 1px solid rgba(201, 164, 74, .18);
+  pointer-events: none;
+  z-index: 2;
+}
+.book-open-inner {
+  position: relative;
+  z-index: 1;
+  border-radius: clamp(10px, 1.4vw, 20px);
+  overflow: hidden;
+}
+/* the inner mushaf page loses its own outer outline inside the cover */
+.book-open-inner .mushaf-page {
+  outline: none !important;
+  border-radius: clamp(10px, 1.4vw, 20px) !important;
+  box-shadow:
+    inset 8px 0 18px -12px rgba(60, 50, 28, .35),
+    inset -8px 0 18px -12px rgba(60, 50, 28, .35) !important;
+}
+.book-open-inner .mushaf-page::before,
+.book-open-inner .mushaf-page::after { display: none; }
+
+/* central spine / gutter of the open book */
+.book-spine {
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 50%;
+  width: 34px;
+  transform: translateX(-50%);
+  z-index: 3;
+  pointer-events: none;
+}
+.book-spine::before {
+  content: "";
+  position: absolute;
+  inset: 0 14px;
+  background:
+    linear-gradient(90deg,
+      rgba(43, 34, 14, 0) 0%,
+      rgba(43, 34, 14, .22) 32%,
+      rgba(28, 22, 9, .5) 50%,
+      rgba(43, 34, 14, .22) 68%,
+      rgba(43, 34, 14, 0) 100%);
+}
+.book-spine::after {
+  content: "";
+  position: absolute;
+  inset: 0 50%;
+  width: 1.5px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, transparent, rgba(201,164,74,.35) 12%, rgba(201,164,74,.35) 88%, transparent);
+}
+/* page-curl shading at bottom outer corners */
+.book-open .page-curl {
+  position: absolute;
+  bottom: 8px;
+  width: 120px;
+  height: 90px;
+  pointer-events: none;
+  z-index: 2;
+  opacity: .5;
+}
+.book-open .page-curl.right {
+  right: 10px;
+  background: radial-gradient(100% 100% at 100% 100%, rgba(43,34,14,.35), transparent 70%);
+  border-bottom-right-radius: 24px;
+}
+.book-open .page-curl.left {
+  left: 10px;
+  background: radial-gradient(100% 100% at 0 100%, rgba(43,34,14,.35), transparent 70%);
+  border-bottom-left-radius: 24px;
+}
+
+/* ============================================================
+   ROYAL QUICK FAB + SLIDE PANEL — اختصار جانبي عائم للمصحف
+   ============================================================ */
+.reader-fab {
+  position: fixed;
+  left: calc(12px + env(safe-area-inset-left));
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 140;
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  border: 2px solid rgba(246, 227, 161, .65);
+  background:
+    radial-gradient(120% 120% at 30% 22%, rgba(255,255,255,.35), rgba(255,255,255,0) 50%),
+    linear-gradient(135deg, #0d9488 0%, #059669 45%, #1d4ed8 100%);
+  box-shadow:
+    0 16px 36px -12px rgba(5, 150, 105, .7),
+    inset 0 2px 3px rgba(255,255,255,.4);
+  cursor: pointer;
+  transition: transform .3s cubic-bezier(.22,1,.36,1), box-shadow .3s ease;
+}
+.reader-fab:hover { transform: translateY(-50%) scale(1.08); box-shadow: 0 20px 44px -12px rgba(37,99,235,.65), inset 0 2px 3px rgba(255,255,255,.4); }
+.reader-fab:active { transform: translateY(-50%) scale(.96); }
+.reader-fab svg { width: 26px; height: 26px; }
+
+.reader-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 195;
+  background: rgba(7, 22, 18, .45);
+  backdrop-filter: blur(2px);
+  animation: fadeIn .25s ease both;
+}
+.reader-drawer {
+  position: fixed;
+  top: 0; bottom: 0;
+  left: 0;
+  z-index: 196;
+  width: min(340px, 88vw);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 18px 16px calc(24px + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, #ffffff, #f4fbf8);
+  box-shadow: 18px 0 60px -20px rgba(4, 30, 24, .5);
+  animation: drawerIn .34s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes drawerIn { from { transform: translateX(-105%); } to { transform: translateX(0); } }
+.reader-drawer .rd-section { margin-bottom: 16px; }
+.reader-drawer .rd-title {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .05em;
+  color: #047857;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.reader-drawer .rd-title::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(16,185,129,.4), transparent); }
+.reader-drawer .rd-seg {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 4px;
+  border-radius: 16px;
+  background: #eef7f4;
+}
+.reader-drawer .rd-seg button {
+  border: none;
+  border-radius: 12px;
+  padding: 10px 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #4a6664;
+  background: transparent;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+.reader-drawer .rd-seg button.active {
+  background: #fff;
+  color: #047857;
+  box-shadow: 0 4px 12px -6px rgba(5,150,105,.4);
+}
+.reader-drawer .rd-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid rgba(16,185,129,.16);
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e3d40;
+  cursor: pointer;
+  transition: border-color .2s ease, background .2s ease;
+}
+.reader-drawer .rd-row:hover { border-color: rgba(16,185,129,.5); background: #f0faf6; }
+.reader-drawer .rd-btn {
+  width: 100%;
+  border: none;
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform .15s ease, filter .15s ease;
+}
+.reader-drawer .rd-btn:active { transform: scale(.98); }
+.reader-drawer .rd-btn-play { background: linear-gradient(120deg,#10b981,#2563eb); box-shadow: 0 10px 24px -10px rgba(5,150,105,.6); }
+.reader-drawer .rd-btn-stop { background: linear-gradient(120deg,#ef4444,#be123c); }
+.reader-drawer .rd-btn-hafiz { background: linear-gradient(120deg,#0d9488,#2563eb); box-shadow: 0 10px 24px -10px rgba(37,99,235,.55); }
+.reader-drawer .rd-jump {
+  width: 100%;
+  border: 1px solid rgba(15,42,44,.12);
+  border-radius: 12px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  outline: none;
+  background: #fff;
+  color: #1e3d40;
+}
+.reader-drawer .rd-jump:focus { border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,.14); }
+
+@media (max-width: 640px) {
+  .reader-fab {
+    top: auto;
+    bottom: calc(96px + env(safe-area-inset-bottom));
+    transform: none;
+    width: 52px;
+    height: 52px;
+  }
+  .reader-fab:hover { transform: scale(1.08); }
+  .book-spine { width: 22px; }
+}
+/* night reading → deep sapphire leather cover */
+.book-open:has(.paper-night) {
+  background: radial-gradient(140% 90% at 50% 0%, #132a3c 0%, #0a1a26 50%, #050d16 100%);
+}

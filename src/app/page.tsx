@@ -124,16 +124,16 @@ export default async function HomePage() {
         <DailyPlanCard />
       </section>
 
-      {/* AYAH OF THE DAY — shareable luxury card */}
+      {/* AYAH OF THE DAY — the crown jewel, pinnacle of luxury */}
       <section className="relative">
         <ArabesqueBg />
         <div className="relative text-center">
           <p className="eyebrow justify-center">آية اليوم</p>
-          <h2 className="mt-3 font-display section-title text-ink-900">بطاقة آية اليوم — شاركها بصورة فاخرة</h2>
-          <p className="mx-auto mt-3 max-w-xl text-ink-500">صورة عالية الدقة ١٠٨٠×١٠٨٠ بإطار ملكي، جاهزة للتنزيل والمشاركة بلمسة واحدة.</p>
+          <h2 className="mt-3 font-display section-title text-ink-900">بطاقة آية اليوم — جوهرة يومك القرآنية</h2>
+          <p className="mx-auto mt-3 max-w-xl text-ink-500">تحفة فاخرة بدقة ١٠٨٠×١٠٨٠، بإطار ملكي ذهبي وتوهّج زمردي — شاركها أو نزّلها بلمسة واحدة.</p>
           <OrnamentDivider />
         </div>
-        <div className="relative mt-6">
+        <div className="relative mt-8">
           <AyahOfDayCard ayah={ayahOfToday()} />
         </div>
       </section>

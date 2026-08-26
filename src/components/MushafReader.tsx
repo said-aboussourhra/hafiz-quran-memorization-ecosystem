@@ -614,6 +614,20 @@ export function MushafReader({
   const [indexQuery, setIndexQuery] = useState("");
   const [fallbackNotice, setFallbackNotice] = useState<string | null>(null);
 
+  /* Floating side shortcut — اختصار جانبي عائم يفتح لوحة أدوات المصحف */
+  const [showQuickPanel, setShowQuickPanel] = useState(false);
+
+  const openMenu = (
+    menu: "font" | "reciter" | "appearance",
+    opts: { index?: boolean } = {}
+  ) => {
+    setShowQuickPanel(false);
+    setShowNav(!!opts.index);
+    setShowAppearance(menu === "appearance");
+    setShowFonts(menu === "font");
+    setShowReciters(menu === "reciter");
+  };
+
   const showToast = (msg: string) => {
     setToast(msg);
     if (toastTimer.current) window.clearTimeout(toastTimer.current);
@@ -1104,8 +1118,10 @@ export function MushafReader({
   ========================================================= */
 
   /**
-   * Royal-reader behaviour: tapping any ayah instantly reveals the
-   * Tafsir Al-Muyassar AND starts the recitation in one smooth action.
+   * Tapping an ayah reveals the option chips (tafsir / listen / bookmark /
+   * copy). The options only appear on tap and disappear again — choosing
+   * "listen" dismisses them (the ayah must be tapped once more to bring
+   * them back).
    */
   const onAyahClick = (
     event: MouseEvent,
@@ -1113,24 +1129,13 @@ export function MushafReader({
   ) => {
     event?.stopPropagation?.();
 
-    const same =
-      selected === n &&
-      tafsirAyah === n;
-
+    setTafsirAyah(null);
     setSelected(
-      same
-        ? null
-        : n
+      (current) =>
+        current === n
+          ? null
+          : n
     );
-    setTafsirAyah(
-      same
-        ? null
-        : n
-    );
-
-    if (!same) {
-      playAyah(n, false);
-    }
   };
 
   const onAyahKeyDown = (
@@ -2332,9 +2337,20 @@ export function MushafReader({
       </div>
 
       {/* =====================================================
-          MUSHAF PAGE
+          ROYAL OPEN BOOK — الكتاب الملكي المفتوح
+          Leather cover + spine + open page
       ===================================================== */}
 
+      <div
+        className="book-open mx-auto w-full"
+        style={{ maxWidth: "calc(var(--mushaf-reading-width, 1024px) + 52px)" }}
+      >
+        {/* central spine & page-curl shading */}
+        <span className="book-spine" aria-hidden />
+        <span className="page-curl right" aria-hidden />
+        <span className="page-curl left" aria-hidden />
+
+        <div className="book-open-inner">
       <div
         ref={pageRef}
         className={`
@@ -2342,22 +2358,17 @@ export function MushafReader({
           paper-${paper}
           hl-style-${hlStyle}
           relative z-10
-          mx-auto
           w-full
           overflow-hidden
           px-4 py-6
           sm:px-8 sm:py-10
           md:px-12 md:py-14
           lg:px-16 lg:py-16
-          ${
-            surahPlaying
-              ? "ring-2 ring-emerald-500/30"
-              : ""
-          }
         `}
         style={
           {
             maxWidth: "var(--mushaf-reading-width, 1024px)",
+            margin: "0 auto",
             "--reader-hl": hlColor,
             "--mushaf-font-size": `${fontSize}px`,
             "--mushaf-line-height": String(lineHeight),
@@ -3096,6 +3107,8 @@ export function MushafReader({
           </div>
         )}
       </div>
+        </div>{/* /book-open-inner */}
+      </div>{/* /book-open */}
 
       {/* =====================================================
           SAJDA MODAL
@@ -3306,6 +3319,176 @@ export function MushafReader({
           Owned by useAudioEngine; hidden until a source is loaded. */}
       {engine.state.status !== "idle" && (
         <AudioControls engine={engine} />
+      )}
+
+      {/* =====================================================
+          FLOATING SIDE SHORTCUT — اختصار جانبي عائم
+      ===================================================== */}
+      {!showQuickPanel && (
+        <button
+          type="button"
+          className="reader-fab"
+          onClick={() => setShowQuickPanel(true)}
+          aria-label="أدوات المصحف السريعة"
+          title="أدوات المصحف"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d="M3.5 5.5A2.5 2.5 0 0 1 6 3h5.5v17H6a2.5 2.5 0 0 0-2.5 2z" />
+            <path d="M20.5 5.5A2.5 2.5 0 0 0 18 3h-6.5v17H18a2.5 2.5 0 0 1 2.5 2z" />
+          </svg>
+        </button>
+      )}
+
+      {showQuickPanel && (
+        <>
+          <div
+            className="reader-drawer-backdrop"
+            onClick={() => setShowQuickPanel(false)}
+            aria-hidden
+          />
+          <aside
+            className="reader-drawer"
+            role="dialog"
+            aria-label="أدوات المصحف"
+            dir="rtl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <div className="font-display text-lg font-bold text-ink-900">أدوات المصحف</div>
+                <div className="text-[11px] font-semibold text-ink-500">سورة {surah.meta.nameAr} · {surah.ayahs.length.toLocaleString("ar-EG")} آية</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowQuickPanel(false)}
+                className="grid h-9 w-9 place-items-center rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200"
+                aria-label="إغلاق"
+              >
+                <IconClose />
+              </button>
+            </div>
+
+            {/* العرض */}
+            <div className="rd-section">
+              <div className="rd-title">نمط العرض</div>
+              <div className="rd-seg">
+                <button className={view === "mushaf" ? "active" : ""} onClick={() => { setView("mushaf"); setShowQuickPanel(false); }}>
+                  <IconBook className="mx-auto mb-1 h-4 w-4" /> مصحف
+                </button>
+                <button className={view === "ayah" ? "active" : ""} onClick={() => { setView("ayah"); setShowQuickPanel(false); }}>
+                  <IconList className="mx-auto mb-1 h-4 w-4" /> آية بآية
+                </button>
+                <button className={view === "continuous" ? "active" : ""} onClick={() => { setView("continuous"); setShowQuickPanel(false); }}>
+                  <IconScroll className="mx-auto mb-1 h-4 w-4" /> متواصل
+                </button>
+              </div>
+            </div>
+
+            {/* الخط */}
+            <div className="rd-section">
+              <div className="rd-title">حجم الخط · {fontSize}px</div>
+              <div className="flex items-center gap-2">
+                <button type="button" className="rd-row flex-1 justify-center" onClick={() => changeSize(-2)} aria-label="تصغير">
+                  <IconMinus /> تصغير
+                </button>
+                <button type="button" className="rd-row px-4" onClick={resetFontSize} title="إعادة الافتراضي">معايرة</button>
+                <button type="button" className="rd-row flex-1 justify-center" onClick={() => changeSize(2)} aria-label="تكبير">
+                  <IconPlus /> تكبير
+                </button>
+              </div>
+            </div>
+
+            {/* التلاوة */}
+            <div className="rd-section">
+              <div className="rd-title">التلاوة الصوتية</div>
+              <button
+                type="button"
+                className={`rd-btn ${isPlaying ? "rd-btn-stop" : "rd-btn-play"}`}
+                onClick={() => {
+                  if (isPlaying) stopAudio();
+                  else playFullSurah();
+                }}
+              >
+                {isPlaying ? <IconStop className="h-5 w-5" /> : <IconPlay className="h-5 w-5" />}
+                {isPlaying ? "إيقاف التلاوة" : "استماع للسورة كاملة"}
+              </button>
+              <p className="mt-2 text-center text-[11px] font-semibold text-ink-500">
+                القارئ الحالي: <span className="text-emerald-700">{reciter.name}</span>
+              </p>
+            </div>
+
+            {/* جلسة ذكية */}
+            <div className="rd-section">
+              <button
+                type="button"
+                className="rd-btn rd-btn-hafiz"
+                onClick={() => {
+                  setShowQuickPanel(false);
+                  setShowHafiz((v) => !v);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+              >
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M12 2a7 7 0 00-7 7c0 3 2 5 2 7h10c0-2 2-4 2-7a7 7 0 00-7-7z" /><path d="M9 21h6" />
+                </svg>
+                ابدأ جلسة ذكية
+              </button>
+            </div>
+
+            {/* أدوات */}
+            <div className="rd-section space-y-2">
+              <button type="button" className="rd-row" onClick={() => openMenu("reciter")}>
+                <span className="flex items-center gap-2"><IconMic className="h-4 w-4 text-emerald-700" /> القارئ والتلاوات</span>
+                <IconChevron className="h-4 w-4 text-slate-400" />
+              </button>
+              <button type="button" className="rd-row" onClick={() => openMenu("font")}>
+                <span className="flex items-center gap-2"><IconType className="h-4 w-4 text-emerald-700" /> نوع الخط</span>
+                <IconChevron className="h-4 w-4 text-slate-400" />
+              </button>
+              <button type="button" className="rd-row" onClick={() => openMenu("appearance")}>
+                <span className="flex items-center gap-2"><IconPalette className="h-4 w-4 text-emerald-700" /> المظهر والورق والتظليل</span>
+                <IconChevron className="h-4 w-4 text-slate-400" />
+              </button>
+              <button type="button" className="rd-row" onClick={() => openMenu("font", { index: true })}>
+                <span className="flex items-center gap-2"><IconBookOpen className="h-4 w-4 text-emerald-700" /> الفهرس والانتقال السريع</span>
+                <IconChevron className="h-4 w-4 text-slate-400" />
+              </button>
+            </div>
+
+            {/* انتقال سريع لآية */}
+            <div className="rd-section">
+              <div className="rd-title">انتقال إلى آية</div>
+              <form
+                className="flex gap-2"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  jumpToAyah(parseAyahInput(jumpAyah));
+                  if (jumpAyah) setShowQuickPanel(false);
+                }}
+              >
+                <input
+                  inputMode="numeric"
+                  value={jumpAyah}
+                  onChange={(e) => setJumpAyah(e.target.value)}
+                  placeholder={`رقم الآية (١–${surah.ayahs.length.toLocaleString("ar-EG")})`}
+                  dir="rtl"
+                  className="rd-jump"
+                  aria-label="رقم الآية"
+                />
+                <button type="submit" className="rounded-xl btn-primary px-5 text-sm font-bold">اذهب</button>
+              </form>
+            </div>
+
+            <div className="rd-section">
+              <div className="rd-row" onClick={toggleHighlight}>
+                <span className="flex items-center gap-2"><span className="grid h-4 w-4 place-items-center rounded-full text-[9px] font-black text-white" style={{ background: hlColor }}>✦</span> تظليل الكلمات أثناء التلاوة</span>
+                <span className={`relative h-5 w-9 shrink-0 rounded-full transition ${highlight ? "bg-emerald-500" : "bg-slate-300"}`}>
+                  <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${highlight ? "right-0.5" : "right-4"}`} />
+                </span>
+              </div>
+            </div>
+          </aside>
+        </>
       )}
 
       {toast && (
