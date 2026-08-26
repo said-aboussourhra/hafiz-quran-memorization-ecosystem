@@ -18,10 +18,10 @@
   --color-ocean-600: #2563eb;
   --color-ocean-500: #3b82f6;
   --color-ocean-400: #60a5fa;
-  --font-arabic: var(--font-arabic), "Amiri", serif;
-  --font-quran: var(--font-quran), "Amiri Quran", "Amiri", serif;
-  --font-display: var(--font-display), serif;
-  --font-ui: var(--font-ui), sans-serif;
+  --font-arabic: "Amiri", "Scheherazade New", "Geeza Pro", "Tahoma", serif;
+  --font-quran: "Amiri Quran", "Amiri", "Scheherazade New", "Traditional Arabic", serif;
+  --font-display: "Reem Kufi", "Amiri", "Tahoma", sans-serif;
+  --font-ui: "Tajawal", "Segoe UI", system-ui, "Tahoma", sans-serif;
 }
 
 :root {
@@ -2689,3 +2689,283 @@ body {
   .card-premium { border-radius: 20px; }
   .icon-badge { border-radius: 15px; }
 }
+
+/* ============================================================
+   ROYAL ISLAMIC CARD FRAMING — نظام إطارات البطاقات الملكية الفاخرة
+   إطار خارجي مصمت 2px · إطار داخلي مزدوج زمردي/ذهبي · أقواس 36px
+   ============================================================ */
+:root {
+  --royal-ink: #0f172a;
+  --royal-emerald: #059669;
+  --royal-ruby: #be123c;
+  --grad-royal-badge: linear-gradient(145deg, #34d399 0%, #059669 40%, #0d9488 62%, #be123c 100%);
+  --shadow-royal:
+    0 2px 4px rgba(15, 23, 42, 0.06),
+    0 26px 58px -28px rgba(15, 23, 42, 0.38),
+    0 18px 42px -26px rgba(5, 150, 105, 0.42);
+}
+
+/* ---- Solid, firm outer frame on every premium surface ---- */
+.card-premium {
+  border: 2px solid var(--royal-ink);
+  border-radius: 26px;
+  box-shadow: var(--shadow-royal);
+}
+.card-premium:hover {
+  box-shadow:
+    0 2px 4px rgba(15, 23, 42, 0.08),
+    0 34px 72px -28px rgba(15, 23, 42, 0.42),
+    0 24px 52px -24px rgba(5, 150, 105, 0.48);
+}
+
+/* ---- Inner double inset frame: emerald line ---- */
+.card-premium::before {
+  inset: 7px;
+  padding: 0;
+  border: 1.5px solid rgba(16, 185, 129, 0.55);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 24%);
+  -webkit-mask: none;
+  mask: none;
+  transition: border-color 0.4s ease;
+}
+/* ---- Inner double inset frame: gold line + faint geometry ---- */
+.card-premium::after {
+  inset: 11px;
+  border: 1px solid rgba(201, 164, 74, 0.55);
+  border-radius: 14px;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(201, 164, 74, 0.03) 0 1px, transparent 1px 20px),
+    repeating-linear-gradient(-45deg, rgba(16, 185, 129, 0.028) 0 1px, transparent 1px 20px);
+  transition: border-color 0.4s ease;
+}
+.card-premium:hover::before { border-color: rgba(5, 150, 105, 0.9); }
+.card-premium:hover::after { border-color: rgba(201, 164, 74, 0.95); }
+
+/* ---- Base cards get the firm solid outer frame too ---- */
+.card {
+  border: 1.5px solid rgba(15, 23, 42, 0.78);
+}
+.card:hover { border-color: var(--royal-ink); }
+
+/* ============================================================
+   ROYAL CORNER ARCS — أقواس الزوايا ╭ ╮ ╰ ╯ (36px)
+   انسيابية الحركة عند التمرير
+   ============================================================ */
+.royal-corner {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-ui), sans-serif;
+  font-size: 34px;
+  font-weight: 400;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 6;
+  background: linear-gradient(135deg, #059669 0%, #b8902f 55%, #0f172a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 6px rgba(201, 164, 74, 0.5));
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), filter 0.4s ease, background 0.4s ease;
+}
+.rc-tl { top: -10px; left: -10px; }
+.rc-tr { top: -10px; right: -10px; }
+.rc-bl { bottom: -10px; left: -10px; }
+.rc-br { bottom: -10px; right: -10px; }
+
+.lift:hover .rc-tl,
+.card-premium:hover .rc-tl,
+.royal-frame:hover .rc-tl,
+.name-card:hover .rc-tl { transform: translate(-4px, -4px) scale(1.22) rotate(-7deg); }
+.lift:hover .rc-tr,
+.card-premium:hover .rc-tr,
+.royal-frame:hover .rc-tr,
+.name-card:hover .rc-tr { transform: translate(4px, -4px) scale(1.22) rotate(7deg); }
+.lift:hover .rc-bl,
+.card-premium:hover .rc-bl,
+.royal-frame:hover .rc-bl,
+.name-card:hover .rc-bl { transform: translate(-4px, 4px) scale(1.22) rotate(7deg); }
+.lift:hover .rc-br,
+.card-premium:hover .rc-br,
+.royal-frame:hover .rc-br,
+.name-card:hover .rc-br { transform: translate(4px, 4px) scale(1.22) rotate(-7deg); }
+
+.lift:hover .royal-corner,
+.card-premium:hover .royal-corner,
+.royal-frame:hover .royal-corner,
+.name-card:hover .royal-corner {
+  background: linear-gradient(135deg, #10b981 0%, #b8902f 45%, #be123c 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 4px 10px rgba(190, 18, 60, 0.45));
+}
+
+@media (max-width: 480px) {
+  .royal-corner { width: 27px; height: 27px; font-size: 26px; }
+  .rc-tl { top: -7px; left: -7px; }
+  .rc-tr { top: -7px; right: -7px; }
+  .rc-bl { bottom: -7px; left: -7px; }
+  .rc-br { bottom: -7px; right: -7px; }
+}
+
+/* ============================================================
+   STANDALONE ROYAL FRAME — for surfaces that are not .card-premium
+   (e.g. the Ayah-of-the-Day shareable card, hero panels)
+   ============================================================ */
+.royal-frame {
+  position: relative;
+  border: 2px solid var(--royal-ink);
+  border-radius: 26px;
+  isolation: isolate;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease;
+}
+.royal-frame .rf-line {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+  transition: border-color 0.4s ease;
+}
+.royal-frame .rf-inner {
+  inset: 7px;
+  border: 1.5px solid rgba(16, 185, 129, 0.55);
+  border-radius: 18px;
+}
+.royal-frame .rf-inner-2 {
+  inset: 11px;
+  border: 1px solid rgba(201, 164, 74, 0.55);
+  border-radius: 14px;
+}
+.royal-frame:hover .rf-inner { border-color: rgba(5, 150, 105, 0.9); }
+.royal-frame:hover .rf-inner-2 { border-color: rgba(201, 164, 74, 0.95); }
+.royal-frame > *:not(.rf-line):not(.royal-corner) { position: relative; z-index: 2; }
+
+/* ============================================================
+   ROYAL 3D GLOWING BADGES — شارات دائرية ثلاثية الأبعاد متوهجة
+   تدرّج زمردي → ياقوتي
+   ============================================================ */
+.royal-badge {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: #ffffff;
+  background:
+    radial-gradient(120% 120% at 28% 22%, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 46%),
+    var(--grad-royal-badge);
+  box-shadow:
+    0 14px 30px -10px rgba(190, 18, 60, 0.5),
+    0 10px 24px -12px rgba(5, 150, 105, 0.62),
+    inset 0 2px 3px rgba(255, 255, 255, 0.55),
+    inset 0 -7px 14px rgba(15, 23, 42, 0.32);
+  text-shadow: 0 1px 2px rgba(15, 23, 42, 0.4);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease;
+}
+.royal-badge::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  z-index: -1;
+  border-radius: inherit;
+  background: conic-gradient(
+    from 120deg,
+    rgba(16, 185, 129, 0.7),
+    rgba(201, 164, 74, 0.55),
+    rgba(190, 18, 60, 0.65),
+    rgba(16, 185, 129, 0.7)
+  );
+  filter: blur(9px);
+  opacity: 0.45;
+  transition: opacity 0.4s ease;
+}
+.group:hover .royal-badge,
+.lift:hover .royal-badge,
+.royal-badge:hover {
+  transform: translateY(-3px) scale(1.1) rotate(-4deg);
+}
+.group:hover .royal-badge::before,
+.lift:hover .royal-badge::before,
+.royal-badge:hover::before { opacity: 0.95; }
+
+/* ============================================================
+   ROYAL OPEN BOOK — المصحف الشريف: الكتاب الملكي المفتوح
+   ============================================================ */
+.mushaf-toolbar {
+  border: 2px solid rgba(15, 23, 42, 0.9);
+  border-radius: 22px;
+  box-shadow:
+    0 16px 44px -20px rgba(15, 23, 42, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* Outer solid frame + emerald/gold double inset on the page */
+.mushaf-page:not(.paper-night) {
+  outline: 2px solid var(--royal-ink);
+  outline-offset: -2px;
+}
+.mushaf-page:not(.paper-night)::before {
+  border-color: rgba(16, 185, 129, 0.6);
+}
+.mushaf-page:not(.paper-night)::after {
+  border-color: rgba(201, 164, 74, 0.55);
+}
+.mushaf-page.paper-night {
+  outline-color: rgba(16, 185, 129, 0.55);
+}
+
+/* Arc corners on the open mushaf page replace the old L-brackets */
+.mushaf-corner {
+  border: 0 !important;
+  width: 40px !important;
+  height: 40px !important;
+  display: grid;
+  place-items: center;
+  border-radius: 0 !important;
+  font-family: var(--font-ui), sans-serif;
+  font-size: 40px;
+  font-weight: 400;
+  line-height: 1;
+  color: #a8802f;
+  text-shadow:
+    0 0 10px rgba(201, 164, 74, 0.55),
+    0 2px 5px rgba(15, 23, 42, 0.35);
+  pointer-events: none;
+  z-index: 5;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), color 0.3s ease;
+}
+.mushaf-page:hover .mushaf-corner { color: #0f172a; }
+.mushaf-page:hover .mushaf-corner.top-3.left-3 { transform: translate(-3px, -3px) scale(1.12) rotate(-6deg); }
+.mushaf-page:hover .mushaf-corner.top-3.right-3 { transform: translate(3px, -3px) scale(1.12) rotate(6deg); }
+.mushaf-page:hover .mushaf-corner.bottom-3.left-3 { transform: translate(-3px, 3px) scale(1.12) rotate(6deg); }
+.mushaf-page:hover .mushaf-corner.bottom-3.right-3 { transform: translate(3px, 3px) scale(1.12) rotate(-6deg); }
+.mushaf-corner::before { font-family: var(--font-ui), sans-serif; }
+.mushaf-corner.top-3.left-3::before { content: "\256D"; }  /* ╭ */
+.mushaf-corner.top-3.right-3::before { content: "\256E"; } /* ╮ */
+.mushaf-corner.bottom-3.left-3::before { content: "\2570"; } /* ╰ */
+.mushaf-corner.bottom-3.right-3::before { content: "\2571"; } /* ╯ */
+.paper-night .mushaf-corner { color: #d9b45c; }
+
+/* Reciter availability badges inside the reader menu */
+.reciter-avail {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.reciter-avail::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+}
+.reciter-avail-ayah { background: rgba(16, 185, 129, 0.12); color: #047857; }
+.reciter-avail-surah { background: rgba(37, 99, 235, 0.12); color: #1d4ed8; }
+.reciter-avail-none { background: rgba(100, 116, 139, 0.14); color: #64748b; }
+.reciter-row-unavailable { opacity: 0.55; }

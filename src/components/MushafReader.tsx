@@ -49,6 +49,7 @@ import {
   perAyahFallback,
   type Reciter,
 } from "@/lib/reciters";
+import { SURAHS } from "@/lib/surahs";
 import { getReciter as getRegistryReciter } from "@/lib/reciterRegistry";
 import { useAudioEngine } from "@/lib/audio/useAudioEngine";
 import { AudioControls } from "@/components/AudioControls";
@@ -124,6 +125,17 @@ const HIGHLIGHT_COLORS = [
 
 function toDigits(n: number): string {
   return String(n);
+}
+
+/** Per-surah availability of a reciter for the current surah.
+ *  - "ayah": every-ayah recordings for all 114 surahs (best sync)
+ *  - "surah": full-surah stream exists for this surah
+ *  - "none": no direct source for this surah (falls back silently)
+ */
+function reciterAvailability(r: Reciter, surahNum: number): "ayah" | "surah" | "none" {
+  if (hasPerAyah(r)) return "ayah";
+  if (r.surahBase && (!r.surahList || r.surahList.includes(surahNum))) return "surah";
+  return "none";
 }
 
 function prefersReducedMotion(): boolean {
@@ -598,6 +610,10 @@ export function MushafReader({
   const [showHafiz, setShowHafiz] = useState(false);
   const [jumpAyah, setJumpAyah] = useState("");
 
+  /* Royal side index — فهرس جانبي تفاعلي سريع (lives inside the nav menu) */
+  const [indexQuery, setIndexQuery] = useState("");
+  const [fallbackNotice, setFallbackNotice] = useState<string | null>(null);
+
   const showToast = (msg: string) => {
     setToast(msg);
     if (toastTimer.current) window.clearTimeout(toastTimer.current);
@@ -658,15 +674,40 @@ export function MushafReader({
   /** Build the exact AudioSource for the current reciter + surah. */
   const buildSource = useCallback(async (): Promise<AudioSource> => {
     const supportsPerAyah = hasPerAyah(reciter);
-    const reciterForAudio = supportsPerAyah ? reciter : perAyahFallback();
-    const granularity: "ayah" | "surah" = supportsPerAyah ? "ayah" : "surah";
-    const syncStatus = baseSyncStatus(reciter.id, surahNum, granularity);
+    // Reciters with only selected full-surah recordings: if THIS surah is not
+    // in their library, fall back to the verified every-ayah collection and
+    // tell the reader honestly via the toast + reciter menu badge.
+    let usingFallback = false;
+    let reciterForAudio: Reciter = reciter;
+    if (!supportsPerAyah) {
+      const avail = reciterAvailability(reciter, surahNum);
+      if (avail === "surah") {
+        reciterForAudio = reciter;
+      } else {
+        reciterForAudio = perAyahFallback();
+        usingFallback = true;
+      }
+    }
+    // Granularity must reflect the ACTUAL audio source: the every-ayah
+    // fallback streams per-ayah files even when the chosen reciter only
+    // offers (missing) full-surah recordings.
+    const effectivePerAyah = supportsPerAyah || usingFallback;
+    const granularity: "ayah" | "surah" = effectivePerAyah ? "ayah" : "surah";
+    const syncStatus = baseSyncStatus(reciterForAudio.id, surahNum, granularity);
+    if (usingFallback) {
+      const fb = reciterForAudio;
+      const msg = `تلاوة سورة ${surah.meta.nameAr} غير متوفرة بصوت ${reciter.name} — تُستمع بصوت ${fb.name}`;
+      setFallbackNotice(msg);
+    } else {
+      setFallbackNotice(null);
+    }
 
-    // Load exact word timings ONLY if a verified source exists for THIS reciter.
+    // Load exact word timings ONLY if a verified source exists for the
+    // reciter actually used for playback (chosen reciter or fallback).
     let timings = null;
     let resolvedStatus = syncStatus;
-    if (supportsPerAyah) {
-      const loaded = await loadTimings(reciter.id, surahNum);
+    if (effectivePerAyah) {
+      const loaded = await loadTimings(reciterForAudio.id, surahNum);
       if (loaded) {
         timings = loaded.timings;
         resolvedStatus = loaded.status;
@@ -1062,20 +1103,34 @@ export function MushafReader({
      AYAH
   ========================================================= */
 
+  /**
+   * Royal-reader behaviour: tapping any ayah instantly reveals the
+   * Tafsir Al-Muyassar AND starts the recitation in one smooth action.
+   */
   const onAyahClick = (
     event: MouseEvent,
     n: number
   ) => {
-    event.stopPropagation();
+    event?.stopPropagation?.();
 
-    setTafsirAyah(null);
+    const same =
+      selected === n &&
+      tafsirAyah === n;
 
     setSelected(
-      (current) =>
-        current === n
-          ? null
-          : n
+      same
+        ? null
+        : n
     );
+    setTafsirAyah(
+      same
+        ? null
+        : n
+    );
+
+    if (!same) {
+      playAyah(n, false);
+    }
   };
 
   const onAyahKeyDown = (
@@ -1088,14 +1143,9 @@ export function MushafReader({
       event.key === " "
     ) {
       event.preventDefault();
-
-      setTafsirAyah(null);
-
-      setSelected(
-        (current) =>
-          current === n
-            ? null
-            : n
+      onAyahClick(
+        event as unknown as MouseEvent,
+        n
       );
     }
   };
@@ -1529,7 +1579,7 @@ export function MushafReader({
               grid
               grid-cols-2
               gap-2
-              sm:grid-cols-5
+              sm:grid-cols-6
             "
           >
             {/* QUICK HIGHLIGHT TOGGLE */}
@@ -1597,16 +1647,16 @@ export function MushafReader({
                 aria-haspopup="dialog"
                 aria-expanded={showNav}
               >
-                <IconTarget className="h-4 w-4" />
-                <span>انتقال</span>
+                <IconBookOpen className="h-4 w-4" />
+                <span>الفهرس</span>
                 <IconChevron className="h-3 w-3" />
               </button>
 
               <MushafMenu open={showNav} onClose={() => setShowNav(false)} side="right" width={300}>
-                <div role="dialog" aria-label="الانتقال إلى آية">
+                <div role="dialog" aria-label="الفهرس والانتقال إلى آية">
                   <div className="mb-3 flex items-center justify-between">
                     <div>
-                      <div className="text-sm font-black text-slate-900">الانتقال إلى آية</div>
+                      <div className="text-sm font-black text-slate-900">الفهرس والانتقال السريع</div>
                       <div className="mt-0.5 text-[10px] text-slate-400">
                         {surah.meta.nameAr} · ١–{surah.ayahs.length.toLocaleString("ar-EG")}
                       </div>
@@ -1649,6 +1699,90 @@ export function MushafReader({
                     <Link href="/mushaf" className="font-bold text-emerald-700 hover:underline">
                       فهرس السور
                     </Link>
+                  </div>
+
+                  {/* ===== فهرس جانبي تفاعلي سريع — royal side index ===== */}
+                  <div className="mt-4 border-t border-slate-100 pt-3">
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="text-xs font-black text-slate-900">الفهرس السريع للسور</span>
+                      <span className="text-[10px] font-bold text-slate-400">اضغط للانتقال فوراً</span>
+                    </div>
+                    <div className="relative">
+                      <input
+                        value={indexQuery}
+                        onChange={(e) => setIndexQuery(e.target.value)}
+                        placeholder="ابحث عن سورة أو رقمها…"
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 pr-8 text-right text-xs font-semibold text-slate-900 outline-none focus:border-emerald-500"
+                        aria-label="البحث في الفهرس"
+                      />
+                      <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs">🔍</span>
+                    </div>
+                    <div
+                      className="mt-2 max-h-52 overflow-y-auto rounded-xl bg-slate-50/70 p-1"
+                      dir="rtl"
+                    >
+                      {(() => {
+                        const q = indexQuery.trim();
+                        const num = q ? parseAyahInput(q) : 0;
+                        const matches = SURAHS.filter((s) => {
+                          if (!q) return true;
+                          return (
+                            s.nameAr.includes(q) ||
+                            s.nameLatin.toLowerCase().includes(q.toLowerCase()) ||
+                            (num >= 1 && num <= 114 && s.number === num)
+                          );
+                        });
+                        return matches.map((s) => {
+                        const active = s.number === surahNum;
+                        return (
+                          <Link
+                            key={s.number}
+                            href={`/mushaf/${s.number}`}
+                            onClick={() => setShowNav(false)}
+                            className={`flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-right transition ${
+                              active
+                                ? "bg-emerald-100 text-emerald-800"
+                                : "hover:bg-white hover:shadow-sm"
+                            }`}
+                          >
+                            <span className="flex items-center gap-2">
+                              <span
+                                className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[11px] font-black text-white"
+                                style={{ background: active ? "linear-gradient(135deg,#10b981,#2563eb)" : "linear-gradient(135deg,#059669,#0f172a)" }}
+                              >
+                                {s.number.toLocaleString("ar-EG")}
+                              </span>
+                              <span
+                                className="text-sm font-bold text-slate-800"
+                                style={{ fontFamily: "var(--font-quran)" }}
+                              >
+                                {s.nameAr}
+                              </span>
+                            </span>
+                            <span className="shrink-0 text-[10px] font-semibold text-slate-400">
+                              {s.ayahCount.toLocaleString("ar-EG")} آية
+                            </span>
+                          </Link>
+                        );
+                        });
+                      })()}
+                      {(() => {
+                        const q = indexQuery.trim();
+                        const num = q ? parseAyahInput(q) : 0;
+                        const count = SURAHS.filter((s) => {
+                          if (!q) return true;
+                          return (
+                            s.nameAr.includes(q) ||
+                            s.nameLatin.toLowerCase().includes(q.toLowerCase()) ||
+                            (num >= 1 && num <= 114 && s.number === num)
+                          );
+                        }).length;
+                        if (count === 0) {
+                          return <p className="px-2 py-3 text-center text-[11px] text-slate-400">لا توجد سورة مطابقة</p>;
+                        }
+                        return null;
+                      })()}
+                    </div>
                   </div>
                 </div>
               </MushafMenu>
@@ -2079,6 +2213,13 @@ export function MushafReader({
                   {reciter.name}
                 </span>
 
+                {reciterAvailability(reciter, surahNum) === "none" && (
+                  <span
+                    className="h-2 w-2 shrink-0 rounded-full bg-amber-400 ring-2 ring-amber-100"
+                    title="غير متاح لهذه السورة — يُستخدم صوت بديل"
+                  />
+                )}
+
                 <IconChevron className="h-3 w-3" />
               </button>
 
@@ -2089,14 +2230,29 @@ export function MushafReader({
                     </div>
 
                     <div className="mt-0.5 text-[10px] text-slate-400">
-                      اختر القارئ المفضل لديك
+                      يُوضَّح لكل قارئ توفّره لهذه السورة
                     </div>
+
+                    {/* Availability legend */}
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <span className="reciter-avail reciter-avail-ayah">آية بآية · كل السور</span>
+                      <span className="reciter-avail reciter-avail-surah">تسجيل كامل للسورة</span>
+                      <span className="reciter-avail reciter-avail-none">غير متاح للسورة</span>
+                    </div>
+
+                    {fallbackNotice && (
+                      <div className="mt-2 rounded-xl bg-amber-50 px-3 py-2 text-[11px] font-bold leading-relaxed text-amber-800 ring-1 ring-amber-200">
+                        {fallbackNotice}
+                      </div>
+                    )}
                   </div>
 
                   <div className="max-h-[45vh] overflow-y-auto p-2">
                     {RECITERS.map(
                       (item) => {
                         const photo = getRegistryReciter(item.id)?.image ?? null;
+                        const avail = reciterAvailability(item, surahNum);
+                        const unavailable = avail === "none";
                         return (
                         <button
                           key={item.id}
@@ -2119,6 +2275,7 @@ export function MushafReader({
                                 ? "bg-emerald-50"
                                 : "hover:bg-slate-50"
                             }
+                            ${unavailable ? "reciter-row-unavailable" : ""}
                           `}
                         >
                           <span className="flex min-w-0 items-center gap-2.5">
@@ -2139,8 +2296,20 @@ export function MushafReader({
                               <span className="truncate font-bold text-slate-800">
                                 {item.name}
                               </span>
-                              <span className="truncate text-[10px] text-slate-400">
-                                {item.style}
+                              <span className="flex flex-wrap items-center gap-1.5">
+                                <span className={`reciter-avail ${
+                                  avail === "ayah"
+                                    ? "reciter-avail-ayah"
+                                    : avail === "surah"
+                                      ? "reciter-avail-surah"
+                                      : "reciter-avail-none"
+                                }`}>
+                                  {avail === "ayah"
+                                    ? "آية بآية"
+                                    : avail === "surah"
+                                      ? "متاح للسورة"
+                                      : "غير متاح"}
+                                </span>
                               </span>
                             </span>
                           </span>
@@ -2205,10 +2374,10 @@ export function MushafReader({
 
         {/* CORNERS */}
 
-        <span className="mushaf-corner left-3 top-3 rounded-tl-lg border-l-2 border-t-2" />
-        <span className="mushaf-corner right-3 top-3 rounded-tr-lg border-r-2 border-t-2" />
-        <span className="mushaf-corner bottom-3 left-3 rounded-bl-lg border-b-2 border-l-2" />
-        <span className="mushaf-corner bottom-3 right-3 rounded-br-lg border-b-2 border-r-2" />
+        <span className="mushaf-corner left-3 top-3" aria-hidden />
+        <span className="mushaf-corner right-3 top-3" aria-hidden />
+        <span className="mushaf-corner bottom-3 left-3" aria-hidden />
+        <span className="mushaf-corner bottom-3 right-3" aria-hidden />
 
         {/* ===================================================
             SURAH HEADER
@@ -2456,9 +2625,7 @@ export function MushafReader({
                     {/* AYAH ACTIONS */}
 
                     {selected ===
-                      ayah.numberInSurah &&
-                      tafsirAyah !==
-                        ayah.numberInSurah && (
+                      ayah.numberInSurah && (
                         <span
                           className="ayah-inline-actions"
                           contentEditable={
@@ -2573,11 +2740,8 @@ export function MushafReader({
                               setTafsirAyah(
                                 null
                               );
-
-                              setSelected(
-                                null
-                              );
                             }}
+                            aria-label="إخفاء التفسير"
                             className="ayah-tafsir-close"
                           >
                             ✕
