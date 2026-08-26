@@ -416,15 +416,21 @@ export function useAudioEngine() {
 
   /* ----------------------------------------------------------------------- */
 
+  const stateRef = useRef(state);
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
   function handleEnded() {
     const source = sourceRef.current;
     if (!source) return;
     const audio = audioRef.current!;
+    const live = stateRef.current;
     const cur = source.currentAyahForGranularity
-      ?? state.currentAyah;
+      ?? live.currentAyah;
 
     // Repeat ayah
-    if (state.repeatAyah && cur) {
+    if (live.repeatAyah && cur) {
       if (source.granularity === "ayah") {
         playAyahFile(source, cur, true);
       } else {
@@ -438,7 +444,7 @@ export function useAudioEngine() {
     }
 
     // Repeat segment
-    if (state.repeatMode === "segment" && segmentRef.current) {
+    if (live.repeatMode === "segment" && segmentRef.current) {
       const { fromAyah, toAyah } = segmentRef.current;
       const nextN = cur && cur < toAyah ? cur + 1 : fromAyah;
       if (source.granularity === "ayah") playAyahFile(source, nextN, true);

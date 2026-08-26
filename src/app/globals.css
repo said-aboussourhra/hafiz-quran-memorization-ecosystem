@@ -2689,3 +2689,19 @@ body {
   .card-premium { border-radius: 20px; }
   .icon-badge { border-radius: 15px; }
 }
+
+/* ============================================================
+   CANONICAL MUSHAF TYPOGRAPHY & FLOW
+   Later duplicate rules were clipping the page (max-height) and
+   dropping the React-controlled font size. These win last.
+   ============================================================ */
+.mushaf-content {
+  max-height: none !important;
+  overflow: visible !important;
+}
+.mushaf-text,
+.mushaf-continuous-text {
+  font-size: var(--mushaf-font-size, 34px) !important;
+  line-height: var(--mushaf-line-height, 2.5) !important;
+  word-spacing: var(--mushaf-word-spacing, 0);
+}
