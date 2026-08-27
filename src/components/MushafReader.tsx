@@ -632,18 +632,6 @@ export function MushafReader({
   /* =========================================================
      REAL BOOK — paged Madani mus.haf (ورقة ورقة)
   ========================================================= */
-  // True when the viewport can display two facing leaves.
-  const [isTwoPage, setIsTwoPage] = useState<boolean>(() => {
-    if (typeof window === "undefined") return true;
-    return window.matchMedia("(min-width: 1024px)").matches;
-  });
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const mq = window.matchMedia("(min-width: 1024px)");
-    const update = () => setIsTwoPage(mq.matches);
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
-  }, []);
 
   // Group the surah's ayahs by their Madani mushaf page number.
   const pages = useMemo(() => {
@@ -664,21 +652,9 @@ export function MushafReader({
   // (The book re-opens at its first spread naturally because the reader
   //  component remounts per surah route; no reset effect needed.)
 
-  const spreadCount = useMemo(
-    () => (isTwoPage ? Math.ceil(pages.length / 2) : pages.length),
-    [isTwoPage, pages.length]
-  );
-
-  // Spread indices (RTL): the facing pair shows the EARLIER page on the
-  // right leaf and the later page on the left leaf.
-  const spreadRight = useMemo(
-    () => (isTwoPage ? pages[bookSpread * 2] : pages[bookSpread]),
-    [isTwoPage, pages, bookSpread]
-  );
-  const spreadLeft = useMemo(
-    () => (isTwoPage ? pages[bookSpread * 2 + 1] : null),
-    [isTwoPage, pages, bookSpread]
-  );
+  // One leaf = one Madani (or synthetic) page.
+  const spreadCount = pages.length;
+  const spreadRight = pages[bookSpread] ?? pages[0];
 
   const turnTo = (target: number) => {
     setTurnDir(target > bookSpread ? "fwd" : "back");
@@ -694,10 +670,9 @@ export function MushafReader({
       const ayah = surah.ayahs.find((a) => a.numberInSurah === n);
       if (!ayah) return 0;
       const idx = pages.findIndex((p) => p.pageNo === ayah.page);
-      if (idx < 0) return 0;
-      return isTwoPage ? Math.floor(idx / 2) : idx;
+      return idx < 0 ? 0 : idx;
     },
-    [isTwoPage, pages, surah.ayahs]
+    [pages, surah.ayahs]
   );
 
   // Keyboard: ←/→ turn the book while reading in mushaf (book) view.
@@ -711,7 +686,7 @@ export function MushafReader({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view, bookSpread, spreadCount, isTwoPage]);
+  }, [view, bookSpread, spreadCount]);
 
   // Auto-fit a book leaf's font so the Madani page content never overflows
   // the physical leaf (measurements run client-side after paint).
@@ -922,13 +897,13 @@ export function MushafReader({
 
   // Auto-fit the leaf font so Madani page content never overflows the leaf.
   useEffect(() => {
-    if (view !== "mushaf" || isTwoPage === null) return;
+    if (view !== "mushaf" || false) return;
     const fit = () => {
       for (const el of leafContentRef.current.values()) {
         const leaf = el.closest<HTMLElement>(".book-page");
         if (!leaf) continue;
-        let px = isTwoPage ? Math.round(fontSize * 0.62) : Math.round(fontSize * 0.85);
-        const minPx = isTwoPage ? 17 : 22;
+        let px = Math.round(fontSize * 0.95);
+        const minPx = 20;
         const maxH = leaf.clientHeight - 20;
         const maxW = leaf.clientWidth - 20;
         el.style.fontSize = `${px}px`;
@@ -940,7 +915,7 @@ export function MushafReader({
     };
     const id = window.setTimeout(fit, 70);
     return () => window.clearTimeout(id);
-  }, [view, isTwoPage, bookSpread, fontSize, paper]);
+  }, [view, bookSpread, fontSize, paper]);
 
   // Reload the source whenever reciter or surah changes while something is playing.
   useEffect(() => {
@@ -2730,11 +2705,11 @@ export function MushafReader({
             <span className="book-edges left" aria-hidden />
 
             <div className="book-spread" key={`${bookSpread}-${turnDir}`} dir="rtl">
-              {/* facing right leaf — earlier page in RTL reading order */}
+              {/* single current leaf */}
               {spreadRight && (
                 <article
-                  className={`book-page book-page-right book-leaf ${turnDir === "fwd" ? "turn-fwd" : "turn-back"}`}
-                  key={`r${spreadRight.pageNo}`}
+                  className={`book-page book-leaf ${turnDir === "fwd" ? "turn-fwd" : "turn-back"}`}
+                  key={`p${spreadRight.pageNo}`}
                 >
                   <span className="book-page-frame" aria-hidden />
                   {bookSpread === 0 && (
@@ -2767,7 +2742,7 @@ export function MushafReader({
                   <div
                     ref={(el) => {
                       if (el) {
-                        leafContentRef.current.set(`r${spreadRight.pageNo}`, el);
+                        leafContentRef.current.set(`p${spreadRight.pageNo}`, el);
                         spreadRight.ayahs.forEach((a) => ayahRefs.current.set(a.numberInSurah, el as unknown as HTMLSpanElement));
                       }
                     }}
@@ -2782,30 +2757,6 @@ export function MushafReader({
                 </article>
               )}
 
-              {/* facing left leaf — later page (two-page spread on ≥1024px) */}
-              {spreadLeft && (
-                <article
-                  className={`book-page book-page-left book-leaf ${turnDir === "fwd" ? "turn-fwd" : "turn-back"}`}
-                  key={`l${spreadLeft.pageNo}`}
-                >
-                  <span className="book-page-frame" aria-hidden />
-                  <div
-                    ref={(el) => {
-                      if (el) {
-                        leafContentRef.current.set(`l${spreadLeft.pageNo}`, el);
-                        spreadLeft.ayahs.forEach((a) => ayahRefs.current.set(a.numberInSurah, el as unknown as HTMLSpanElement));
-                      }
-                    }}
-                    className={`book-leaf-text ${font}`}
-                    dir="rtl"
-                  >
-                    {spreadLeft.ayahs.map(renderBookAyah)}
-                  </div>
-                  <span className="book-page-num">
-                    {spreadLeft.pageNo >= 1000 ? "۝" : spreadLeft.pageNo.toLocaleString("ar-EG")}
-                  </span>
-                </article>
-              )}
             </div>
 
             {/* turn-zones (desktop) */}
@@ -2837,20 +2788,9 @@ export function MushafReader({
               </button>
               <span className="book-nav-indicator">
                 <span className="dot" />
-                {(() => {
-                  const rightPage = spreadRight?.pageNo ?? 0;
-                  const leaf = (bookSpread + 1).toLocaleString("ar-EG");
-                  const total = spreadCount.toLocaleString("ar-EG");
-                  const synthetic = rightPage >= 1000;
-                  if (synthetic) {
-                    return isTwoPage
-                      ? `الورقة ${leaf} من ${total}`
-                      : `الورقة ${leaf} من ${total}`;
-                  }
-                  return isTwoPage
-                    ? `صفحة المصحف ${rightPage.toLocaleString("ar-EG")} · ورقة ${leaf} من ${total}`
-                    : `صفحة المصحف ${rightPage.toLocaleString("ar-EG")} · ${leaf} / ${total}`;
-                })()}
+                {spreadRight && spreadRight.pageNo < 1000
+                  ? `صفحة المصحف ${spreadRight.pageNo.toLocaleString("ar-EG")} · ${(bookSpread + 1).toLocaleString("ar-EG")} / ${spreadCount.toLocaleString("ar-EG")}`
+                  : `الورقة ${(bookSpread + 1).toLocaleString("ar-EG")} من ${spreadCount.toLocaleString("ar-EG")}`}
               </span>
               <button type="button" className="book-nav-btn" onClick={nextSpread} disabled={bookSpread >= spreadCount - 1}>
                 الورقة التالية ‹

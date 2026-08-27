@@ -44,7 +44,8 @@ export async function fetchSurahLocal(
   const hasBasmala = surahNumber !== 1 && surahNumber !== 9;
 
   // Synthetic leaf length when no real Madani page numbers are available.
-  const LEAF = surahNumber === 2 ? 18 : surahNumber > 70 ? 14 : 16;
+  // Kept small so one leaf always fits comfortably on a book page.
+  const LEAF = surahNumber === 2 ? 11 : surahNumber > 70 ? 9 : surahNumber > 20 ? 10 : 12;
 
   const ayahs: QuranAyah[] = local.v.map((text, idx) => {
     const nInSurah = idx + 1;

@@ -3525,3 +3525,98 @@ body {
   color: #f3dd9b;
   border-color: rgba(217,180,92,.7);
 }
+
+/* ============================================================
+   REAL BOOK v2 — ورقة واحدة في كل مرة بتقليب واقعي (كل الأجهزة)
+   ============================================================ */
+.book-spread { display: block; }
+
+.book-page {
+  min-height: 70vh;
+  border-radius: 6px 6px 20px 20px !important;
+  box-shadow:
+    inset 16px 0 28px -20px rgba(60, 50, 28, .55),
+    inset 0 0 0 1px rgba(201, 164, 74, .28) !important;
+  padding: clamp(1.2rem, 3.2vw, 2.6rem) clamp(1.3rem, 5vw, 4.5rem) clamp(3.6rem, 6vw, 5.2rem);
+}
+@media (min-width: 1024px) { .book-page { min-height: 78vh; } }
+.book-page-left,
+.book-page-right { box-shadow:
+  inset 16px 0 28px -20px rgba(60, 50, 28, .55),
+  inset 0 0 0 1px rgba(201, 164, 74, .28) !important; }
+
+/* binding gutter sits at the RIGHT edge (RTL book spine) */
+.book-spine {
+  left: auto;
+  right: 0;
+  top: 0; bottom: 0;
+  width: 30px;
+  transform: none;
+}
+.book-spine::before {
+  inset: 0 0 0 auto;
+  width: 30px;
+  background: linear-gradient(270deg,
+    rgba(28, 22, 9, .55) 0%,
+    rgba(43, 34, 14, .35) 35%,
+    rgba(43, 34, 14, .08) 70%,
+    transparent 100%);
+}
+.book-spine::after { display: none; }
+
+/* page number rosette centred at the bottom outer edge */
+.book-page-num,
+.book-page-right .book-page-num,
+.book-page-left .book-page-num {
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  bottom: 14px;
+}
+
+/* realistic single-page flip around the binding edge */
+.book-leaf {
+  animation-duration: .6s;
+  transform-origin: right center;
+  backface-visibility: hidden;
+}
+.book-leaf.turn-fwd { animation-name: bookFlipNext; }
+.book-leaf.turn-back { animation-name: bookFlipPrev; transform-origin: left center; }
+@keyframes bookFlipNext {
+  0%   { opacity: 0; transform: perspective(2400px) rotateY(-38deg) translateX(70px); }
+  55%  { opacity: 1; }
+  100% { opacity: 1; transform: perspective(2400px) rotateY(0) translateX(0); }
+}
+@keyframes bookFlipPrev {
+  0%   { opacity: 0; transform: perspective(2400px) rotateY(38deg) translateX(-70px); }
+  55%  { opacity: 1; }
+  100% { opacity: 1; transform: perspective(2400px) rotateY(0) translateX(0); }
+}
+
+/* edge turn zones visible on all screens (slightly smaller on phones) */
+.book-edge-btn { opacity: .92; }
+.book-edge-btn.next { left: -8px; }
+.book-edge-btn.prev { right: -8px; }
+@media (max-width: 1023.5px) {
+  .book-edge-btn {
+    display: grid;
+    width: 40px; height: 40px;
+    font-size: 1.1rem;
+    position: static;
+    transform: none;
+  }
+  .book-edge-nav-inline { display: flex; }
+}
+
+/* subtle drop shadow under the turning page */
+.book-stage { position: relative; }
+
+/* v2: only one fore-edge set (at the left = outer edge in RTL binding) */
+.book-edges.left { display: block; }
+.book-edges.right { display: none; }
+.book-spine { z-index: 4; }
+
+/* centre edge buttons on narrow screens via the nav bar */
+@media (max-width: 1023.5px) {
+  .book-edge-btn { display: none; }
+}
