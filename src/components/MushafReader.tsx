@@ -1503,746 +1503,457 @@ export function MushafReader({
           TOOLBAR
       ===================================================== */}
 
-      <div
-        className="
-          sticky top-2 z-[80]
-          mx-auto mb-5
-          w-full
-          max-w-5xl
-          px-2 sm:px-4
-        "
-      >
-        <div
-          className="
-            mushaf-toolbar
-            rounded-[24px]
-            border border-emerald-100
-            bg-white/95
-            p-2
-            shadow-[0_12px_40px_rgba(15,23,42,0.10)]
-            backdrop-blur-xl
-            sm:p-3
-          "
-          onClick={(e) =>
-            e.stopPropagation()
-          }
-        >
-          {/* =================================================
-              ROW 1
-          ================================================= */}
+      {/* ===== HAFIZ smart session (opens above the book) ===== */}
+      {showHafiz && (
+        <div className="mx-auto mb-5 w-full max-w-3xl" onClick={(e) => e.stopPropagation()}>
+          <HafizPanel teacher={hafiz} surah={surah} onListenAyah={(n) => playAyah(n, false)} />
+        </div>
+      )}
 
-          <div
-            className="
-              flex
-              flex-wrap
-              items-center
-              gap-2
-            "
-          >
-            {/* VIEW */}
-
-            <div
-              className="
-                flex
-                flex-1
-                items-center
-                gap-1
-                rounded-2xl
-                bg-[#f4f8f5]
-                p-1
-                sm:flex-none
-              "
-            >
-              <button
-                type="button"
-                onClick={() =>
-                  setView(
-                    "mushaf"
-                  )
-                }
-                className={`
-                  flex flex-1
-                  items-center
-                  justify-center
-                  gap-1.5
-                  rounded-xl
-                  px-3 py-2
-                  text-xs
-                  font-bold
-                  transition-all
-                  sm:flex-none
-                  sm:text-sm
-                  ${
-                    view ===
-                    "mushaf"
-                      ? "bg-white text-emerald-700 shadow-sm"
-                      : "text-slate-500 hover:text-emerald-700"
-                  }
-                `}
-              >
-                <IconBook className="h-4 w-4" />
-                <span>
-                  مصحف
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  setView(
-                    "ayah"
-                  )
-                }
-                className={`
-                  flex flex-1
-                  items-center
-                  justify-center
-                  gap-1.5
-                  rounded-xl
-                  px-3 py-2
-                  text-xs
-                  font-bold
-                  transition-all
-                  sm:flex-none
-                  sm:text-sm
-                  ${
-                    view ===
-                    "ayah"
-                      ? "bg-white text-emerald-700 shadow-sm"
-                      : "text-slate-500 hover:text-emerald-700"
-                  }
-                `}
-              >
-                <IconList className="h-4 w-4" />
-                <span>
-                  آية بآية
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  setView(
-                    "continuous"
-                  )
-                }
-                className={`
-                  flex flex-1
-                  items-center
-                  justify-center
-                  gap-1.5
-                  rounded-xl
-                  px-3 py-2
-                  text-xs
-                  font-bold
-                  transition-all
-                  sm:flex-none
-                  sm:text-sm
-                  ${
-                    view ===
-                    "continuous"
-                      ? "bg-white text-emerald-700 shadow-sm"
-                      : "text-slate-500 hover:text-emerald-700"
-                  }
-                `}
-                aria-pressed={view === "continuous"}
-              >
-                <IconScroll className="h-4 w-4" />
-                <span>
-                  متواصل
-                </span>
-              </button>
-            </div>
-
-            {/* FONT SIZE */}
-
-            <div
-              className="
-                flex
-                items-center
-                gap-1
-                rounded-2xl
-                bg-[#f7f5ec]
-                p-1
-              "
-            >
-              <button
-                type="button"
-                onClick={() =>
-                  changeSize(-2)
-                }
-                className="
-                  grid
-                  h-9 w-9
-                  place-items-center
-                  rounded-xl
-                  bg-white
-                  text-slate-700
-                  shadow-sm
-                  transition
-                  hover:bg-emerald-50
-                  hover:text-emerald-700
-                  active:scale-95
-                "
-                aria-label="تصغير الخط"
-              >
-                <IconMinus />
-              </button>
-
-              <button
-                type="button"
-                onClick={
-                  resetFontSize
-                }
-                className="
-                  min-w-[52px]
-                  rounded-xl
-                  px-2
-                  py-2
-                  text-center
-                  text-xs
-                  font-black
-                  text-slate-700
-                "
-                title="إعادة الحجم"
-              >
-                {fontSize}px
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  changeSize(2)
-                }
-                className="
-                  grid
-                  h-9 w-9
-                  place-items-center
-                  rounded-xl
-                  bg-white
-                  text-slate-700
-                  shadow-sm
-                  transition
-                  hover:bg-emerald-50
-                  hover:text-emerald-700
-                  active:scale-95
-                "
-                aria-label="تكبير الخط"
-              >
-                <IconPlus />
-              </button>
-            </div>
-
-            {/* PLAY */}
-
-            <button
-              type="button"
-              onClick={() => {
-                if (isPlaying) {
-                  stopAudio();
-                } else {
-                  playFullSurah();
-                }
-              }}
-              className={`
-                flex
-                items-center
-                justify-center
-                gap-2
-                rounded-2xl
-                px-4
-                py-2.5
-                text-xs
-                font-black
-                text-white
-                shadow-md
-                transition-all
-                active:scale-95
-                sm:text-sm
-                ${
-                  isPlaying
-                    ? "bg-red-500 hover:bg-red-600"
-                    : "bg-gradient-to-l from-blue-600 to-emerald-500 hover:from-blue-700 hover:to-emerald-600"
-                }
-              `}
-            >
-              {isPlaying ? (
-                <>
-                  <IconStop className="h-4 w-4" />
-                  <span>
-                    إيقاف
-                  </span>
-                </>
-              ) : (
-                <>
-                  <IconPlay className="h-4 w-4" />
-                  <span>
-                    تلاوة
-                  </span>
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* HAFIZ SMART SESSION — the primary memorization action. */}
-          <button
-            type="button"
-            onClick={() => {
-              setShowHafiz((v) => !v);
-              setShowNav(false);
-              setShowAppearance(false);
-              setShowFonts(false);
-              setShowReciters(false);
-            }}
-            className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-l from-emerald-500 to-ocean-500 px-3 py-2.5 text-sm font-bold text-white shadow-sm transition active:scale-[0.99]"
-          >
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M12 2a7 7 0 00-7 7c0 3 2 5 2 7h10c0-2 2-4 2-7a7 7 0 00-7-7z" /><path d="M9 21h6" />
-            </svg>
-            ابدأ جلسة ذكية
-          </button>
-
-          {showHafiz && (
-            <div className="mt-2" onClick={(e) => e.stopPropagation()}>
-              <HafizPanel
-                teacher={hafiz}
-                surah={surah}
-                onListenAyah={(n) => playAyah(n, false)}
-              />
-            </div>
-          )}
-
-          {/* =================================================
-              ROW 2
-          ================================================= */}
-
-          <div
-            className="
-              mt-2
-              grid
-              grid-cols-2
-              gap-2
-              sm:grid-cols-6
-            "
-          >
-            {/* QUICK HIGHLIGHT TOGGLE */}
-
-            <button
-              type="button"
-              onClick={toggleHighlight}
-              aria-pressed={highlight}
-              className={`
-                flex w-full
-                items-center
-                justify-center
-                gap-1.5
-                rounded-2xl
-                border
-                px-2 py-2.5
-                text-xs
-                font-bold
-                transition
-                ${
-                  highlight
-                    ? "border-emerald-300 bg-emerald-50 text-emerald-700"
-                    : "border-slate-100 bg-white text-slate-600 hover:border-emerald-200 hover:text-emerald-700"
-                }
-              `}
-              title="تظليل الكلمات أثناء التلاوة"
-            >
-              <span
-                className="grid h-4 w-4 place-items-center rounded-full text-[9px] font-black text-white"
-                style={{ background: hlColor }}
-              >
-                ✦
-              </span>
-              <span>تظليل</span>
-            </button>
-
-            {/* NAVIGATION */}
-
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowNav((v) => !v);
-                  setShowAppearance(false);
-                  setShowFonts(false);
-                  setShowReciters(false);
-                }}
-                className={`
-                  flex w-full
-                  items-center
-                  justify-center
-                  gap-1.5
-                  rounded-2xl
-                  border
-                  px-2 py-2.5
-                  text-xs
-                  font-bold
-                  transition
-                  ${
-                    showNav
-                      ? "border-emerald-300 bg-emerald-50 text-emerald-700"
-                      : "border-slate-100 bg-white text-slate-600 hover:border-emerald-200 hover:text-emerald-700"
-                  }
-                `}
-                aria-haspopup="dialog"
-                aria-expanded={showNav}
-              >
-                <IconBookOpen className="h-4 w-4" />
-                <span>الفهرس</span>
-                <IconChevron className="h-3 w-3" />
-              </button>
-
-              <MushafMenu open={showNav} onClose={() => setShowNav(false)} side="right" width={300}>
-                <div role="dialog" aria-label="الفهرس والانتقال إلى آية">
-                  <div className="mb-3 flex items-center justify-between">
-                    <div>
-                      <div className="text-sm font-black text-slate-900">الفهرس والانتقال السريع</div>
-                      <div className="mt-0.5 text-[10px] text-slate-400">
-                        {surah.meta.nameAr} · ١–{surah.ayahs.length.toLocaleString("ar-EG")}
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowNav(false)}
-                      className="grid h-8 w-8 place-items-center rounded-xl bg-slate-50 text-slate-500 hover:bg-slate-100"
-                      aria-label="إغلاق"
-                    >
-                      <IconClose />
-                    </button>
-                  </div>
-
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      const n = parseAyahInput(jumpAyah);
-                      jumpToAyah(n);
-                    }}
-                    className="flex gap-2"
-                  >
-                    <input
-                      inputMode="numeric"
-                      autoFocus
-                      value={jumpAyah}
-                      onChange={(e) => setJumpAyah(e.target.value)}
-                      placeholder="رقم الآية"
-                      dir="ltr"
-                      className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-center text-lg font-bold text-slate-900 outline-none focus:border-emerald-500"
-                      aria-label="رقم الآية"
-                    />
-                    <button type="submit" className="rounded-xl btn-primary px-5 py-2.5 text-sm font-bold">
-                      اذهب
-                    </button>
-                  </form>
-
-                  <div className="mt-3 flex items-center justify-between text-[11px] text-slate-500">
-                    <span>الجزء {surah.meta.juz.toLocaleString("ar-EG")} · الصفحة {surah.ayahs[0]?.page.toLocaleString("ar-EG") ?? "—"}</span>
-                    <Link href="/mushaf" className="font-bold text-emerald-700 hover:underline">
-                      فهرس السور
-                    </Link>
-                  </div>
-
-                  {/* ===== فهرس جانبي تفاعلي سريع — royal side index ===== */}
-                  <div className="mt-4 border-t border-slate-100 pt-3">
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="text-xs font-black text-slate-900">الفهرس السريع للسور</span>
-                      <span className="text-[10px] font-bold text-slate-400">اضغط للانتقال فوراً</span>
-                    </div>
-                    <div className="relative">
-                      <input
-                        value={indexQuery}
-                        onChange={(e) => setIndexQuery(e.target.value)}
-                        placeholder="ابحث عن سورة أو رقمها…"
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 pr-8 text-right text-xs font-semibold text-slate-900 outline-none focus:border-emerald-500"
-                        aria-label="البحث في الفهرس"
-                      />
-                      <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs">🔍</span>
-                    </div>
-                    <div
-                      className="mt-2 max-h-52 overflow-y-auto rounded-xl bg-slate-50/70 p-1"
-                      dir="rtl"
-                    >
-                      {(() => {
-                        const q = indexQuery.trim();
-                        const num = q ? parseAyahInput(q) : 0;
-                        const matches = SURAHS.filter((s) => {
-                          if (!q) return true;
-                          return (
-                            s.nameAr.includes(q) ||
-                            s.nameLatin.toLowerCase().includes(q.toLowerCase()) ||
-                            (num >= 1 && num <= 114 && s.number === num)
-                          );
-                        });
-                        return matches.map((s) => {
-                        const active = s.number === surahNum;
-                        return (
-                          <Link
-                            key={s.number}
-                            href={`/mushaf/${s.number}`}
+      {/* ===== Reader menus (centered elegant modals) ===== */}
+      <MushafMenu open={showNav} onClose={() => setShowNav(false)} side="right" width={300}>
+                      <div role="dialog" aria-label="الفهرس والانتقال إلى آية">
+                        <div className="mb-3 flex items-center justify-between">
+                          <div>
+                            <div className="text-sm font-black text-slate-900">الفهرس والانتقال السريع</div>
+                            <div className="mt-0.5 text-[10px] text-slate-400">
+                              {surah.meta.nameAr} · ١–{surah.ayahs.length.toLocaleString("ar-EG")}
+                            </div>
+                          </div>
+                          <button
+                            type="button"
                             onClick={() => setShowNav(false)}
-                            className={`flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-right transition ${
-                              active
-                                ? "bg-emerald-100 text-emerald-800"
-                                : "hover:bg-white hover:shadow-sm"
-                            }`}
+                            className="grid h-8 w-8 place-items-center rounded-xl bg-slate-50 text-slate-500 hover:bg-slate-100"
+                            aria-label="إغلاق"
                           >
-                            <span className="flex items-center gap-2">
-                              <span
-                                className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[11px] font-black text-white"
-                                style={{ background: active ? "linear-gradient(135deg,#10b981,#2563eb)" : "linear-gradient(135deg,#059669,#0f172a)" }}
-                              >
-                                {s.number.toLocaleString("ar-EG")}
-                              </span>
-                              <span
-                                className="text-sm font-bold text-slate-800"
-                                style={{ fontFamily: "var(--font-quran)" }}
-                              >
-                                {s.nameAr}
-                              </span>
-                            </span>
-                            <span className="shrink-0 text-[10px] font-semibold text-slate-400">
-                              {s.ayahCount.toLocaleString("ar-EG")} آية
-                            </span>
-                          </Link>
-                        );
-                        });
-                      })()}
-                      {(() => {
-                        const q = indexQuery.trim();
-                        const num = q ? parseAyahInput(q) : 0;
-                        const count = SURAHS.filter((s) => {
-                          if (!q) return true;
-                          return (
-                            s.nameAr.includes(q) ||
-                            s.nameLatin.toLowerCase().includes(q.toLowerCase()) ||
-                            (num >= 1 && num <= 114 && s.number === num)
-                          );
-                        }).length;
-                        if (count === 0) {
-                          return <p className="px-2 py-3 text-center text-[11px] text-slate-400">لا توجد سورة مطابقة</p>;
-                        }
-                        return null;
-                      })()}
-                    </div>
-                  </div>
-                </div>
-              </MushafMenu>
-            </div>
-
-            {/* APPEARANCE */}
-
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() =>
-                  toggleOnly(
-                    "appearance"
-                  )
-                }
-                className={`
-                  flex w-full
-                  items-center
-                  justify-center
-                  gap-1.5
-                  rounded-2xl
-                  border
-                  px-2 py-2.5
-                  text-xs
-                  font-bold
-                  transition
-                  ${
-                    showAppearance
-                      ? "border-emerald-300 bg-emerald-50 text-emerald-700"
-                      : "border-slate-100 bg-white text-slate-600 hover:border-emerald-200 hover:text-emerald-700"
-                  }
-                `}
-              >
-                <IconPalette className="h-4 w-4" />
-                <span>
-                  المظهر
-                </span>
-                <IconChevron className="h-3 w-3" />
-              </button>
-
-              <MushafMenu open={showAppearance} onClose={() => setShowAppearance(false)} side="right" width={310}>
-                  <div className="mb-3 flex items-center justify-between">
-                    <div>
-                      <div className="text-sm font-black text-slate-900">
-                        مظهر المصحف
-                      </div>
-
-                      <div className="mt-0.5 text-[10px] text-slate-400">
-                        اختر الشكل المناسب للقراءة
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowAppearance(
-                          false
-                        )
-                      }
-                      className="
-                        grid
-                        h-8 w-8
-                        place-items-center
-                        rounded-xl
-                        bg-slate-50
-                        text-slate-500
-                        hover:bg-slate-100
-                      "
-                    >
-                      <IconClose />
-                    </button>
-                  </div>
-
-                  <div className="mb-4 grid grid-cols-5 gap-1.5">
-                    {PAPERS.map(
-                      (item) => (
-                        <button
-                          key={
-                            item.id
-                          }
-                          type="button"
-                          onClick={() =>
-                            choosePaper(
-                              item.id
-                            )
-                          }
-                          className={`
-                            rounded-xl
-                            border
-                            p-1
-                            transition
-                            ${
-                              paper ===
-                              item.id
-                                ? "border-emerald-500 ring-2 ring-emerald-100"
-                                : "border-slate-100"
-                            }
-                          `}
+                            <IconClose />
+                          </button>
+                        </div>
+      
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            const n = parseAyahInput(jumpAyah);
+                            jumpToAyah(n);
+                          }}
+                          className="flex gap-2"
                         >
-                          <span
-                            className="
-                              block
-                              h-8
-                              rounded-lg
-                              border
-                              border-black/5
-                            "
-                            style={{
-                              background:
-                                item.preview,
-                            }}
+                          <input
+                            inputMode="numeric"
+                            autoFocus
+                            value={jumpAyah}
+                            onChange={(e) => setJumpAyah(e.target.value)}
+                            placeholder="رقم الآية"
+                            dir="ltr"
+                            className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-center text-lg font-bold text-slate-900 outline-none focus:border-emerald-500"
+                            aria-label="رقم الآية"
                           />
-
-                          <span className="mt-1 block truncate text-[9px] font-bold text-slate-500">
-                            {item.label}
-                          </span>
-                        </button>
-                      )
-                    )}
-                  </div>
-
-                  <div
-                    className="
-                      rounded-2xl
-                      bg-slate-50
-                      p-3
-                    "
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-xs font-black text-slate-800">
-                          تظليل الكلمات
+                          <button type="submit" className="rounded-xl btn-primary px-5 py-2.5 text-sm font-bold">
+                            اذهب
+                          </button>
+                        </form>
+      
+                        <div className="mt-3 flex items-center justify-between text-[11px] text-slate-500">
+                          <span>الجزء {surah.meta.juz.toLocaleString("ar-EG")} · الصفحة {surah.ayahs[0]?.page.toLocaleString("ar-EG") ?? "—"}</span>
+                          <Link href="/mushaf" className="font-bold text-emerald-700 hover:underline">
+                            فهرس السور
+                          </Link>
                         </div>
-
-                        <div className="mt-0.5 text-[10px] text-slate-400">
-                          أثناء تشغيل التلاوة
+      
+                        {/* ===== فهرس جانبي تفاعلي سريع — royal side index ===== */}
+                        <div className="mt-4 border-t border-slate-100 pt-3">
+                          <div className="mb-2 flex items-center justify-between">
+                            <span className="text-xs font-black text-slate-900">الفهرس السريع للسور</span>
+                            <span className="text-[10px] font-bold text-slate-400">اضغط للانتقال فوراً</span>
+                          </div>
+                          <div className="relative">
+                            <input
+                              value={indexQuery}
+                              onChange={(e) => setIndexQuery(e.target.value)}
+                              placeholder="ابحث عن سورة أو رقمها…"
+                              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 pr-8 text-right text-xs font-semibold text-slate-900 outline-none focus:border-emerald-500"
+                              aria-label="البحث في الفهرس"
+                            />
+                            <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs">🔍</span>
+                          </div>
+                          <div
+                            className="mt-2 max-h-52 overflow-y-auto rounded-xl bg-slate-50/70 p-1"
+                            dir="rtl"
+                          >
+                            {(() => {
+                              const q = indexQuery.trim();
+                              const num = q ? parseAyahInput(q) : 0;
+                              const matches = SURAHS.filter((s) => {
+                                if (!q) return true;
+                                return (
+                                  s.nameAr.includes(q) ||
+                                  s.nameLatin.toLowerCase().includes(q.toLowerCase()) ||
+                                  (num >= 1 && num <= 114 && s.number === num)
+                                );
+                              });
+                              return matches.map((s) => {
+                              const active = s.number === surahNum;
+                              return (
+                                <Link
+                                  key={s.number}
+                                  href={`/mushaf/${s.number}`}
+                                  onClick={() => setShowNav(false)}
+                                  className={`flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-right transition ${
+                                    active
+                                      ? "bg-emerald-100 text-emerald-800"
+                                      : "hover:bg-white hover:shadow-sm"
+                                  }`}
+                                >
+                                  <span className="flex items-center gap-2">
+                                    <span
+                                      className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[11px] font-black text-white"
+                                      style={{ background: active ? "linear-gradient(135deg,#10b981,#2563eb)" : "linear-gradient(135deg,#059669,#0f172a)" }}
+                                    >
+                                      {s.number.toLocaleString("ar-EG")}
+                                    </span>
+                                    <span
+                                      className="text-sm font-bold text-slate-800"
+                                      style={{ fontFamily: "var(--font-quran)" }}
+                                    >
+                                      {s.nameAr}
+                                    </span>
+                                  </span>
+                                  <span className="shrink-0 text-[10px] font-semibold text-slate-400">
+                                    {s.ayahCount.toLocaleString("ar-EG")} آية
+                                  </span>
+                                </Link>
+                              );
+                              });
+                            })()}
+                            {(() => {
+                              const q = indexQuery.trim();
+                              const num = q ? parseAyahInput(q) : 0;
+                              const count = SURAHS.filter((s) => {
+                                if (!q) return true;
+                                return (
+                                  s.nameAr.includes(q) ||
+                                  s.nameLatin.toLowerCase().includes(q.toLowerCase()) ||
+                                  (num >= 1 && num <= 114 && s.number === num)
+                                );
+                              }).length;
+                              if (count === 0) {
+                                return <p className="px-2 py-3 text-center text-[11px] text-slate-400">لا توجد سورة مطابقة</p>;
+                              }
+                              return null;
+                            })()}
+                          </div>
                         </div>
                       </div>
-
-                      <button
-                        type="button"
-                        onClick={
-                          toggleHighlight
-                        }
-                        className={`
-                          relative
-                          h-6 w-11
-                          rounded-full
-                          transition
-                          ${
-                            highlight
-                              ? "bg-emerald-500"
-                              : "bg-slate-300"
-                          }
-                        `}
-                        aria-label="تشغيل أو إيقاف التظليل"
-                      >
-                        <span
-                          className={`
-                            absolute
-                            top-1
-                            h-4 w-4
-                            rounded-full
-                            bg-white
-                            shadow
-                            transition
-                            ${
-                              highlight
-                                ? "right-1"
-                                : "right-6"
+                    </MushafMenu>
+      <MushafMenu open={showAppearance} onClose={() => setShowAppearance(false)} side="right" width={310}>
+                        <div className="mb-3 flex items-center justify-between">
+                          <div>
+                            <div className="text-sm font-black text-slate-900">
+                              مظهر المصحف
+                            </div>
+      
+                            <div className="mt-0.5 text-[10px] text-slate-400">
+                              اختر الشكل المناسب للقراءة
+                            </div>
+                          </div>
+      
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setShowAppearance(
+                                false
+                              )
                             }
-                          `}
-                        />
-                      </button>
-                    </div>
-
-                    {highlight && (
-                      <div className="mt-3">
-                        <div className="mb-2 text-[10px] font-bold text-slate-500">
-                          لون التظليل
+                            className="
+                              grid
+                              h-8 w-8
+                              place-items-center
+                              rounded-xl
+                              bg-slate-50
+                              text-slate-500
+                              hover:bg-slate-100
+                            "
+                          >
+                            <IconClose />
+                          </button>
                         </div>
-
-                        <div className="flex items-center gap-2">
-                          {HIGHLIGHT_COLORS.map(
-                            (color) => (
+      
+                        <div className="mb-4 grid grid-cols-5 gap-1.5">
+                          {PAPERS.map(
+                            (item) => (
                               <button
                                 key={
-                                  color
+                                  item.id
                                 }
                                 type="button"
                                 onClick={() =>
-                                  chooseHighlightColor(
-                                    color
+                                  choosePaper(
+                                    item.id
                                   )
                                 }
                                 className={`
-                                  grid
-                                  h-8 w-8
-                                  place-items-center
-                                  rounded-full
+                                  rounded-xl
+                                  border
+                                  p-1
                                   transition
                                   ${
-                                    hlColor ===
-                                    color
-                                      ? "scale-110 ring-2 ring-slate-400 ring-offset-2"
-                                      : ""
+                                    paper ===
+                                    item.id
+                                      ? "border-emerald-500 ring-2 ring-emerald-100"
+                                      : "border-slate-100"
                                   }
                                 `}
-                                style={{
-                                  background:
-                                    color,
-                                }}
-                                aria-label={`لون ${color}`}
                               >
-                                {hlColor ===
-                                  color && (
-                                  <span className="text-xs font-black text-white">
+                                <span
+                                  className="
+                                    block
+                                    h-8
+                                    rounded-lg
+                                    border
+                                    border-black/5
+                                  "
+                                  style={{
+                                    background:
+                                      item.preview,
+                                  }}
+                                />
+      
+                                <span className="mt-1 block truncate text-[9px] font-bold text-slate-500">
+                                  {item.label}
+                                </span>
+                              </button>
+                            )
+                          )}
+                        </div>
+      
+                        <div
+                          className="
+                            rounded-2xl
+                            bg-slate-50
+                            p-3
+                          "
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="text-xs font-black text-slate-800">
+                                تظليل الكلمات
+                              </div>
+      
+                              <div className="mt-0.5 text-[10px] text-slate-400">
+                                أثناء تشغيل التلاوة
+                              </div>
+                            </div>
+      
+                            <button
+                              type="button"
+                              onClick={
+                                toggleHighlight
+                              }
+                              className={`
+                                relative
+                                h-6 w-11
+                                rounded-full
+                                transition
+                                ${
+                                  highlight
+                                    ? "bg-emerald-500"
+                                    : "bg-slate-300"
+                                }
+                              `}
+                              aria-label="تشغيل أو إيقاف التظليل"
+                            >
+                              <span
+                                className={`
+                                  absolute
+                                  top-1
+                                  h-4 w-4
+                                  rounded-full
+                                  bg-white
+                                  shadow
+                                  transition
+                                  ${
+                                    highlight
+                                      ? "right-1"
+                                      : "right-6"
+                                  }
+                                `}
+                              />
+                            </button>
+                          </div>
+      
+                          {highlight && (
+                            <div className="mt-3">
+                              <div className="mb-2 text-[10px] font-bold text-slate-500">
+                                لون التظليل
+                              </div>
+      
+                              <div className="flex items-center gap-2">
+                                {HIGHLIGHT_COLORS.map(
+                                  (color) => (
+                                    <button
+                                      key={
+                                        color
+                                      }
+                                      type="button"
+                                      onClick={() =>
+                                        chooseHighlightColor(
+                                          color
+                                        )
+                                      }
+                                      className={`
+                                        grid
+                                        h-8 w-8
+                                        place-items-center
+                                        rounded-full
+                                        transition
+                                        ${
+                                          hlColor ===
+                                          color
+                                            ? "scale-110 ring-2 ring-slate-400 ring-offset-2"
+                                            : ""
+                                        }
+                                      `}
+                                      style={{
+                                        background:
+                                          color,
+                                      }}
+                                      aria-label={`لون ${color}`}
+                                    >
+                                      {hlColor ===
+                                        color && (
+                                        <span className="text-xs font-black text-white">
+                                          ✓
+                                        </span>
+                                      )}
+                                    </button>
+                                  )
+                                )}
+                              </div>
+                            </div>
+                          )}
+      
+                          {/* Highlight style */}
+                          <div className="mt-3 rounded-2xl bg-slate-50 p-3">
+                            <div className="mb-2 text-[10px] font-bold text-slate-500">
+                              نمط التظليل
+                            </div>
+                            <div className="grid grid-cols-3 gap-1.5">
+                              {([
+                                ["background", "خلفية"],
+                                ["underline", "تسطير"],
+                                ["frame", "إطار"],
+                              ] as [HighlightStyle, string][]).map(([id, label]) => (
+                                <button
+                                  key={id}
+                                  type="button"
+                                  onClick={() => chooseHighlightStyle(id)}
+                                  className={`rounded-lg px-2 py-2 text-[11px] font-bold transition ${
+                                    hlStyle === id
+                                      ? "bg-emerald-600 text-white"
+                                      : "bg-white text-slate-600 hover:bg-emerald-50"
+                                  }`}
+                                >
+                                  {label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+      
+                          {/* Typography spacing */}
+                          <div className="mt-3 rounded-2xl bg-slate-50 p-3">
+                            <div className="mb-2 text-[10px] font-bold text-slate-500">
+                              إعدادات القراءة
+                            </div>
+                            <div className="space-y-2">
+                              <SettingStepper
+                                label="ارتفاع السطر"
+                                value={lineHeight.toFixed(1)}
+                                onDec={() => changeLineHeight(-0.1)}
+                                onInc={() => changeLineHeight(0.1)}
+                                onReset={() => { setLineHeight(LINE_HEIGHT.def); writeLineHeight(LINE_HEIGHT.def); }}
+                                decLabel="تقليل ارتفاع السطر"
+                                incLabel="زيادة ارتفاع السطر"
+                              />
+                              <SettingStepper
+                                label="تباعد الكلمات"
+                                value={`${wordSpacing}px`}
+                                onDec={() => changeWordSpacing(-1)}
+                                onInc={() => changeWordSpacing(1)}
+                                onReset={() => { setWordSpacing(WORD_SPACING.def); writeWordSpacing(WORD_SPACING.def); }}
+                                decLabel="تقليل تباعد الكلمات"
+                                incLabel="زيادة تباعد الكلمات"
+                              />
+                              <SettingStepper
+                                label="عرض القراءة"
+                                value={`${readingWidth}px`}
+                                onDec={() => changeReadingWidth(-40)}
+                                onInc={() => changeReadingWidth(40)}
+                                onReset={() => { setReadingWidth(READING_WIDTH.def); writeReadingWidth(READING_WIDTH.def); }}
+                                decLabel="تضييق عرض القراءة"
+                                incLabel="توسيع عرض القراءة"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                    </MushafMenu>
+      <MushafMenu open={showFonts} onClose={() => setShowFonts(false)} side="right" width={280}>
+                        <div className="border-b border-slate-100 px-4 py-3">
+                          <div className="text-sm font-black text-slate-900">
+                            نوع الخط
+                          </div>
+      
+                          <div className="mt-0.5 text-[10px] text-slate-400">
+                            اختر الخط المناسب للمصحف
+                          </div>
+                        </div>
+      
+                        <div className="p-2">
+                          {FONTS.map(
+                            (item) => (
+                              <button
+                                key={
+                                  item.id
+                                }
+                                type="button"
+                                onClick={() =>
+                                  chooseFont(
+                                    item.id
+                                  )
+                                }
+                                className={`
+                                  flex w-full
+                                  items-center
+                                  justify-between
+                                  gap-3
+                                  rounded-2xl
+                                  px-3 py-3
+                                  text-right
+                                  transition
+                                  ${
+                                    font ===
+                                    item.id
+                                      ? "bg-emerald-50"
+                                      : "hover:bg-slate-50"
+                                  }
+                                `}
+                              >
+                                <span
+                                  className={`
+                                    ${item.id}
+                                    text-xl
+                                    text-slate-900
+                                  `}
+                                >
+                                  بِسْمِ
+                                </span>
+      
+                                <span className="flex-1 text-[11px] font-bold text-slate-500">
+                                  {item.label}
+                                </span>
+      
+                                {font ===
+                                  item.id && (
+                                  <span className="grid h-6 w-6 place-items-center rounded-full bg-emerald-500 text-xs font-black text-white">
                                     ✓
                                   </span>
                                 )}
@@ -2250,329 +1961,110 @@ export function MushafReader({
                             )
                           )}
                         </div>
-                      </div>
-                    )}
-
-                    {/* Highlight style */}
-                    <div className="mt-3 rounded-2xl bg-slate-50 p-3">
-                      <div className="mb-2 text-[10px] font-bold text-slate-500">
-                        نمط التظليل
-                      </div>
-                      <div className="grid grid-cols-3 gap-1.5">
-                        {([
-                          ["background", "خلفية"],
-                          ["underline", "تسطير"],
-                          ["frame", "إطار"],
-                        ] as [HighlightStyle, string][]).map(([id, label]) => (
-                          <button
-                            key={id}
-                            type="button"
-                            onClick={() => chooseHighlightStyle(id)}
-                            className={`rounded-lg px-2 py-2 text-[11px] font-bold transition ${
-                              hlStyle === id
-                                ? "bg-emerald-600 text-white"
-                                : "bg-white text-slate-600 hover:bg-emerald-50"
-                            }`}
-                          >
-                            {label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Typography spacing */}
-                    <div className="mt-3 rounded-2xl bg-slate-50 p-3">
-                      <div className="mb-2 text-[10px] font-bold text-slate-500">
-                        إعدادات القراءة
-                      </div>
-                      <div className="space-y-2">
-                        <SettingStepper
-                          label="ارتفاع السطر"
-                          value={lineHeight.toFixed(1)}
-                          onDec={() => changeLineHeight(-0.1)}
-                          onInc={() => changeLineHeight(0.1)}
-                          onReset={() => { setLineHeight(LINE_HEIGHT.def); writeLineHeight(LINE_HEIGHT.def); }}
-                          decLabel="تقليل ارتفاع السطر"
-                          incLabel="زيادة ارتفاع السطر"
-                        />
-                        <SettingStepper
-                          label="تباعد الكلمات"
-                          value={`${wordSpacing}px`}
-                          onDec={() => changeWordSpacing(-1)}
-                          onInc={() => changeWordSpacing(1)}
-                          onReset={() => { setWordSpacing(WORD_SPACING.def); writeWordSpacing(WORD_SPACING.def); }}
-                          decLabel="تقليل تباعد الكلمات"
-                          incLabel="زيادة تباعد الكلمات"
-                        />
-                        <SettingStepper
-                          label="عرض القراءة"
-                          value={`${readingWidth}px`}
-                          onDec={() => changeReadingWidth(-40)}
-                          onInc={() => changeReadingWidth(40)}
-                          onReset={() => { setReadingWidth(READING_WIDTH.def); writeReadingWidth(READING_WIDTH.def); }}
-                          decLabel="تضييق عرض القراءة"
-                          incLabel="توسيع عرض القراءة"
-                        />
-                      </div>
-                    </div>
-                  </div>
-              </MushafMenu>
-            </div>
-
-            {/* FONT */}
-
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() =>
-                  toggleOnly(
-                    "font"
-                  )
-                }
-                className={`
-                  flex w-full
-                  items-center
-                  justify-center
-                  gap-1.5
-                  rounded-2xl
-                  border
-                  px-2 py-2.5
-                  text-xs
-                  font-bold
-                  transition
-                  ${
-                    showFonts
-                      ? "border-emerald-300 bg-emerald-50 text-emerald-700"
-                      : "border-slate-100 bg-white text-slate-600 hover:border-emerald-200 hover:text-emerald-700"
-                  }
-                `}
-              >
-                <IconType className="h-4 w-4" />
-                <span>
-                  الخط
-                </span>
-                <IconChevron className="h-3 w-3" />
-              </button>
-
-              <MushafMenu open={showFonts} onClose={() => setShowFonts(false)} side="right" width={280}>
-                  <div className="border-b border-slate-100 px-4 py-3">
-                    <div className="text-sm font-black text-slate-900">
-                      نوع الخط
-                    </div>
-
-                    <div className="mt-0.5 text-[10px] text-slate-400">
-                      اختر الخط المناسب للمصحف
-                    </div>
-                  </div>
-
-                  <div className="p-2">
-                    {FONTS.map(
-                      (item) => (
-                        <button
-                          key={
-                            item.id
-                          }
-                          type="button"
-                          onClick={() =>
-                            chooseFont(
-                              item.id
-                            )
-                          }
-                          className={`
-                            flex w-full
-                            items-center
-                            justify-between
-                            gap-3
-                            rounded-2xl
-                            px-3 py-3
-                            text-right
-                            transition
-                            ${
-                              font ===
-                              item.id
-                                ? "bg-emerald-50"
-                                : "hover:bg-slate-50"
-                            }
-                          `}
-                        >
-                          <span
-                            className={`
-                              ${item.id}
-                              text-xl
-                              text-slate-900
-                            `}
-                          >
-                            بِسْمِ
-                          </span>
-
-                          <span className="flex-1 text-[11px] font-bold text-slate-500">
-                            {item.label}
-                          </span>
-
-                          {font ===
-                            item.id && (
-                            <span className="grid h-6 w-6 place-items-center rounded-full bg-emerald-500 text-xs font-black text-white">
-                              ✓
-                            </span>
+                    </MushafMenu>
+      <MushafMenu open={showReciters} onClose={() => setShowReciters(false)} side="left" width={300}>
+                        <div className="sticky top-0 z-10 border-b border-slate-100 bg-white px-4 py-3">
+                          <div className="text-sm font-black text-slate-900">
+                            القارئ
+                          </div>
+      
+                          <div className="mt-0.5 text-[10px] text-slate-400">
+                            يُوضَّح لكل قارئ توفّره لهذه السورة
+                          </div>
+      
+                          {/* Availability legend */}
+                          <div className="mt-2 flex flex-wrap items-center gap-2">
+                            <span className="reciter-avail reciter-avail-ayah">آية بآية · كل السور</span>
+                            <span className="reciter-avail reciter-avail-surah">تسجيل كامل للسورة</span>
+                            <span className="reciter-avail reciter-avail-none">غير متاح للسورة</span>
+                          </div>
+      
+                          {fallbackNotice && (
+                            <div className="mt-2 rounded-xl bg-amber-50 px-3 py-2 text-[11px] font-bold leading-relaxed text-amber-800 ring-1 ring-amber-200">
+                              {fallbackNotice}
+                            </div>
                           )}
-                        </button>
-                      )
-                    )}
-                  </div>
-              </MushafMenu>
-            </div>
-
-            {/* RECITER */}
-
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() =>
-                  toggleOnly(
-                    "reciter"
-                  )
-                }
-                className={`
-                  flex w-full
-                  items-center
-                  justify-center
-                  gap-1.5
-                  rounded-2xl
-                  border
-                  px-2 py-2.5
-                  text-xs
-                  font-bold
-                  transition
-                  ${
-                    showReciters
-                      ? "border-emerald-300 bg-emerald-50 text-emerald-700"
-                      : "border-slate-100 bg-white text-slate-600 hover:border-emerald-200 hover:text-emerald-700"
-                  }
-                `}
-              >
-                <IconMic className="h-4 w-4" />
-
-                <span className="max-w-[90px] truncate">
-                  {reciter.name}
-                </span>
-
-                {reciterAvailability(reciter, surahNum) === "none" && (
-                  <span
-                    className="h-2 w-2 shrink-0 rounded-full bg-amber-400 ring-2 ring-amber-100"
-                    title="غير متاح لهذه السورة — يُستخدم صوت بديل"
-                  />
-                )}
-
-                <IconChevron className="h-3 w-3" />
-              </button>
-
-              <MushafMenu open={showReciters} onClose={() => setShowReciters(false)} side="left" width={300}>
-                  <div className="sticky top-0 z-10 border-b border-slate-100 bg-white px-4 py-3">
-                    <div className="text-sm font-black text-slate-900">
-                      القارئ
-                    </div>
-
-                    <div className="mt-0.5 text-[10px] text-slate-400">
-                      يُوضَّح لكل قارئ توفّره لهذه السورة
-                    </div>
-
-                    {/* Availability legend */}
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
-                      <span className="reciter-avail reciter-avail-ayah">آية بآية · كل السور</span>
-                      <span className="reciter-avail reciter-avail-surah">تسجيل كامل للسورة</span>
-                      <span className="reciter-avail reciter-avail-none">غير متاح للسورة</span>
-                    </div>
-
-                    {fallbackNotice && (
-                      <div className="mt-2 rounded-xl bg-amber-50 px-3 py-2 text-[11px] font-bold leading-relaxed text-amber-800 ring-1 ring-amber-200">
-                        {fallbackNotice}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="max-h-[45vh] overflow-y-auto p-2">
-                    {RECITERS.map(
-                      (item) => {
-                        const photo = getRegistryReciter(item.id)?.image ?? null;
-                        const avail = reciterAvailability(item, surahNum);
-                        const unavailable = avail === "none";
-                        return (
-                        <button
-                          key={item.id}
-                          type="button"
-                          onClick={() =>
-                            chooseReciter(item)
-                          }
-                          className={`
-                            flex w-full
-                            items-center
-                            justify-between
-                            gap-2
-                            rounded-2xl
-                            px-3 py-2.5
-                            text-right
-                            transition
-                            ${
-                              item.id ===
-                              reciter.id
-                                ? "bg-emerald-50"
-                                : "hover:bg-slate-50"
-                            }
-                            ${unavailable ? "reciter-row-unavailable" : ""}
-                          `}
-                        >
-                          <span className="flex min-w-0 items-center gap-2.5">
-                            {photo ? (
-                              <Image
-                                src={photo}
-                                alt=""
-                                width={40}
-                                height={40}
-                                className="h-10 w-10 shrink-0 rounded-xl object-cover object-top ring-1 ring-emerald-100"
-                              />
-                            ) : (
-                              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-emerald-500 to-ocean-600 text-sm font-bold text-white">
-                                {item.name.charAt(0)}
-                              </span>
-                            )}
-                            <span className="flex min-w-0 flex-col">
-                              <span className="truncate font-bold text-slate-800">
-                                {item.name}
-                              </span>
-                              <span className="flex flex-wrap items-center gap-1.5">
-                                <span className={`reciter-avail ${
-                                  avail === "ayah"
-                                    ? "reciter-avail-ayah"
-                                    : avail === "surah"
-                                      ? "reciter-avail-surah"
-                                      : "reciter-avail-none"
-                                }`}>
-                                  {avail === "ayah"
-                                    ? "آية بآية"
-                                    : avail === "surah"
-                                      ? "متاح للسورة"
-                                      : "غير متاح"}
+                        </div>
+      
+                        <div className="max-h-[45vh] overflow-y-auto p-2">
+                          {RECITERS.map(
+                            (item) => {
+                              const photo = getRegistryReciter(item.id)?.image ?? null;
+                              const avail = reciterAvailability(item, surahNum);
+                              const unavailable = avail === "none";
+                              return (
+                              <button
+                                key={item.id}
+                                type="button"
+                                onClick={() =>
+                                  chooseReciter(item)
+                                }
+                                className={`
+                                  flex w-full
+                                  items-center
+                                  justify-between
+                                  gap-2
+                                  rounded-2xl
+                                  px-3 py-2.5
+                                  text-right
+                                  transition
+                                  ${
+                                    item.id ===
+                                    reciter.id
+                                      ? "bg-emerald-50"
+                                      : "hover:bg-slate-50"
+                                  }
+                                  ${unavailable ? "reciter-row-unavailable" : ""}
+                                `}
+                              >
+                                <span className="flex min-w-0 items-center gap-2.5">
+                                  {photo ? (
+                                    <Image
+                                      src={photo}
+                                      alt=""
+                                      width={40}
+                                      height={40}
+                                      className="h-10 w-10 shrink-0 rounded-xl object-cover object-top ring-1 ring-emerald-100"
+                                    />
+                                  ) : (
+                                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-emerald-500 to-ocean-600 text-sm font-bold text-white">
+                                      {item.name.charAt(0)}
+                                    </span>
+                                  )}
+                                  <span className="flex min-w-0 flex-col">
+                                    <span className="truncate font-bold text-slate-800">
+                                      {item.name}
+                                    </span>
+                                    <span className="flex flex-wrap items-center gap-1.5">
+                                      <span className={`reciter-avail ${
+                                        avail === "ayah"
+                                          ? "reciter-avail-ayah"
+                                          : avail === "surah"
+                                            ? "reciter-avail-surah"
+                                            : "reciter-avail-none"
+                                      }`}>
+                                        {avail === "ayah"
+                                          ? "آية بآية"
+                                          : avail === "surah"
+                                            ? "متاح للسورة"
+                                            : "غير متاح"}
+                                      </span>
+                                    </span>
+                                  </span>
                                 </span>
-                              </span>
-                            </span>
-                          </span>
-
-                          {item.id ===
-                            reciter.id && (
-                            <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-emerald-500 text-xs font-black text-white">
-                              ✓
-                            </span>
+      
+                                {item.id ===
+                                  reciter.id && (
+                                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-emerald-500 text-xs font-black text-white">
+                                    ✓
+                                  </span>
+                                )}
+                              </button>
+                              );
+                            }
                           )}
-                        </button>
-                        );
-                      }
-                    )}
-                  </div>
-              </MushafMenu>
-            </div>
-          </div>
-        </div>
-      </div>
+                        </div>
+                    </MushafMenu>
 
       {/* =====================================================
           ROYAL OPEN BOOK — الكتاب الملكي المفتوح
@@ -2583,11 +2075,6 @@ export function MushafReader({
         className="book-open mx-auto w-full"
         style={{ maxWidth: "calc(var(--mushaf-reading-width, 1024px) + 52px)" }}
       >
-        {/* central spine & page-curl shading */}
-        <span className="book-spine" aria-hidden />
-        <span className="page-curl right" aria-hidden />
-        <span className="page-curl left" aria-hidden />
-
         <div className="book-open-inner">
         <div
         ref={pageRef}
@@ -2700,8 +2187,7 @@ export function MushafReader({
 
         {view === "mushaf" && (
           <div ref={bookWrapRef} className="book-stage relative z-10">
-            {/* stacked-page fore-edges */}
-            <span className="book-edges right" aria-hidden />
+            {/* stacked-page fore-edge at the outer (left) side */}
             <span className="book-edges left" aria-hidden />
 
             <div className="book-spread" key={`${bookSpread}-${turnDir}`} dir="rtl">
