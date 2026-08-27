@@ -1,0 +1,33 @@
+/* ============================================================================
+   HAFIZ — Font contract
+   ----------------------------------------------------------------------------
+   The whole app references the CSS custom properties below (same contract the
+   old next/font setup exposed). Each variable points to the intended Arabic
+   web font with a robust local/system fallback, so the UI renders beautifully
+   even when the Google Fonts stylesheet cannot be fetched (offline builds,
+   restricted networks). When the CDN stylesheet IS loaded, the exact named
+   families resolve to the real web fonts automatically.
+   ============================================================================ */
+
+:root {
+  /* Classic Naskh-style body / headings */
+  --font-arabic: "Amiri", "Scheherazade New", "Geeza Pro", "Sakkal Majalla",
+    "Traditional Arabic", "Tahoma", serif;
+
+  /* Mushaf — Uthmani-style Quran faces */
+  --font-quran: "Amiri Quran", "Amiri", "Scheherazade New", "Geeza Pro",
+    "Traditional Arabic", serif;
+  --font-quran-kfgqpc: "Scheherazade New", "Amiri Quran", "Amiri",
+    "Traditional Arabic", serif;
+  --font-quran-naskh: "Noto Naskh Arabic", "Amiri", "Scheherazade New",
+    "Geeza Pro", serif;
+  --font-quran-markazi: "Markazi Text", "Amiri", "Scheherazade New",
+    "Geeza Pro", serif;
+
+  /* Kufic display for titles & numerals */
+  --font-display: "Reem Kufi", "Amiri", "Tahoma", sans-serif;
+
+  /* Clean UI text */
+  --font-ui: "Tajawal", "Segoe UI", system-ui, -apple-system, "Tahoma",
+    sans-serif;
+}
