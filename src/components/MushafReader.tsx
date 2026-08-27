@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type CSSProperties,
@@ -628,6 +629,94 @@ export function MushafReader({
     setShowReciters(menu === "reciter");
   };
 
+  /* =========================================================
+     REAL BOOK — paged Madani mus.haf (ورقة ورقة)
+  ========================================================= */
+  // True when the viewport can display two facing leaves.
+  const [isTwoPage, setIsTwoPage] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    return window.matchMedia("(min-width: 1024px)").matches;
+  });
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const update = () => setIsTwoPage(mq.matches);
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  // Group the surah's ayahs by their Madani mushaf page number.
+  const pages = useMemo(() => {
+    const map = new Map<number, typeof surah.ayahs>();
+    for (const a of surah.ayahs) {
+      const arr = map.get(a.page) ?? [];
+      arr.push(a);
+      map.set(a.page, arr);
+    }
+    return [...map.entries()]
+      .sort((a, b) => a[0] - b[0])
+      .map(([pageNo, ayahs]) => ({ pageNo, ayahs }));
+  }, [surah]);
+
+  const [bookSpread, setBookSpread] = useState(0);
+  const [turnDir, setTurnDir] = useState<"fwd" | "back">("fwd");
+
+  // (The book re-opens at its first spread naturally because the reader
+  //  component remounts per surah route; no reset effect needed.)
+
+  const spreadCount = useMemo(
+    () => (isTwoPage ? Math.ceil(pages.length / 2) : pages.length),
+    [isTwoPage, pages.length]
+  );
+
+  // Spread indices (RTL): the facing pair shows the EARLIER page on the
+  // right leaf and the later page on the left leaf.
+  const spreadRight = useMemo(
+    () => (isTwoPage ? pages[bookSpread * 2] : pages[bookSpread]),
+    [isTwoPage, pages, bookSpread]
+  );
+  const spreadLeft = useMemo(
+    () => (isTwoPage ? pages[bookSpread * 2 + 1] : null),
+    [isTwoPage, pages, bookSpread]
+  );
+
+  const turnTo = (target: number) => {
+    setTurnDir(target > bookSpread ? "fwd" : "back");
+    setBookSpread(Math.max(0, Math.min(spreadCount - 1, target)));
+    setTafsirAyah(null);
+  };
+  const nextSpread = () => bookSpread < spreadCount - 1 && turnTo(bookSpread + 1);
+  const prevSpread = () => bookSpread > 0 && turnTo(bookSpread - 1);
+
+  // Locate the spread that contains a given ayah.
+  const spreadOfAyah = useCallback(
+    (n: number) => {
+      const ayah = surah.ayahs.find((a) => a.numberInSurah === n);
+      if (!ayah) return 0;
+      const idx = pages.findIndex((p) => p.pageNo === ayah.page);
+      if (idx < 0) return 0;
+      return isTwoPage ? Math.floor(idx / 2) : idx;
+    },
+    [isTwoPage, pages, surah.ayahs]
+  );
+
+  // Keyboard: ←/→ turn the book while reading in mushaf (book) view.
+  useEffect(() => {
+    if (view !== "mushaf") return;
+    const onKey = (e: globalThis.KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.key === "ArrowLeft") nextSpread();
+      else if (e.key === "ArrowRight") prevSpread();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view, bookSpread, spreadCount, isTwoPage]);
+
+  // Auto-fit a book leaf's font so the Madani page content never overflows
+  // the physical leaf (measurements run client-side after paint).
+  const leafContentRef = useRef<Map<string, HTMLDivElement>>(new Map());
+
   const showToast = (msg: string) => {
     setToast(msg);
     if (toastTimer.current) window.clearTimeout(toastTimer.current);
@@ -639,6 +728,9 @@ export function MushafReader({
   ========================================================= */
 
   const pageRef =
+    useRef<HTMLDivElement | null>(null);
+
+  const bookWrapRef =
     useRef<HTMLDivElement | null>(null);
 
   const ayahRefs =
@@ -813,6 +905,43 @@ export function MushafReader({
     }
   }, [engine.state.currentAyah, engine.state.autoScroll, engine.state.status]);
 
+  // Recitation automatically turns the leaf to the ayah being recited.
+  useEffect(() => {
+    if (view !== "mushaf" || playingAyah == null) return;
+    const target = spreadOfAyah(playingAyah);
+    const id = window.requestAnimationFrame(() => {
+      setBookSpread((cur) => {
+        if (cur === target) return cur;
+        setTurnDir(target > cur ? "fwd" : "back");
+        return target;
+      });
+    });
+    return () => window.cancelAnimationFrame(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playingAyah, view]);
+
+  // Auto-fit the leaf font so Madani page content never overflows the leaf.
+  useEffect(() => {
+    if (view !== "mushaf" || isTwoPage === null) return;
+    const fit = () => {
+      for (const el of leafContentRef.current.values()) {
+        const leaf = el.closest<HTMLElement>(".book-page");
+        if (!leaf) continue;
+        let px = isTwoPage ? Math.round(fontSize * 0.62) : Math.round(fontSize * 0.85);
+        const minPx = isTwoPage ? 17 : 22;
+        const maxH = leaf.clientHeight - 20;
+        const maxW = leaf.clientWidth - 20;
+        el.style.fontSize = `${px}px`;
+        while (px > minPx && (el.scrollHeight > maxH || el.scrollWidth > maxW)) {
+          px -= 1;
+          el.style.fontSize = `${px}px`;
+        }
+      }
+    };
+    const id = window.setTimeout(fit, 70);
+    return () => window.clearTimeout(id);
+  }, [view, isTwoPage, bookSpread, fontSize, paper]);
+
   // Reload the source whenever reciter or surah changes while something is playing.
   useEffect(() => {
     if (engine.state.status === "idle") return;
@@ -934,12 +1063,146 @@ export function MushafReader({
     setShowNav(false);
     setTafsirAyah(null);
     setSelected(n);
+    if (view === "mushaf") {
+      // Turn the book to the leaf that contains the ayah.
+      const target = spreadOfAyah(n);
+      setTurnDir(target >= bookSpread ? "fwd" : "back");
+      setBookSpread(target);
+      window.setTimeout(() => {
+        bookWrapRef.current?.scrollIntoView({
+          behavior: prefersReducedMotion() ? "auto" : "smooth",
+          block: "center",
+        });
+      }, 80);
+      return;
+    }
     // Wait a tick for selection/state, then scroll the ayah into view.
     window.setTimeout(() => {
       const el = ayahRefs.current.get(n);
       el?.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "center" });
       el?.focus?.({ preventScroll: true });
     }, 60);
+  };
+
+  /* One ayah rendered INSIDE a book leaf (reuses the same actions/tafsir). */
+  const renderBookAyah = (ayah: (typeof surah.ayahs)[number]) => {
+    const playing = playingAyah === ayah.numberInSurah;
+    const isSajdaHere = isSajda(surah.meta.number, ayah.numberInSurah);
+    return (
+      <span key={ayah.numberInSurah}>
+        <span
+          role="button"
+          tabIndex={0}
+          onClick={(event) => onAyahClick(event, ayah.numberInSurah)}
+          onKeyDown={(event) => onAyahKeyDown(event, ayah.numberInSurah)}
+          className={`cursor-pointer rounded-md transition ${
+            playing
+              ? `ayah-playing ayah-${hlStyle}`
+              : selected === ayah.numberInSurah
+                ? "bg-[rgba(59,130,246,0.12)]"
+                : "hover:bg-[rgba(16,185,129,0.10)]"
+          }`}
+        >
+          {highlight && playing
+            ? ayah.words.map((word, wi) => (
+                <span
+                  key={wi}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    engine.seekToWord(ayah.numberInSurah, wi + 1);
+                  }}
+                  className="cursor-pointer"
+                  style={
+                    wi === activeWord
+                      ? { color: hlColor, background: `${hlColor}22`, borderRadius: 6, padding: "0 2px" }
+                      : undefined
+                  }
+                >
+                  {word.t}{" "}
+                </span>
+              ))
+            : ayah.text}
+          <span
+            role="button"
+            tabIndex={-1}
+            title="استماع للآية"
+            aria-label={`استماع للآية ${ayah.numberInSurah}`}
+            onClick={(event) => {
+              event.stopPropagation();
+              playAyah(ayah.numberInSurah, false);
+            }}
+            className="ayah-marker-btn"
+          >
+            <AyahMarker n={ayah.numberInSurah} active={playing} />
+          </span>
+        </span>
+
+        {isSajdaHere && (
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              setSajdaOpen(true);
+            }}
+            title="موضع سجدة"
+            className="mx-1 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 align-middle text-[11px] font-bold text-amber-700"
+          >
+            ۩ سجدة
+          </button>
+        )}
+
+        {selected === ayah.numberInSurah && (
+          <span className="ayah-inline-actions" contentEditable={false} onClick={(event) => event.stopPropagation()}>
+            <button type="button" onClick={() => openTafsirInline(ayah.numberInSurah)} className="ayah-chip ayah-chip-tafsir">
+              📖 التفسير
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                playAyah(ayah.numberInSurah, false);
+                setSelected(null);
+              }}
+              className="ayah-chip ayah-chip-listen"
+            >
+              🔊 استماع
+            </button>
+            <button type="button" onClick={() => onToggleBookmark(ayah.numberInSurah, ayah.page)} className="ayah-chip ayah-chip-bookmark" title="علامة مرجعية">
+              🔖 علامة
+            </button>
+            <button type="button" onClick={() => onCopy(ayah.text, ayah.numberInSurah)} className="ayah-chip ayah-chip-copy" title="نسخ الآية">
+              ⧉ نسخ
+            </button>
+            <button type="button" onClick={() => setSelected(null)} className="ayah-chip ayah-chip-close">
+              ✕
+            </button>
+          </span>
+        )}
+
+        {tafsirAyah === ayah.numberInSurah && (
+          <span className="ayah-tafsir-inline" contentEditable={false} onClick={(event) => event.stopPropagation()}>
+            <span className="ayah-tafsir-head">
+              <span className="ayah-tafsir-badge">{toDigits(ayah.numberInSurah)}</span>
+              <span className="font-display text-sm font-bold text-ink-900">التفسير الميسّر</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setTafsirAyah(null);
+                  setSelected(null);
+                }}
+                className="ayah-tafsir-close"
+              >
+                ✕
+              </button>
+            </span>
+            <span className="ayah-tafsir-body">{ayah.tafsir || "التفسير غير متوفّر لهذه الآية حالياً."}</span>
+            <button type="button" onClick={() => playAyah(ayah.numberInSurah, false)} className="mt-2 rounded-lg btn-primary px-4 py-2 text-xs font-semibold">
+              🔊 استماع للآية
+            </button>
+          </span>
+        )}
+        {" "}
+      </span>
+    );
   };
 
   /* =========================================================
@@ -2351,7 +2614,7 @@ export function MushafReader({
         <span className="page-curl left" aria-hidden />
 
         <div className="book-open-inner">
-      <div
+        <div
         ref={pageRef}
         className={`
           mushaf-page
@@ -2364,6 +2627,7 @@ export function MushafReader({
           sm:px-8 sm:py-10
           md:px-12 md:py-14
           lg:px-16 lg:py-16
+          ${view === "mushaf" ? "is-book" : ""}
         `}
         style={
           {
@@ -2381,19 +2645,24 @@ export function MushafReader({
       >
         {/* WATERMARK */}
 
-        <span className="mushaf-watermark" />
+        {view !== "mushaf" && <span className="mushaf-watermark" />}
 
-        {/* CORNERS */}
+        {/* CORNERS (book mode has its own leaf frames) */}
 
-        <span className="mushaf-corner left-3 top-3" aria-hidden />
-        <span className="mushaf-corner right-3 top-3" aria-hidden />
-        <span className="mushaf-corner bottom-3 left-3" aria-hidden />
-        <span className="mushaf-corner bottom-3 right-3" aria-hidden />
+        {view !== "mushaf" && (
+          <>
+            <span className="mushaf-corner left-3 top-3" aria-hidden />
+            <span className="mushaf-corner right-3 top-3" aria-hidden />
+            <span className="mushaf-corner bottom-3 left-3" aria-hidden />
+            <span className="mushaf-corner bottom-3 right-3" aria-hidden />
+          </>
+        )}
 
         {/* ===================================================
             SURAH HEADER
         =================================================== */}
 
+        {view !== "mushaf" && (
         <div
           className="
             relative z-20
@@ -2416,12 +2685,13 @@ export function MushafReader({
             }
           />
         </div>
+        )}
 
         {/* ===================================================
             BASMALA
         =================================================== */}
 
-        {surah.basmala && (
+        {surah.basmala && view !== "mushaf" && (
           <div className="relative z-10 mb-6 text-center">
             <div
               className="
@@ -2454,345 +2724,126 @@ export function MushafReader({
         =================================================== */}
 
         {view === "mushaf" && (
-          <div className="mushaf-content relative z-10">
-            <p
-              className={`mushaf-text ${font}`}
-              dir="rtl"
-              style={
-                mushafTextStyle
-              }
-            >
-              {surah.ayahs.map(
-                (ayah) => (
-                  <span
-                    key={
-                      ayah.numberInSurah
-                    }
+          <div ref={bookWrapRef} className="book-stage relative z-10">
+            {/* stacked-page fore-edges */}
+            <span className="book-edges right" aria-hidden />
+            <span className="book-edges left" aria-hidden />
+
+            <div className="book-spread" key={`${bookSpread}-${turnDir}`} dir="rtl">
+              {/* facing right leaf — earlier page in RTL reading order */}
+              {spreadRight && (
+                <article
+                  className={`book-page book-page-right book-leaf ${turnDir === "fwd" ? "turn-fwd" : "turn-back"}`}
+                  key={`r${spreadRight.pageNo}`}
+                >
+                  <span className="book-page-frame" aria-hidden />
+                  {bookSpread === 0 && (
+                    <div className="relative z-10 mb-3">
+                      <SurahHeader
+                        nameAr={surah.meta.nameAr}
+                        revelation={surah.meta.revelation}
+                        ayahCount={surah.meta.ayahCount}
+                        juz={surah.meta.juz}
+                      />
+                    </div>
+                  )}
+                  {bookSpread === 0 && surah.basmala && (
+                    <div className="relative z-10 mb-4 text-center">
+                      <div
+                        className="text-xl sm:text-2xl md:text-[1.9rem]"
+                        style={{
+                          fontFamily: "var(--font-quran)",
+                          background: "linear-gradient(120deg,#047857,#059669,#2563eb)",
+                          WebkitBackgroundClip: "text",
+                          backgroundClip: "text",
+                          color: "transparent",
+                        }}
+                      >
+                        بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+                      </div>
+                      <div className="basmala-ornament mx-auto mt-3 max-w-[14rem]" />
+                    </div>
+                  )}
+                  <div
+                    ref={(el) => {
+                      if (el) {
+                        leafContentRef.current.set(`r${spreadRight.pageNo}`, el);
+                        spreadRight.ayahs.forEach((a) => ayahRefs.current.set(a.numberInSurah, el as unknown as HTMLSpanElement));
+                      }
+                    }}
+                    className={`book-leaf-text ${font}`}
+                    dir="rtl"
                   >
-                    {/* AYAH */}
-
-                    <span
-                      ref={(
-                        element
-                      ) => {
-                        if (
-                          element
-                        ) {
-                          ayahRefs.current.set(
-                            ayah.numberInSurah,
-                            element
-                          );
-                        } else {
-                          ayahRefs.current.delete(
-                            ayah.numberInSurah
-                          );
-                        }
-                      }}
-                      role="button"
-                      tabIndex={0}
-                      onClick={(
-                        event
-                      ) =>
-                        onAyahClick(
-                          event,
-                          ayah.numberInSurah
-                        )
-                      }
-                      onKeyDown={(
-                        event
-                      ) =>
-                        onAyahKeyDown(
-                          event,
-                          ayah.numberInSurah
-                        )
-                      }
-                      className={`
-                        cursor-pointer
-                        rounded-md
-                        transition
-                        ${
-                          playingAyah ===
-                          ayah.numberInSurah
-                            ? `ayah-playing ayah-${hlStyle}`
-                            : selected ===
-                              ayah.numberInSurah
-                            ? "bg-[rgba(59,130,246,0.12)]"
-                            : "hover:bg-[rgba(16,185,129,0.10)]"
-                        }
-                      `}
-                    >
-                      {/* WORD HIGHLIGHT */}
-
-                      {highlight &&
-                      playingAyah ===
-                        ayah.numberInSurah ? (
-                        ayah.words.map(
-                          (
-                            word,
-                            wordIndex
-                          ) => (
-                            <span
-                              key={
-                                wordIndex
-                              }
-                              onClick={(
-                                event
-                              ) => {
-                                event.stopPropagation();
-
-                                engine.seekToWord(
-                                  ayah.numberInSurah,
-                                  wordIndex + 1
-                                );
-                              }}
-                              className="cursor-pointer"
-                              style={
-                                wordIndex ===
-                                activeWord
-                                  ? {
-                                      color:
-                                        hlColor,
-                                      background:
-                                        `${hlColor}22`,
-                                      borderRadius:
-                                        "6px",
-                                      padding:
-                                        "0 2px",
-                                      transition:
-                                        "color .15s, background .15s",
-                                    }
-                                  : undefined
-                              }
-                            >
-                              {
-                                word.t
-                              }{" "}
-                            </span>
-                          )
-                        )
-                      ) : (
-                        ayah.text
-                      )}
-
-                      <span
-                        role="button"
-                        tabIndex={-1}
-                        title="استماع للآية"
-                        aria-label={`استماع للآية ${ayah.numberInSurah}`}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          playAyah(ayah.numberInSurah, false);
-                        }}
-                        className="ayah-marker-btn"
-                      >
-                        <AyahMarker
-                          n={
-                            ayah.numberInSurah
-                          }
-                          active={
-                            playingAyah ===
-                            ayah.numberInSurah
-                          }
-                        />
-                      </span>
-                    </span>
-
-                    {/* SAJDA */}
-
-                    {isSajda(
-                      surah.meta
-                        .number,
-                      ayah.numberInSurah
-                    ) && (
-                      <button
-                        type="button"
-                        onClick={(
-                          event
-                        ) => {
-                          event.stopPropagation();
-                          setSajdaOpen(
-                            true
-                          );
-                        }}
-                        title="موضع سجدة"
-                        className="
-                          mx-1
-                          inline-flex
-                          items-center
-                          gap-1
-                          rounded-full
-                          bg-amber-100
-                          px-2 py-0.5
-                          align-middle
-                          text-[11px]
-                          font-bold
-                          text-amber-700
-                        "
-                      >
-                        ۩ سجدة
-                      </button>
-                    )}
-
-                    {/* AYAH ACTIONS */}
-
-                    {selected ===
-                      ayah.numberInSurah && (
-                        <span
-                          className="ayah-inline-actions"
-                          contentEditable={
-                            false
-                          }
-                          onClick={(
-                            event
-                          ) =>
-                            event.stopPropagation()
-                          }
-                        >
-                          <button
-                            type="button"
-                            onClick={() =>
-                              openTafsirInline(
-                                ayah.numberInSurah
-                              )
-                            }
-                            className="ayah-chip ayah-chip-tafsir"
-                          >
-                            📖 التفسير
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              playAyah(
-                                ayah.numberInSurah,
-                                false
-                              );
-
-                              setSelected(
-                                null
-                              );
-                            }}
-                            className="ayah-chip ayah-chip-listen"
-                          >
-                            🔊 استماع
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              onToggleBookmark(
-                                ayah.numberInSurah,
-                                ayah.page
-                              )
-                            }
-                            className="ayah-chip ayah-chip-bookmark"
-                            title="علامة مرجعية"
-                          >
-                            🔖 علامة
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              onCopy(
-                                ayah.text,
-                                ayah.numberInSurah
-                              )
-                            }
-                            className="ayah-chip ayah-chip-copy"
-                            title="نسخ الآية"
-                          >
-                            ⧉ نسخ
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setSelected(
-                                null
-                              )
-                            }
-                            className="ayah-chip ayah-chip-close"
-                          >
-                            ✕
-                          </button>
-                        </span>
-                      )}
-
-                    {/* INLINE TAFSIR */}
-
-                    {tafsirAyah ===
-                      ayah.numberInSurah && (
-                      <span
-                        className="ayah-tafsir-inline"
-                        contentEditable={
-                          false
-                        }
-                        onClick={(
-                          event
-                        ) =>
-                          event.stopPropagation()
-                        }
-                      >
-                        <span className="ayah-tafsir-head">
-                          <span className="ayah-tafsir-badge">
-                            {toDigits(
-                              ayah.numberInSurah
-                            )}
-                          </span>
-
-                          <span className="font-display text-sm font-bold text-ink-900">
-                            التفسير الميسّر
-                          </span>
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setTafsirAyah(
-                                null
-                              );
-                            }}
-                            aria-label="إخفاء التفسير"
-                            className="ayah-tafsir-close"
-                          >
-                            ✕
-                          </button>
-                        </span>
-
-                        <span className="ayah-tafsir-body">
-                          {ayah.tafsir ||
-                            "التفسير غير متوفّر لهذه الآية حالياً."}
-                        </span>
-
-                        <button
-                          type="button"
-                          onClick={() =>
-                            playAyah(
-                              ayah.numberInSurah,
-                              false
-                            )
-                          }
-                          className="
-                            mt-2
-                            rounded-lg
-                            btn-primary
-                            px-4 py-2
-                            text-xs
-                            font-semibold
-                          "
-                        >
-                          🔊 استماع للآية
-                        </button>
-                      </span>
-                    )}
-
-                    {" "}
-                  </span>
-                )
+                    {spreadRight.ayahs.map(renderBookAyah)}
+                  </div>
+                  <span className="book-page-num">{spreadRight.pageNo.toLocaleString("ar-EG")}</span>
+                </article>
               )}
-            </p>
+
+              {/* facing left leaf — later page (two-page spread on ≥1024px) */}
+              {spreadLeft && (
+                <article
+                  className={`book-page book-page-left book-leaf ${turnDir === "fwd" ? "turn-fwd" : "turn-back"}`}
+                  key={`l${spreadLeft.pageNo}`}
+                >
+                  <span className="book-page-frame" aria-hidden />
+                  <div
+                    ref={(el) => {
+                      if (el) {
+                        leafContentRef.current.set(`l${spreadLeft.pageNo}`, el);
+                        spreadLeft.ayahs.forEach((a) => ayahRefs.current.set(a.numberInSurah, el as unknown as HTMLSpanElement));
+                      }
+                    }}
+                    className={`book-leaf-text ${font}`}
+                    dir="rtl"
+                  >
+                    {spreadLeft.ayahs.map(renderBookAyah)}
+                  </div>
+                  <span className="book-page-num">{spreadLeft.pageNo.toLocaleString("ar-EG")}</span>
+                </article>
+              )}
+            </div>
+
+            {/* turn-zones (desktop) */}
+            <button
+              type="button"
+              className="book-edge-btn prev"
+              onClick={prevSpread}
+              disabled={bookSpread === 0}
+              aria-label="الورقة السابقة"
+              title="السابقة"
+            >
+              ›
+            </button>
+            <button
+              type="button"
+              className="book-edge-btn next"
+              onClick={nextSpread}
+              disabled={bookSpread >= spreadCount - 1}
+              aria-label="الورقة التالية"
+              title="التالية"
+            >
+              ‹
+            </button>
+
+            {/* book navigation bar */}
+            <div className="book-nav">
+              <button type="button" className="book-nav-btn ghost" onClick={prevSpread} disabled={bookSpread === 0}>
+                › الورقة السابقة
+              </button>
+              <span className="book-nav-indicator">
+                <span className="dot" />
+                {isTwoPage
+                  ? `صفحة المصحف ٠٠ · ورقة ${(bookSpread + 1).toLocaleString("ar-EG")} من ${spreadCount.toLocaleString("ar-EG")}`.replace("٠٠", (spreadRight?.pageNo ?? 0).toLocaleString("ar-EG"))
+                  : `صفحة المصحف ${(spreadRight?.pageNo ?? 0).toLocaleString("ar-EG")} · ${(bookSpread + 1).toLocaleString("ar-EG")} / ${spreadCount.toLocaleString("ar-EG")}`}
+              </span>
+              <button type="button" className="book-nav-btn" onClick={nextSpread} disabled={bookSpread >= spreadCount - 1}>
+                الورقة التالية ‹
+              </button>
+            </div>
           </div>
         )}
+
 
         {/* ===================================================
             CONTINUOUS SCROLL
