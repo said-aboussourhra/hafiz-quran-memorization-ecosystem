@@ -53,7 +53,6 @@ import {
 import { SURAHS } from "@/lib/surahs";
 import { getReciter as getRegistryReciter } from "@/lib/reciterRegistry";
 import { useAudioEngine } from "@/lib/audio/useAudioEngine";
-import { AudioControls } from "@/components/AudioControls";
 import { useHafiz } from "@/lib/hafiz/useHafiz";
 import { HafizPanel } from "@/components/hafiz/HafizPanel";
 import { MushafMenu } from "@/components/MushafMenu";
@@ -2806,12 +2805,6 @@ export function MushafReader({
             </div>
           </div>
         )}
-
-      {/* Exact-sync transport (Play/Pause/Prev/Next/Repeat/Speed/Seek/Sleep/AutoScroll).
-          Owned by useAudioEngine; hidden until a source is loaded. */}
-      {engine.state.status !== "idle" && (
-        <AudioControls engine={engine} />
-      )}
 
       {/* =====================================================
           FLOATING SIDE SHORTCUT — اختصار جانبي عائم

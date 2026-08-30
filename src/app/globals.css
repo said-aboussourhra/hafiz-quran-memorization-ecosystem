@@ -3053,7 +3053,7 @@ body {
 .book-open {
   position: relative;
   border-radius: clamp(20px, 2.6vw, 36px);
-  padding: clamp(12px, 1.8vw, 24px);
+  padding: clamp(10px, 1.4vw, 18px);
   background:
     radial-gradient(130% 80% at 50% -10%, rgba(52, 211, 153, .22), transparent 55%),
     radial-gradient(160% 120% at 50% 115%, rgba(37, 99, 235, .18), transparent 60%),
@@ -3138,8 +3138,8 @@ body {
     radial-gradient(70% 36% at 50% 0%, rgba(201, 164, 74, .10), transparent 70%),
     radial-gradient(90% 60% at 8% 100%, rgba(16, 185, 129, .05), transparent 70%),
     linear-gradient(180deg, #fffdf6 0%, #fbf4e0 58%, #f5ecd2 100%);
-  padding: clamp(1.4rem, 3.4vw, 2.8rem) clamp(1.4rem, 5.5vw, 4.8rem) clamp(4.2rem, 6.5vw, 5.8rem);
-  min-height: 68vh;
+  padding: clamp(1.1rem, 2.6vw, 2.2rem) clamp(1.2rem, 4.5vw, 4rem) clamp(3.4rem, 5vw, 4.6rem);
+  min-height: 60vh;
   overflow: hidden;
   border-radius: 8px 8px 18px 18px;
   box-shadow:
@@ -3173,15 +3173,15 @@ body {
   bottom: 13px;
   left: 50%;
   transform: translateX(-50%);
-  min-width: 36px;
-  height: 36px;
-  padding: 0 10px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 9px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 999px;
   font-family: var(--font-ui), sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
   color: #0a7468;
   background: radial-gradient(circle at 35% 30%, #fff 55%, #f6e9c2 100%);
@@ -3232,8 +3232,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: clamp(.5rem, 2vw, 1.1rem);
-  margin-top: clamp(.9rem, 2vw, 1.5rem);
+  gap: clamp(.45rem, 1.6vw, .9rem);
+  margin-top: clamp(.7rem, 1.6vw, 1.1rem);
   flex-wrap: wrap;
 }
 .book-nav-btn {
@@ -3242,8 +3242,8 @@ body {
   gap: .4rem;
   border: none;
   border-radius: 999px;
-  padding: .7rem 1.5rem;
-  font-size: .86rem;
+  padding: .52rem 1.15rem;
+  font-size: .8rem;
   font-weight: 800;
   color: #fff;
   cursor: pointer;
@@ -3269,10 +3269,10 @@ body {
 .book-nav-indicator {
   display: inline-flex;
   align-items: center;
-  gap: .5rem;
+  gap: .45rem;
   border-radius: 999px;
-  padding: .62rem 1.3rem;
-  font-size: .85rem;
+  padding: .46rem 1.05rem;
+  font-size: .78rem;
   font-weight: 800;
   color: #0a5d4b;
   background: linear-gradient(160deg, rgba(255, 255, 255, .97), rgba(246, 238, 216, .92));
