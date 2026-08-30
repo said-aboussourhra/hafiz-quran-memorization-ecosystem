@@ -123,7 +123,7 @@ export function Intro() {
     <div className={`intro-root ${phase === "noor" ? "noor" : ""} ${phase === "fadeout" ? "fade-out" : ""} ${glow ? "glow-burst" : ""}`} role="presentation">
       <audio
         ref={audioRef}
-        src={`https://everyayah.com/data/Yasser_Ad-Dussary_128kbps/${verse.audio}.mp3`}
+        src={verse.audioUrl}
         preload="auto"
         onEnded={() => setShowContinue(true)}
       />
@@ -197,7 +197,7 @@ export function Intro() {
         </div>
 
         <p className="intro-attribution mt-5 text-xs sm:text-sm tracking-[0.2em] text-[#4a6664]">
-          {verse.source} · بصوت الشيخ ياسر الدوسري
+          {verse.source} · بصوت {verse.reciter}
         </p>
 
         {/* ===== 4) زر «متابعة» أسفل الآية ===== */}

@@ -8,7 +8,6 @@ import { TOTAL_AYAHS } from "@/lib/surahs";
 import { VIRTUES } from "@/lib/virtues";
 import { AyahOfDayCard } from "@/components/AyahOfDayCard";
 import { DailyPlanCard } from "@/components/hafiz/DailyPlanCard";
-import { WelcomeRecitation } from "@/components/WelcomeRecitation";
 import { ayahOfToday } from "@/lib/ayahOfDay";
 
 export const dynamic = "force-dynamic";
@@ -101,11 +100,6 @@ export default async function HomePage() {
           <QuranUniverse surahs={universe} height={360} />
           {/* Mobile-tuned height; desktop can scale via the component's own viewBox */}
         </div>
-      </section>
-
-      {/* WELCOME RECITATION — تلاوة ترحيبية بأصوات القرّاء (حمزة بوديب، إسلام صبحي، محمد عبادة، شريف مصطفى) */}
-      <section className="mx-auto w-full max-w-3xl">
-        <WelcomeRecitation />
       </section>
 
       {/* STATS */}
