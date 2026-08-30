@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
   // shadow the real runtime value on Vercel.
   serverExternalPackages: ["drizzle-orm", "pg"],
   staticPageGenerationTimeout: 120,
+  // Allow the Arena preview proxy host for dev HMR / dev resources.
+  allowedDevOrigins: ["*.e2b.app"],
 };
 
 export default nextConfig;

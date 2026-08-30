@@ -27,14 +27,41 @@ export function OrnamentDivider({ label }: { label?: ReactNode }) {
   );
 }
 
-/** Four ornamental golden corners — drop inside any relatively-positioned card. */
-export function OrnamentCorners() {
+/**
+ * Royal Islamic arc corners — أقواس الزوايا الملكية ╭ ╮ ╰ ╯
+ * 36px elegant corner brackets with smooth hover motion.
+ * Drop inside any relatively-positioned card (.lift / .card-premium /
+ * .royal-frame all animate these on hover).
+ */
+export function RoyalCorners({ size = "md" }: { size?: "sm" | "md" }) {
+  const cls = size === "sm" ? "royal-corner rc-" : "royal-corner rc-";
   return (
     <>
-      <span className="corner tl" aria-hidden />
-      <span className="corner tr" aria-hidden />
-      <span className="corner bl" aria-hidden />
-      <span className="corner br" aria-hidden />
+      <span className={`${cls}tl`} aria-hidden>╭</span>
+      <span className={`${cls}tr`} aria-hidden>╮</span>
+      <span className={`${cls}bl`} aria-hidden>╰</span>
+      <span className={`${cls}br`} aria-hidden>╯</span>
+    </>
+  );
+}
+
+/** Legacy alias kept for any un-migrated markup — now renders royal arcs. */
+export function OrnamentCorners() {
+  return <RoyalCorners />;
+}
+
+/**
+ * Full standalone royal frame: solid 2px outer frame + double inner
+ * inset frame (emerald + gold) + four arc corners. Wrap a non-card
+ * surface (the element itself should carry the `.royal-frame` class).
+ */
+export function RoyalFrame({ children }: { children: ReactNode }) {
+  return (
+    <>
+      <span className="rf-line rf-inner" aria-hidden />
+      <span className="rf-line rf-inner-2" aria-hidden />
+      <RoyalCorners />
+      {children}
     </>
   );
 }
@@ -47,9 +74,8 @@ export function ArabesqueBg() {
 /** Basmala ornamental frame with corners — used on hero/intro headings. */
 export function BasmalaFrame({ children }: { children: ReactNode }) {
   return (
-    <div className="ornate-card relative inline-block px-6 py-4 sm:px-10 sm:py-6">
-      <OrnamentCorners />
-      {children}
+    <div className="royal-frame relative inline-block px-6 py-4 sm:px-10 sm:py-6">
+      <RoyalFrame>{children}</RoyalFrame>
     </div>
   );
 }

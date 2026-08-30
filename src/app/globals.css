@@ -18,10 +18,10 @@
   --color-ocean-600: #2563eb;
   --color-ocean-500: #3b82f6;
   --color-ocean-400: #60a5fa;
-  --font-arabic: var(--font-arabic), "Amiri", serif;
-  --font-quran: var(--font-quran), "Amiri Quran", "Amiri", serif;
-  --font-display: var(--font-display), serif;
-  --font-ui: var(--font-ui), sans-serif;
+  --font-arabic: "Amiri", "Scheherazade New", "Geeza Pro", "Tahoma", serif;
+  --font-quran: "Amiri Quran", "Amiri", "Scheherazade New", "Traditional Arabic", serif;
+  --font-display: "Reem Kufi", "Amiri", "Tahoma", sans-serif;
+  --font-ui: "Tajawal", "Segoe UI", system-ui, "Tahoma", sans-serif;
 }
 
 :root {
@@ -684,35 +684,7 @@ body::before {
 .mushaf-page.paper-night .mushaf-continuous-text { color: #d7ece4; }
 .mushaf-page.paper-night .mushaf-watermark { opacity: 0.18; }
 .mushaf-page.paper-night::before { border-color: rgba(16,185,129,0.30); }
-.mushaf-page.paper-night::after { border-color: rgba(96,165,250,0.20); }
-
-/* Reader dark chrome (toolbar + panels) */
-.reader-dark .mushaf-toolbar {
-  background: rgba(14, 26, 23, 0.92) !important;
-  border-color: rgba(16,185,129,0.18) !important;
-}
-.reader-dark .mushaf-toolbar button {
-  color: #cfe9df;
-}
-.reader-dark .mushaf-toolbar .bg-\[\#f4f8f5\],
-.reader-dark .mushaf-toolbar .bg-\[\#f7f5ec\] {
-  background: rgba(255,255,255,0.06) !important;
-}
-.reader-dark .mushaf-toolbar .bg-white {
-  background: rgba(255,255,255,0.08) !important;
-  color: #e6f4ee;
-}
-.reader-dark .mushaf-toolbar .text-slate-500,
-.reader-dark .mushaf-toolbar .text-slate-600,
-.reader-dark .mushaf-toolbar .text-slate-700,
-.reader-dark .mushaf-toolbar .text-slate-800,
-.reader-dark .mushaf-toolbar .text-slate-900 {
-  color: #cfe0da !important;
-}
-.reader-dark .mushaf-toolbar .border-slate-100 {
-  border-color: rgba(255,255,255,0.10) !important;
-}
-.reader-dark .mushaf-page .ayah-tafsir-inline,
+.mushaf-page.paper-night::after { border-color: rgba(96,165,250,0.20); }.reader-dark .mushaf-page .ayah-tafsir-inline,
 .reader-dark .mushaf-page .ayah-inline-actions .ayah-chip {
   background: rgba(255,255,255,0.06) !important;
   color: #d7ece4 !important;
@@ -1593,25 +1565,7 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .mushaf-page {
     padding: 2rem !important;
   }
-}/* ============================================================
-   MUSHAF READER STYLES
-   ============================================================ */
-
-/* شريط الأدوات الثابت */
-.mushaf-toolbar {
-  position: sticky;
-  top: 64px;
-  z-index: 30;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(184, 144, 47, 0.15);
-  border-radius: 16px;
-  padding: 8px 12px;
-  margin-bottom: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
 }
-
 /* أزرار التحكم */
 .mushaf-control-btn {
   min-width: 36px;
@@ -1712,12 +1666,6 @@ html, body { max-width: 100%; overflow-x: hidden; }
    ============================================================ */
 
 @media (max-width: 480px) {
-  .mushaf-toolbar {
-    top: 56px;
-    padding: 6px 8px;
-    border-radius: 12px;
-    gap: 4px;
-  }
   .mushaf-control-btn {
     min-width: 32px;
     min-height: 32px;
@@ -1902,24 +1850,6 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .mushaf-content.user-scrolling {
   scroll-behavior: auto;
 }
-
-/* تثبيت شريط الأدوات */
-.mushaf-toolbar {
-  position: sticky;
-  top: 64px;
-  z-index: 30;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(184, 144, 47, 0.15);
-  border-radius: 16px;
-  padding: 8px 12px;
-  margin-bottom: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
 /* أزرار التحكم - تعمل بشكل صحيح */
 .mushaf-control-btn {
   min-width: 36px;
@@ -2023,10 +1953,6 @@ html, body { max-width: 100%; overflow-x: hidden; }
     min-width: 2rem;
     font-size: 0.75rem;
   }
-  .mushaf-toolbar {
-    padding: 4px 6px;
-    gap: 2px;
-  }
 }
 
 /* هواتف متوسطة */
@@ -2043,9 +1969,6 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .achievement-card::after {
     inset: 8px;
     border-radius: 8px;
-  }
-  .mushaf-toolbar {
-    padding: 6px 8px;
   }
   .mushaf-control-btn {
     min-width: 34px;
@@ -2064,9 +1987,6 @@ html, body { max-width: 100%; overflow-x: hidden; }
     border-radius: 22px;
     padding: 1.25rem !important;
     min-height: 360px !important;
-  }
-  .mushaf-toolbar {
-    padding: 8px 10px;
   }
 }
 
@@ -2493,14 +2413,6 @@ body { -webkit-tap-highlight-color: transparent; }
   .mushaf-menu-panel { width: var(--mushaf-menu-w, 310px); }
 }
 
-/* Make the toolbar wrap comfortably on phones and the controls easy to tap */
-@media (max-width: 640px) {
-  .mushaf-toolbar { border-radius: 20px; padding: 0.5rem; }
-  .mushaf-toolbar button { min-height: 42px; }
-  /* Give the zoom stepper a touch-friendly footprint */
-  .mushaf-toolbar .grid.h-9 { height: 40px; width: 40px; }
-}
-
 /* ============================================================
    PREMIUM CARD & COLOR POLISH
    ============================================================ */
@@ -2688,4 +2600,836 @@ body {
 @media (max-width: 640px) {
   .card-premium { border-radius: 20px; }
   .icon-badge { border-radius: 15px; }
+}
+
+/* ============================================================
+   ROYAL ISLAMIC CARD FRAMING — نظام إطارات البطاقات الملكية الفاخرة
+   إطار خارجي مصمت 2px · إطار داخلي مزدوج زمردي/ذهبي · أقواس 36px
+   ============================================================ */
+:root {
+  --royal-ink: #0f172a;
+  --royal-emerald: #059669;
+  --royal-ruby: #be123c;
+  --grad-royal-badge: linear-gradient(145deg, #34d399 0%, #059669 40%, #0d9488 62%, #be123c 100%);
+  --shadow-royal:
+    0 2px 4px rgba(15, 23, 42, 0.06),
+    0 26px 58px -28px rgba(15, 23, 42, 0.38),
+    0 18px 42px -26px rgba(5, 150, 105, 0.42);
+}
+
+/* ---- Solid, firm outer frame on every premium surface ---- */
+.card-premium {
+  border: 2px solid var(--royal-ink);
+  border-radius: 26px;
+  box-shadow: var(--shadow-royal);
+}
+.card-premium:hover {
+  box-shadow:
+    0 2px 4px rgba(15, 23, 42, 0.08),
+    0 34px 72px -28px rgba(15, 23, 42, 0.42),
+    0 24px 52px -24px rgba(5, 150, 105, 0.48);
+}
+
+/* ---- Inner double inset frame: emerald line ---- */
+.card-premium::before {
+  inset: 7px;
+  padding: 0;
+  border: 1.5px solid rgba(16, 185, 129, 0.55);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 24%);
+  -webkit-mask: none;
+  mask: none;
+  transition: border-color 0.4s ease;
+}
+/* ---- Inner double inset frame: gold line + faint geometry ---- */
+.card-premium::after {
+  inset: 11px;
+  border: 1px solid rgba(201, 164, 74, 0.55);
+  border-radius: 14px;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(201, 164, 74, 0.03) 0 1px, transparent 1px 20px),
+    repeating-linear-gradient(-45deg, rgba(16, 185, 129, 0.028) 0 1px, transparent 1px 20px);
+  transition: border-color 0.4s ease;
+}
+.card-premium:hover::before { border-color: rgba(5, 150, 105, 0.9); }
+.card-premium:hover::after { border-color: rgba(201, 164, 74, 0.95); }
+
+/* ---- Base cards get the firm solid outer frame too ---- */
+.card {
+  border: 1.5px solid rgba(15, 23, 42, 0.78);
+}
+.card:hover { border-color: var(--royal-ink); }
+
+/* ============================================================
+   ROYAL CORNER ARCS — أقواس الزوايا ╭ ╮ ╰ ╯ (36px)
+   انسيابية الحركة عند التمرير
+   ============================================================ */
+.royal-corner {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-ui), sans-serif;
+  font-size: 34px;
+  font-weight: 400;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 6;
+  background: linear-gradient(135deg, #059669 0%, #b8902f 55%, #0f172a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 6px rgba(201, 164, 74, 0.5));
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), filter 0.4s ease, background 0.4s ease;
+}
+.rc-tl { top: -10px; left: -10px; }
+.rc-tr { top: -10px; right: -10px; }
+.rc-bl { bottom: -10px; left: -10px; }
+.rc-br { bottom: -10px; right: -10px; }
+
+.lift:hover .rc-tl,
+.card-premium:hover .rc-tl,
+.royal-frame:hover .rc-tl,
+.name-card:hover .rc-tl { transform: translate(-4px, -4px) scale(1.22) rotate(-7deg); }
+.lift:hover .rc-tr,
+.card-premium:hover .rc-tr,
+.royal-frame:hover .rc-tr,
+.name-card:hover .rc-tr { transform: translate(4px, -4px) scale(1.22) rotate(7deg); }
+.lift:hover .rc-bl,
+.card-premium:hover .rc-bl,
+.royal-frame:hover .rc-bl,
+.name-card:hover .rc-bl { transform: translate(-4px, 4px) scale(1.22) rotate(7deg); }
+.lift:hover .rc-br,
+.card-premium:hover .rc-br,
+.royal-frame:hover .rc-br,
+.name-card:hover .rc-br { transform: translate(4px, 4px) scale(1.22) rotate(-7deg); }
+
+.lift:hover .royal-corner,
+.card-premium:hover .royal-corner,
+.royal-frame:hover .royal-corner,
+.name-card:hover .royal-corner {
+  background: linear-gradient(135deg, #10b981 0%, #b8902f 45%, #be123c 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 4px 10px rgba(190, 18, 60, 0.45));
+}
+
+@media (max-width: 480px) {
+  .royal-corner { width: 27px; height: 27px; font-size: 26px; }
+  .rc-tl { top: -7px; left: -7px; }
+  .rc-tr { top: -7px; right: -7px; }
+  .rc-bl { bottom: -7px; left: -7px; }
+  .rc-br { bottom: -7px; right: -7px; }
+}
+
+/* ============================================================
+   STANDALONE ROYAL FRAME — for surfaces that are not .card-premium
+   (e.g. the Ayah-of-the-Day shareable card, hero panels)
+   ============================================================ */
+.royal-frame {
+  position: relative;
+  border: 2px solid var(--royal-ink);
+  border-radius: 26px;
+  isolation: isolate;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease;
+}
+.royal-frame .rf-line {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+  transition: border-color 0.4s ease;
+}
+.royal-frame .rf-inner {
+  inset: 7px;
+  border: 1.5px solid rgba(16, 185, 129, 0.55);
+  border-radius: 18px;
+}
+.royal-frame .rf-inner-2 {
+  inset: 11px;
+  border: 1px solid rgba(201, 164, 74, 0.55);
+  border-radius: 14px;
+}
+.royal-frame:hover .rf-inner { border-color: rgba(5, 150, 105, 0.9); }
+.royal-frame:hover .rf-inner-2 { border-color: rgba(201, 164, 74, 0.95); }
+.royal-frame > *:not(.rf-line):not(.royal-corner) { position: relative; z-index: 2; }
+
+/* ============================================================
+   ROYAL 3D GLOWING BADGES — شارات دائرية ثلاثية الأبعاد متوهجة
+   تدرّج زمردي → ياقوتي
+   ============================================================ */
+.royal-badge {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: #ffffff;
+  background:
+    radial-gradient(120% 120% at 28% 22%, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 46%),
+    var(--grad-royal-badge);
+  box-shadow:
+    0 14px 30px -10px rgba(190, 18, 60, 0.5),
+    0 10px 24px -12px rgba(5, 150, 105, 0.62),
+    inset 0 2px 3px rgba(255, 255, 255, 0.55),
+    inset 0 -7px 14px rgba(15, 23, 42, 0.32);
+  text-shadow: 0 1px 2px rgba(15, 23, 42, 0.4);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease;
+}
+.royal-badge::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  z-index: -1;
+  border-radius: inherit;
+  background: conic-gradient(
+    from 120deg,
+    rgba(16, 185, 129, 0.7),
+    rgba(201, 164, 74, 0.55),
+    rgba(190, 18, 60, 0.65),
+    rgba(16, 185, 129, 0.7)
+  );
+  filter: blur(9px);
+  opacity: 0.45;
+  transition: opacity 0.4s ease;
+}
+.group:hover .royal-badge,
+.lift:hover .royal-badge,
+.royal-badge:hover {
+  transform: translateY(-3px) scale(1.1) rotate(-4deg);
+}
+.group:hover .royal-badge::before,
+.lift:hover .royal-badge::before,
+.royal-badge:hover::before { opacity: 0.95; }
+
+/* ============================================================
+   ROYAL MUSHAF PAGE — إطار الصفحة والزوايا (وضع القراءة المستمرة)
+   ============================================================ */
+
+/* Outer solid frame + emerald/gold double inset on the page */
+.mushaf-page:not(.paper-night) {
+  outline: 2px solid var(--royal-ink);
+  outline-offset: -2px;
+}
+.mushaf-page:not(.paper-night)::before {
+  border-color: rgba(16, 185, 129, 0.6);
+}
+.mushaf-page:not(.paper-night)::after {
+  border-color: rgba(201, 164, 74, 0.55);
+}
+.mushaf-page.paper-night {
+  outline-color: rgba(16, 185, 129, 0.55);
+}
+
+/* Arc corners on the open mushaf page replace the old L-brackets */
+.mushaf-corner {
+  border: 0 !important;
+  width: 40px !important;
+  height: 40px !important;
+  display: grid;
+  place-items: center;
+  border-radius: 0 !important;
+  font-family: var(--font-ui), sans-serif;
+  font-size: 40px;
+  font-weight: 400;
+  line-height: 1;
+  color: #a8802f;
+  text-shadow:
+    0 0 10px rgba(201, 164, 74, 0.55),
+    0 2px 5px rgba(15, 23, 42, 0.35);
+  pointer-events: none;
+  z-index: 5;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), color 0.3s ease;
+}
+.mushaf-page:hover .mushaf-corner { color: #0f172a; }
+.mushaf-page:hover .mushaf-corner.top-3.left-3 { transform: translate(-3px, -3px) scale(1.12) rotate(-6deg); }
+.mushaf-page:hover .mushaf-corner.top-3.right-3 { transform: translate(3px, -3px) scale(1.12) rotate(6deg); }
+.mushaf-page:hover .mushaf-corner.bottom-3.left-3 { transform: translate(-3px, 3px) scale(1.12) rotate(6deg); }
+.mushaf-page:hover .mushaf-corner.bottom-3.right-3 { transform: translate(3px, 3px) scale(1.12) rotate(-6deg); }
+.mushaf-corner::before { font-family: var(--font-ui), sans-serif; }
+.mushaf-corner.top-3.left-3::before { content: "\256D"; }  /* ╭ */
+.mushaf-corner.top-3.right-3::before { content: "\256E"; } /* ╮ */
+.mushaf-corner.bottom-3.left-3::before { content: "\2570"; } /* ╰ */
+.mushaf-corner.bottom-3.right-3::before { content: "\2571"; } /* ╯ */
+.paper-night .mushaf-corner { color: #d9b45c; }
+
+/* Reciter availability badges inside the reader menu */
+.reciter-avail {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.reciter-avail::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+}
+.reciter-avail-ayah { background: rgba(16, 185, 129, 0.12); color: #047857; }
+.reciter-avail-surah { background: rgba(37, 99, 235, 0.12); color: #1d4ed8; }
+.reciter-avail-none { background: rgba(100, 116, 139, 0.14); color: #64748b; }
+.reciter-row-unavailable { opacity: 0.55; }
+
+/* ============================================================
+   AYAH OF THE DAY — crown jewel arcs (gold on royal night)
+   ============================================================ */
+.aod-corner {
+  width: 40px;
+  height: 40px;
+  font-size: 40px;
+  background: linear-gradient(135deg, #f6e3a1 0%, #c9a44a 50%, #34d399 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 10px rgba(246,227,161,.55));
+  z-index: 5;
+}
+.aod-card:hover .aod-corner { transform: scale(1.12); }
+.aod-card:hover .rc-tl { transform: translate(-3px,-3px) scale(1.25) rotate(-8deg); }
+.aod-card:hover .rc-tr { transform: translate(3px,-3px) scale(1.25) rotate(8deg); }
+.aod-card:hover .rc-bl { transform: translate(-3px,3px) scale(1.25) rotate(8deg); }
+.aod-card:hover .rc-br { transform: translate(3px,3px) scale(1.25) rotate(-8deg); }
+
+
+/* ============================================================
+   ROYAL QUICK FAB + SLIDE PANEL — اختصار جانبي عائم للمصحف
+   ============================================================ */
+.reader-fab {
+  position: fixed;
+  left: calc(12px + env(safe-area-inset-left));
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 140;
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  border: 2px solid rgba(246, 227, 161, .65);
+  background:
+    radial-gradient(120% 120% at 30% 22%, rgba(255,255,255,.35), rgba(255,255,255,0) 50%),
+    linear-gradient(135deg, #0d9488 0%, #059669 45%, #1d4ed8 100%);
+  box-shadow:
+    0 16px 36px -12px rgba(5, 150, 105, .7),
+    inset 0 2px 3px rgba(255,255,255,.4);
+  cursor: pointer;
+  transition: transform .3s cubic-bezier(.22,1,.36,1), box-shadow .3s ease;
+}
+.reader-fab:hover { transform: translateY(-50%) scale(1.08); box-shadow: 0 20px 44px -12px rgba(37,99,235,.65), inset 0 2px 3px rgba(255,255,255,.4); }
+.reader-fab:active { transform: translateY(-50%) scale(.96); }
+.reader-fab svg { width: 26px; height: 26px; }
+
+.reader-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 195;
+  background: rgba(7, 22, 18, .45);
+  backdrop-filter: blur(2px);
+  animation: fadeIn .25s ease both;
+}
+.reader-drawer {
+  position: fixed;
+  top: 0; bottom: 0;
+  left: 0;
+  z-index: 196;
+  width: min(340px, 88vw);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 18px 16px calc(24px + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, #ffffff, #f4fbf8);
+  box-shadow: 18px 0 60px -20px rgba(4, 30, 24, .5);
+  animation: drawerIn .34s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes drawerIn { from { transform: translateX(-105%); } to { transform: translateX(0); } }
+.reader-drawer .rd-section { margin-bottom: 16px; }
+.reader-drawer .rd-title {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .05em;
+  color: #047857;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.reader-drawer .rd-title::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(16,185,129,.4), transparent); }
+.reader-drawer .rd-seg {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 4px;
+  border-radius: 16px;
+  background: #eef7f4;
+}
+.reader-drawer .rd-seg button {
+  border: none;
+  border-radius: 12px;
+  padding: 10px 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #4a6664;
+  background: transparent;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+.reader-drawer .rd-seg button.active {
+  background: #fff;
+  color: #047857;
+  box-shadow: 0 4px 12px -6px rgba(5,150,105,.4);
+}
+.reader-drawer .rd-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid rgba(16,185,129,.16);
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e3d40;
+  cursor: pointer;
+  transition: border-color .2s ease, background .2s ease;
+}
+.reader-drawer .rd-row:hover { border-color: rgba(16,185,129,.5); background: #f0faf6; }
+.reader-drawer .rd-btn {
+  width: 100%;
+  border: none;
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform .15s ease, filter .15s ease;
+}
+.reader-drawer .rd-btn:active { transform: scale(.98); }
+.reader-drawer .rd-btn-play { background: linear-gradient(120deg,#10b981,#2563eb); box-shadow: 0 10px 24px -10px rgba(5,150,105,.6); }
+.reader-drawer .rd-btn-stop { background: linear-gradient(120deg,#ef4444,#be123c); }
+.reader-drawer .rd-btn-hafiz { background: linear-gradient(120deg,#0d9488,#2563eb); box-shadow: 0 10px 24px -10px rgba(37,99,235,.55); }
+.reader-drawer .rd-jump {
+  width: 100%;
+  border: 1px solid rgba(15,42,44,.12);
+  border-radius: 12px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  outline: none;
+  background: #fff;
+  color: #1e3d40;
+}
+.reader-drawer .rd-jump:focus { border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,.14); }
+
+@media (max-width: 640px) {
+  .reader-fab {
+    top: auto;
+    bottom: calc(96px + env(safe-area-inset-bottom));
+    transform: none;
+    width: 52px;
+    height: 52px;
+  }
+  .reader-fab:hover { transform: scale(1.08); }
+}
+
+/* ============================================================
+   ROYAL OPEN BOOK — المصحف الشريف كتاب مفتوح
+   غلاف جلدي مخملي + ورقة مصحف واحدة تُقلَب ورقةً ورقة.
+   تصميم نظيف: لا خط فاصل، لا عناصر زائدة — إطار ذهبي رفيع فقط.
+   ============================================================ */
+
+/* الغلاف الجلدي الخارجي */
+.book-open {
+  position: relative;
+  border-radius: clamp(20px, 2.6vw, 36px);
+  padding: clamp(10px, 1.4vw, 18px);
+  background:
+    radial-gradient(130% 80% at 50% -10%, rgba(52, 211, 153, .22), transparent 55%),
+    radial-gradient(160% 120% at 50% 115%, rgba(37, 99, 235, .18), transparent 60%),
+    linear-gradient(155deg, #14532d 0%, #0c3b2e 42%, #082a22 78%, #062018 100%);
+  border: 1px solid rgba(201, 164, 74, .35);
+  box-shadow:
+    0 46px 90px -38px rgba(3, 24, 19, .85),
+    0 18px 42px -24px rgba(3, 24, 19, .55),
+    inset 0 1px 2px rgba(255, 255, 255, .14),
+    inset 0 -4px 10px rgba(0, 0, 0, .45);
+  isolation: isolate;
+}
+/* إطار ذهبي رفيع داخل الغلاف */
+.book-open::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border-radius: clamp(13px, 2vw, 28px);
+  border: 1.5px solid rgba(214, 178, 96, .5);
+  box-shadow: inset 0 0 0 1px rgba(214, 178, 96, .14);
+  pointer-events: none;
+  z-index: 3;
+}
+/* توهج زخرفي أعلى الغلاف */
+.book-open::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 12%; right: 12%;
+  height: 38%;
+  border-radius: 0 0 50% 50% / 0 0 100% 100%;
+  background: radial-gradient(60% 100% at 50% 0%, rgba(246, 227, 161, .10), transparent 75%);
+  pointer-events: none;
+  z-index: 0;
+}
+.book-open-inner {
+  position: relative;
+  z-index: 1;
+  border-radius: clamp(11px, 1.6vw, 22px);
+  overflow: hidden;
+}
+/* صفحة الـ mushaf داخل الكتاب تصبح حاملة شفافة فقط في وضع الكتاب */
+.book-open-inner .mushaf-page.is-book {
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  padding: 0 !important;
+  max-width: none !important;
+  overflow: visible;
+}
+.book-open-inner .mushaf-page.is-book::before,
+.book-open-inner .mushaf-page.is-book::after { display: none; }
+/* زوايا الأقواس تُخفى داخل الكتاب (الإطار الذهبي للورقة يكفي) */
+.book-open-inner .mushaf-corner { display: none !important; }
+
+/* حافّات أوراق الكتاب المكدّسة (اليمين = بداية المصحف في RTL) */
+.book-edges {
+  position: absolute;
+  top: 26px;
+  bottom: 70px;
+  right: 5px;
+  width: 10px;
+  z-index: 4;
+  pointer-events: none;
+  border-radius: 5px;
+  background:
+    repeating-linear-gradient(90deg,
+      rgba(133, 101, 42, .35) 0 1px,
+      rgba(255, 251, 238, .95) 1px 3px);
+  box-shadow:
+    0 0 0 1px rgba(201, 164, 74, .3),
+    -2px 0 8px -4px rgba(0, 0, 0, .5);
+}
+
+/* مسرح الكتاب */
+.book-stage { position: relative; padding: clamp(8px, 2vw, 22px); }
+.book-spread { display: block; position: relative; }
+
+/* الورقة الواحدة */
+.book-page {
+  position: relative;
+  background:
+    radial-gradient(70% 36% at 50% 0%, rgba(201, 164, 74, .10), transparent 70%),
+    radial-gradient(90% 60% at 8% 100%, rgba(16, 185, 129, .05), transparent 70%),
+    linear-gradient(180deg, #fffdf6 0%, #fbf4e0 58%, #f5ecd2 100%);
+  padding: clamp(1.1rem, 2.6vw, 2.2rem) clamp(1.2rem, 4.5vw, 4rem) clamp(3.4rem, 5vw, 4.6rem);
+  min-height: 60vh;
+  overflow: hidden;
+  border-radius: 8px 8px 18px 18px;
+  box-shadow:
+    0 24px 46px -22px rgba(20, 24, 18, .45),
+    0 4px 14px -8px rgba(20, 24, 18, .3),
+    inset 0 0 0 1px rgba(201, 164, 74, .25),
+    inset 0 1px 0 rgba(255, 255, 255, .85);
+}
+@media (min-width: 1024px) { .book-page { min-height: 76vh; } }
+
+/* إطار الورقة الذهبي المزدوج الرفيع */
+.book-page-frame {
+  position: absolute;
+  inset: 9px;
+  border: 1.5px solid rgba(184, 134, 11, .55);
+  border-radius: 9px;
+  pointer-events: none;
+  z-index: 1;
+}
+.book-page-frame::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 1px solid rgba(16, 185, 129, .28);
+  border-radius: 6px;
+}
+
+/* رقم الصفحة في وردة سفلية وسطى */
+.book-page-num {
+  position: absolute;
+  bottom: 13px;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 32px;
+  height: 32px;
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-family: var(--font-ui), sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  color: #0a7468;
+  background: radial-gradient(circle at 35% 30%, #fff 55%, #f6e9c2 100%);
+  border: 1.5px solid rgba(201, 164, 74, .65);
+  box-shadow: 0 3px 10px -3px rgba(120, 90, 30, .55);
+  z-index: 3;
+}
+
+/* نص الورقة */
+.book-leaf-text {
+  position: relative;
+  z-index: 2;
+  font-family: var(--font-quran);
+  color: #241c0c;
+  text-align: justify;
+  text-align-last: center;
+  text-justify: inter-word;
+  line-height: 2.35;
+  word-spacing: .02em;
+  transition: font-size .18s ease;
+}
+.book-page .ayah-rosette,
+.book-page .ayah-marker { font-size: .62em; }
+
+/* حركة تقليب الورقة */
+.book-leaf {
+  animation-duration: .55s;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+.book-leaf.turn-fwd { animation-name: bookFlipNext; transform-origin: right center; }
+.book-leaf.turn-back { animation-name: bookFlipPrev; transform-origin: left center; }
+@keyframes bookFlipNext {
+  0%   { opacity: 0; transform: perspective(2200px) rotateY(-34deg) translateX(60px); }
+  55%  { opacity: 1; }
+  100% { opacity: 1; transform: perspective(2200px) rotateY(0) translateX(0); }
+}
+@keyframes bookFlipPrev {
+  0%   { opacity: 0; transform: perspective(2200px) rotateY(34deg) translateX(-60px); }
+  55%  { opacity: 1; }
+  100% { opacity: 1; transform: perspective(2200px) rotateY(0) translateX(0); }
+}
+
+/* شريط التنقل السفلي */
+.book-nav {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(.45rem, 1.6vw, .9rem);
+  margin-top: clamp(.7rem, 1.6vw, 1.1rem);
+  flex-wrap: wrap;
+}
+.book-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  border: none;
+  border-radius: 999px;
+  padding: .52rem 1.15rem;
+  font-size: .8rem;
+  font-weight: 800;
+  color: #fff;
+  cursor: pointer;
+  background: linear-gradient(120deg, #10b981, #0d9488 45%, #2563eb);
+  box-shadow:
+    0 12px 26px -12px rgba(5, 150, 105, .7),
+    inset 0 1px 0 rgba(255, 255, 255, .32);
+  transition: transform .2s cubic-bezier(.22,1,.36,1), filter .2s, box-shadow .2s;
+}
+.book-nav-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.07);
+  box-shadow: 0 16px 30px -12px rgba(5, 150, 105, .8), inset 0 1px 0 rgba(255,255,255,.32);
+}
+.book-nav-btn:active:not(:disabled) { transform: scale(.97); }
+.book-nav-btn:disabled { opacity: .35; cursor: default; box-shadow: none; }
+.book-nav-btn.ghost {
+  background: linear-gradient(160deg, #fffdf4, #f3e9cf);
+  color: #0a5d4b;
+  border: 1.5px solid rgba(201, 164, 74, .6);
+  box-shadow: 0 8px 20px -12px rgba(120, 90, 30, .65);
+}
+.book-nav-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  border-radius: 999px;
+  padding: .46rem 1.05rem;
+  font-size: .78rem;
+  font-weight: 800;
+  color: #0a5d4b;
+  background: linear-gradient(160deg, rgba(255, 255, 255, .97), rgba(246, 238, 216, .92));
+  border: 1.5px solid rgba(201, 164, 74, .55);
+  box-shadow: 0 8px 20px -12px rgba(120, 90, 30, .6);
+  white-space: nowrap;
+}
+.book-nav-indicator .dot {
+  width: 7px; height: 7px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #10b981, #2563eb);
+}
+
+/* مناطق التقليب غير المرئية على حواف الورقة (شاشات اللمس تُستثنى) */
+.book-edge-btn {
+  position: absolute;
+  top: 14%;
+  bottom: 14%;
+  z-index: 6;
+  width: clamp(36px, 5vw, 66px);
+  display: grid;
+  place-items: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1.7rem;
+  font-weight: 900;
+  color: rgba(10, 93, 75, 0);
+  border-radius: 18px;
+  transition: background .25s ease, color .25s ease;
+}
+.book-edge-btn:hover:not(:disabled) {
+  background: radial-gradient(closest-side, rgba(201, 164, 74, .18), transparent 80%);
+  color: rgba(10, 93, 75, .6);
+}
+.book-edge-btn:disabled { display: none; }
+.book-edge-btn.prev { left: 8px; }
+.book-edge-btn.next { right: 8px; }
+@media (max-width: 768px) { .book-edge-btn { display: none; } }
+
+/* الوضع الليلي: غلاف وورقة داكنان */
+.book-open:has(.paper-night) {
+  background:
+    radial-gradient(130% 80% at 50% -10%, rgba(45, 212, 191, .12), transparent 55%),
+    linear-gradient(155deg, #132a3c 0%, #0b1e2c 45%, #060f18 100%);
+}
+.book-open:has(.paper-night) .book-page {
+  background:
+    radial-gradient(70% 36% at 50% 0%, rgba(217, 180, 92, .08), transparent 70%),
+    linear-gradient(180deg, #12231f 0%, #0d1a16 100%);
+  box-shadow:
+    0 24px 46px -22px rgba(0, 0, 0, .7),
+    inset 0 0 0 1px rgba(217, 180, 92, .22);
+}
+.book-open:has(.paper-night) .book-leaf-text { color: #d8ece3; }
+.book-open:has(.paper-night) .book-page-frame { border-color: rgba(217, 180, 92, .5); }
+.book-open:has(.paper-night) .book-page-frame::before { border-color: rgba(16, 185, 129, .3); }
+.book-open:has(.paper-night) .book-page-num {
+  background: radial-gradient(circle at 35% 30%, #162722 55%, #0c1713 100%);
+  color: #f3dd9b;
+  border-color: rgba(217, 180, 92, .7);
+}
+.book-open:has(.paper-night) .book-edges {
+  background: repeating-linear-gradient(90deg,
+    rgba(217, 180, 92, .3) 0 1px,
+    rgba(30, 48, 42, .95) 1px 3px);
+}
+
+/* ============================================================
+   AYAH OF THE DAY — فخم فاتح (bright royal luxury)
+   ============================================================ */
+.aod-light {
+  background:
+    radial-gradient(900px 480px at 50% -8%, rgba(255,244,214,.95), transparent 60%),
+    radial-gradient(700px 500px at 88% 108%, rgba(16,185,129,.14), transparent 60%),
+    radial-gradient(700px 500px at 8% 108%, rgba(37,99,235,.10), transparent 60%),
+    linear-gradient(160deg, #fffef9 0%, #fdf6e7 55%, #f6efdd 100%) !important;
+  box-shadow:
+    0 40px 90px -40px rgba(120, 90, 30, .45),
+    0 18px 44px -28px rgba(5, 150, 105, .35),
+    inset 0 1px 0 rgba(255,255,255,.9);
+}
+.aod-light .rf-inner { border-color: rgba(201,164,74,.8) !important; }
+.aod-light .rf-inner-2 { border-color: rgba(5,150,105,.45) !important; }
+.aod-light .aod-corner {
+  background: linear-gradient(135deg, #059669 0%, #0d9488 55%, #c9a44a 100%);
+  -webkit-background-clip: text; background-clip: text;
+  filter: drop-shadow(0 2px 8px rgba(5,150,105,.35));
+}
+.aod-medallion {
+  background: conic-gradient(from 0deg, #f6e3a1, #c9a44a, #8a6a24, #f6e3a1);
+  box-shadow: 0 0 0 3px rgba(255,253,244,1), 0 0 30px rgba(201,164,74,.55);
+}
+.aod-title {
+  background: linear-gradient(120deg, #047857, #0d9488 45%, #b8860b);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.aod-ayah { color: #07352a !important; text-shadow: 0 1px 0 rgba(255,255,255,.7) !important; }
+.aod-ayah .bracket { color: #c9a44a; text-shadow: 0 0 18px rgba(201,164,74,.4) !important; }
+.aod-ref {
+  background: linear-gradient(120deg,#059669,#0d9488 50%,#1d4ed8) !important;
+  -webkit-background-clip: text; background-clip: text; color: transparent !important;
+  filter: drop-shadow(0 1px 2px rgba(5,150,105,.2));
+}
+.aod-tafsir {
+  background: linear-gradient(160deg, rgba(255,255,255,.85), rgba(236,250,245,.7)) !important;
+  border-color: rgba(201,164,74,.5) !important;
+  color: #1e4d44 !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 14px 34px -22px rgba(5,150,105,.4) !important;
+  backdrop-filter: none !important;
+}
+.aod-btn-gold {
+  border-color: rgba(201,164,74,.9) !important;
+  color: #8a6a24 !important;
+  background: linear-gradient(160deg,#fffdf4,#f6ecd2) !important;
+  box-shadow: 0 14px 34px -16px rgba(120,90,30,.55), inset 0 1px 0 rgba(255,255,255,.9) !important;
+  backdrop-filter: none !important;
+}
+
+/* ---- paged book: the outer mushaf-page shell becomes a neutral
+   holder; the ivory leaves carry the paper look ---- */
+.mushaf-page.is-book {
+  padding: 4px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+.mushaf-page.is-book::before,
+.mushaf-page.is-book::after { display: none; }
+.book-stage { padding: clamp(10px, 2.5vw, 26px); }
+
+.book-leaf-text {
+  position: relative;
+  z-index: 2;
+  font-family: var(--font-quran);
+  color: #241c0c;
+  text-align: justify;
+  text-align-last: center;
+  text-justify: inter-word;
+  line-height: 2.35;
+  word-spacing: 0.02em;
+  transition: font-size .18s ease;
+}
+.book-page .ayah-rosette,
+.book-page .ayah-marker { font-size: .62em; }
+
+/* night reading leaves */
+.book-open:has(.paper-night) .book-page {
+  background:
+    radial-gradient(80% 50% at 50% 0%, rgba(16,185,129,.05), transparent 70%),
+    linear-gradient(180deg,#12231f 0%, #0d1a16 100%) !important;
+}
+.book-open:has(.paper-night) .book-leaf-text { color: #d8ece3; }
+.book-open:has(.paper-night) .book-page-frame { border-color: rgba(217,180,92,.5); }
+.book-open:has(.paper-night) .book-page-frame::after { border-color: rgba(16,185,129,.3); }
+.book-open:has(.paper-night) .book-page-num {
+  background: radial-gradient(circle,#14231f 58%, rgba(217,180,92,.25) 100%);
+  color: #f3dd9b;
+  border-color: rgba(217,180,92,.7);
 }

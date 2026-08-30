@@ -4,60 +4,11 @@ import { PWARegister } from "@/components/PWARegister";
 import { IdleDhikr } from "@/components/IdleDhikr";
 import { MagneticCards } from "@/components/MagneticCards";
 
-import { Amiri, Amiri_Quran, Reem_Kufi, Tajawal, Scheherazade_New, Noto_Naskh_Arabic, Markazi_Text } from "next/font/google";
 import "./globals.css";
+import "./fonts.css";
 import { SiteChrome } from "@/components/SiteChrome";
 import { Intro } from "@/components/Intro";
 import { getCurrentUser } from "@/lib/auth";
-
-const amiri = Amiri({
-  subsets: ["arabic"],
-  weight: ["400", "700"],
-  variable: "--font-arabic",
-  display: "swap",
-});
-
-const amiriQuran = Amiri_Quran({
-  subsets: ["arabic"],
-  weight: ["400"],
-  variable: "--font-quran",
-  display: "swap",
-});
-
-const scheherazade = Scheherazade_New({
-  subsets: ["arabic"],
-  weight: ["400", "700"],
-  variable: "--font-quran-kfgqpc",
-  display: "swap",
-});
-
-const notoNaskh = Noto_Naskh_Arabic({
-  subsets: ["arabic"],
-  weight: ["400", "700"],
-  variable: "--font-quran-naskh",
-  display: "swap",
-});
-
-const markazi = Markazi_Text({
-  subsets: ["arabic"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-quran-markazi",
-  display: "swap",
-});
-
-const reem = Reem_Kufi({
-  subsets: ["arabic"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-display",
-  display: "swap",
-});
-
-const tajawal = Tajawal({
-  subsets: ["arabic"],
-  weight: ["300", "400", "500", "700"],
-  variable: "--font-ui",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "حافظ — رحلتك مع القرآن الكريم",
@@ -82,10 +33,33 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
+/**
+ * Fonts: we expose the same CSS variable contract the app already uses
+ * (--font-arabic / --font-quran / --font-display / --font-ui …).
+ *
+ * The Arabic web fonts are loaded progressively via a <link> to Google
+ * Fonts CDN (added in <head> below). System Arabic serif/sans stacks are
+ * used as fallbacks, so the UI NEVER depends on a font network fetch at
+ * build or runtime — this keeps `next build` hermetic and resilient.
+ */
+const fontVars =
+  "font-arabic font-quran font-quran-kfgqpc font-quran-naskh font-quran-markazi font-display font-ui";
+
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const user = await getCurrentUser();
   return (
-    <html lang="ar" dir="rtl" className={`${amiri.variable} ${amiriQuran.variable} ${scheherazade.variable} ${notoNaskh.variable} ${markazi.variable} ${reem.variable} ${tajawal.variable}`}>
+    <html lang="ar" dir="rtl" className={fontVars}>
+      <head>
+        {/* Progressive enhancement: load real Arabic web fonts from CDN.
+            If the network is unavailable (offline / restricted build env),
+            the system fallbacks defined in fonts.css take over seamlessly. */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Amiri+Quran&family=Scheherazade+New:wght@400;700&family=Noto+Naskh+Arabic:wght@400;700&family=Markazi+Text:wght@400;500;600;700&family=Reem+Kufi:wght@400;500;600;700&family=Tajawal:wght@300;400;500;700&display=swap"
+        />
+      </head>
       <body className="min-h-screen antialiased">
         <PWARegister />
         <MagneticCards />

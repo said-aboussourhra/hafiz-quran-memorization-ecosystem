@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { QuranUniverse } from "@/components/QuranUniverse";
-import { ArabesqueBg, OrnamentCorners, OrnamentDivider, OrnamentStar } from "@/components/Ornament";
+import { ArabesqueBg, RoyalCorners, OrnamentDivider, OrnamentStar } from "@/components/Ornament";
 import { getCurrentUser } from "@/lib/auth";
 import { getUniverseData, getProgressStats } from "@/lib/progress";
 import { TOTAL_AYAHS } from "@/lib/surahs";
@@ -111,8 +111,8 @@ export default async function HomePage() {
           { v: user ? `${stats.completionPct}٪` : "ابدأ", l: user ? "نسبة إتمامك" : "رحلتك الآن", icon: "🌙" },
         ].map((s, i) => (
           <div key={s.l} className="pop lift card-premium shine ornate-card relative overflow-hidden p-5 text-center sm:p-6" style={{ animationDelay: `${i * 90}ms` }}>
-            <OrnamentCorners />
-            <div className="mx-auto mb-2 grid h-10 w-10 place-items-center rounded-2xl text-lg text-white shadow-md sm:h-11 sm:w-11" style={{ background: i % 2 ? "var(--grad-sapphire)" : "var(--grad-gold)" }}>{s.icon}</div>
+            <RoyalCorners />
+            <div className="royal-badge mx-auto mb-3 h-12 w-12 text-xl sm:h-14 sm:w-14 sm:text-2xl">{s.icon}</div>
             <div className="font-display text-2xl font-extrabold stat-num sm:text-3xl">{s.v}</div>
             <div className="mt-1 text-[11px] font-semibold text-ink-500 sm:text-xs">{s.l}</div>
           </div>
@@ -124,9 +124,18 @@ export default async function HomePage() {
         <DailyPlanCard />
       </section>
 
-      {/* AYAH OF THE DAY — shareable */}
-      <section>
-        <AyahOfDayCard ayah={ayahOfToday()} />
+      {/* AYAH OF THE DAY — the crown jewel, pinnacle of luxury */}
+      <section className="relative">
+        <ArabesqueBg />
+        <div className="relative text-center">
+          <p className="eyebrow justify-center">آية اليوم</p>
+          <h2 className="mt-3 font-display section-title text-ink-900">بطاقة آية اليوم — جوهرة يومك القرآنية</h2>
+          <p className="mx-auto mt-3 max-w-xl text-ink-500">تحفة فاخرة بدقة ١٠٨٠×١٠٨٠، بإطار ملكي ذهبي وتوهّج زمردي — شاركها أو نزّلها بلمسة واحدة.</p>
+          <OrnamentDivider />
+        </div>
+        <div className="relative mt-8">
+          <AyahOfDayCard ayah={ayahOfToday()} />
+        </div>
       </section>
 
       {/* VIRTUES OF READING QURAN */}
@@ -141,7 +150,7 @@ export default async function HomePage() {
         <div className="relative mt-6 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {VIRTUES.slice(0, 6).map((v, i) => (
             <div key={i} className="lift group shine card-premium ornate-card relative overflow-hidden p-5 sm:p-7">
-              <OrnamentCorners />
+              <RoyalCorners />
               <span className="absolute -left-3 -top-5 text-7xl text-emerald-500/10">”</span>
               <span className={`inline-block rounded-full px-3 py-1 text-[11px] font-semibold ${v.kind === "ayah" ? "bg-emerald-700/10 text-emerald-700" : "bg-ocean-600/10 text-ocean-700"}`}>
                 {v.kind === "ayah" ? "آية كريمة" : "حديث شريف"}
@@ -163,9 +172,9 @@ export default async function HomePage() {
         <div className="mt-6 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map((f) => (
             <div key={f.title} className="lift group shine card-premium ornate-card relative overflow-hidden p-5 sm:p-7">
-              <OrnamentCorners />
+              <RoyalCorners />
               <div className="absolute -left-6 -top-6 font-arabic text-7xl text-emerald-500/10 transition group-hover:text-ocean-500/15">{f.glyph}</div>
-              <div className="icon-badge emerald h-12 w-12 text-2xl">{f.glyph}</div>
+              <div className="royal-badge h-14 w-14 text-2xl">{f.glyph}</div>
               <h3 className="mt-4 font-display text-xl font-bold text-ink-900">{f.title}</h3>
               <p className="mt-3 text-sm leading-relaxed text-ink-700">{f.body}</p>
             </div>
@@ -176,8 +185,8 @@ export default async function HomePage() {
       {/* QUICK ACCESS */}
       <section>
         <div className="text-center">
-          <p className="eyebrow justify-center">أدوات إضافية</p>
-          <h2 className="mt-3 font-display section-title text-ink-900">المزيد في رحلتك القرآنية</h2>
+          <p className="eyebrow justify-center">أدوات القرآن</p>
+          <h2 className="mt-3 font-display section-title text-ink-900">شبكة أدوات القرآن — تسع أدوات بين يديك</h2>
           <OrnamentDivider />
         </div>
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -193,8 +202,8 @@ export default async function HomePage() {
             { href: "/achievements", icon: "🏆", title: "الإنجازات", body: "محطات تُفتح مع تقدّمك في الحفظ" },
           ].map((c) => (
             <Link key={c.href} href={c.href} className="lift group shine card-premium ornate-card rounded-3xl p-5 text-center sm:p-6">
-              <OrnamentCorners />
-              <div className="icon-badge circle mx-auto h-14 w-14 text-2xl transition group-hover:scale-110 sm:h-16 sm:w-16 sm:text-3xl">{c.icon}</div>
+              <RoyalCorners />
+              <div className="royal-badge mx-auto h-14 w-14 text-2xl sm:h-16 sm:w-16 sm:text-3xl">{c.icon}</div>
               <h3 className="mt-4 font-display text-lg font-bold text-ink-900">{c.title}</h3>
               <p className="mt-2 text-sm text-ink-500">{c.body}</p>
             </Link>
@@ -205,7 +214,7 @@ export default async function HomePage() {
       {/* CTA */}
       <section className="card-gold shine ornate-card relative overflow-hidden rounded-[1.75rem] p-8 text-center sm:rounded-3xl sm:p-16">
         <ArabesqueBg />
-        <OrnamentCorners />
+        <RoyalCorners />
         <span className="ribbon hidden sm:inline-block">مجاني</span>
         <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-emerald-400/20 blur-3xl" />
         <div className="pointer-events-none absolute -left-10 bottom-0 h-44 w-44 rounded-full bg-blue-400/20 blur-3xl" />

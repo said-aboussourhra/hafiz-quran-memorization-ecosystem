@@ -1,4 +1,5 @@
 import { getSurah, type SurahMeta } from "./surahs";
+import { fetchSurahLocal } from "./quranLocal";
 
 export type QuranWord = { t: string; i: number };
 
@@ -43,13 +44,17 @@ export async function fetchSurah(surahNumber: number): Promise<SurahContent | nu
     if (!res.ok) return null;
     json = (await res.json()) as { data: ApiEdition[] };
   } catch {
-    return null;
+    // Network unavailable → always fall back to the bundled, real Uthmani text.
+    return fetchSurahLocal(surahNumber, null);
   }
 
   const data = json?.data ?? [];
   const quran = data.find((d) => d.edition.identifier === "quran-uthmani");
   const tafsir = data.find((d) => d.edition.identifier === "ar.muyassar");
-  if (!quran) return null;
+  if (!quran) {
+    // Offline / restricted network → render real text from the bundled dataset.
+    return fetchSurahLocal(surahNumber, null);
+  }
 
   const hasBasmala = surahNumber !== 1 && surahNumber !== 9;
 
