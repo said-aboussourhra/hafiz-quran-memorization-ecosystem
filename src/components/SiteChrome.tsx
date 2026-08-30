@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 import { ScrollTop } from "@/components/ScrollTop";
 import { ReportProblem } from "@/components/ReportProblem";
 import Image from "next/image";
+import { useAdminLogin } from "./AdminLoginProvider";
 
 const NAV = [
   { href: "/", label: "الرئيسية" },
@@ -52,6 +53,7 @@ function Icon({ name, active, inverted }: { name: string; active: boolean; inver
 
 export function SiteChrome({ children, userName }: { children: ReactNode; userName: string | null }) {
   const pathname = usePathname();
+  const { openAdminLogin } = useAdminLogin();
   const [open, setOpen] = useState(false);
 
   const logout = async () => {
@@ -66,13 +68,22 @@ export function SiteChrome({ children, userName }: { children: ReactNode; userNa
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3">
           {/* ===== الشعار الجديد مع الصورة ===== */}
           <Link href="/" className="group flex items-center gap-3">
-            <Image 
-              src="/HAFIZ.jpg" 
-              alt="شعار حافظ" 
-              width={44} 
-              height={44} 
-              className="h-11 w-11 rounded-2xl object-cover shadow-md transition group-hover:scale-105"
-            />
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                openAdminLogin();
+              }}
+              className="grid h-11 w-11 place-items-center rounded-2xl overflow-hidden bg-transparent border-none p-0 m-0 cursor-pointer shadow-md transition group-hover:scale-105"
+              aria-label="فتح لوحة التحكم"
+            >
+              <Image 
+                src="/HAFIZ.jpg" 
+                alt="شعار حافظ" 
+                width={44} 
+                height={44} 
+                className="h-11 w-11 rounded-2xl object-cover transition group-hover:scale-105"
+              />
+            </button>
             <span className="flex flex-col leading-tight">
               <span className="block font-display text-2xl font-black leading-none shine-text">حافظ</span>
               <span className="mt-1 block text-[10px] font-semibold leading-none tracking-[0.15em] text-ink-500">رحلتك مع القرآن</span>

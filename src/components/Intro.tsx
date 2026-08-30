@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { pickIntroVerse, type IntroVerse } from "@/lib/introVerses";
 import { OrnamentStar } from "@/components/Ornament";
+import { useAdminLogin } from "./AdminLoginProvider";
 
 const SESSION_KEY = "hafiz_intro_seen_v10";
 const CONTINUE_REVEAL_MS = 2400; // reveal "continue" button smoothly after 2.4s
@@ -31,6 +32,7 @@ function wasIntroSeen(): boolean {
 
 export function Intro() {
   const isMounted = useIsMounted();
+  const { openAdminLogin } = useAdminLogin();
   const [phase, setPhase] = useState<Phase>("hidden");
   const [glow, setGlow] = useState(false);
   const [showContinue, setShowContinue] = useState(false);
@@ -143,7 +145,15 @@ export function Intro() {
       <div className="intro-burst" />
 
       {/* ===== 1) الشعار فقط في الزاوية العلوية (~56px بإطار ذهبي رقيق) ===== */}
-      <div className="intro-corner-logo">
+      <button
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          openAdminLogin();
+        }}
+        className="intro-corner-logo cursor-pointer hover:scale-105 transition-transform"
+        aria-label="فتح لوحة التحكم"
+      >
         <span className="intro-corner-ring">
           <Image
             src="/HAFIZ.jpg"
@@ -158,7 +168,7 @@ export function Intro() {
           <span className="intro-corner-title">حافظ</span>
           <span className="intro-corner-sub">رحلتك مع القرآن</span>
         </div>
-      </div>
+      </button>
 
       <div className="intro-stage relative z-10 w-full max-w-4xl px-5 sm:px-8">
         {/* ===== 2) البسملة صغيرة في الوسط ===== */}

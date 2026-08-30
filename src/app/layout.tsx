@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { PWARegister } from "@/components/PWARegister";
 import { IdleDhikr } from "@/components/IdleDhikr";
 import { MagneticCards } from "@/components/MagneticCards";
+import { AdminLoginProvider } from "@/components/AdminLoginProvider";
 
 import "./globals.css";
 import "./fonts.css";
@@ -63,8 +64,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <body className="min-h-screen antialiased">
         <PWARegister />
         <MagneticCards />
-        <Intro />
-        <SiteChrome userName={user?.name ?? null}>{children}</SiteChrome>
+        <AdminLoginProvider>
+          <Intro />
+          <SiteChrome userName={user?.name ?? null}>{children}</SiteChrome>
+        </AdminLoginProvider>
         <IdleDhikr name={user?.name ?? null} />
       </body>
     </html>
