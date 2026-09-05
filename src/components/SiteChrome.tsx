@@ -6,6 +6,7 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import { ScrollTop } from "@/components/ScrollTop";
 import { ReportProblem } from "@/components/ReportProblem";
+import { ScrollProgress } from "@/components/ScrollProgress";
 import Image from "next/image";
 import { useAdminLogin } from "./AdminLoginProvider";
 
@@ -63,7 +64,8 @@ export function SiteChrome({ children, userName }: { children: ReactNode; userNa
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-emerald-500/15 bg-white/80 shadow-[0_4px_20px_-12px_rgba(37,99,235,0.25)] backdrop-blur-xl">
+      <ScrollProgress />
+      <header className="header-enter sticky top-0 z-50 border-b border-emerald-500/15 bg-white/80 shadow-[0_4px_20px_-12px_rgba(37,99,235,0.25)] backdrop-blur-xl">
         <div className="h-1 w-full" style={{ background: "linear-gradient(90deg, #10b981, #059669, #3b82f6)" }} />
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3">
           {/* ===== الشعار الجديد مع الصورة ===== */}
@@ -98,7 +100,7 @@ export function SiteChrome({ children, userName }: { children: ReactNode; userNa
                   key={item.href}
                   href={item.href}
                   className={`relative rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 ${
-                    active ? "text-emerald-700" : "text-ink-700 hover:bg-emerald-50/70 hover:text-emerald-700"
+                    active ? "text-emerald-700" : "nav-lux text-ink-700 hover:bg-emerald-50/70 hover:text-emerald-700"
                   }`}
                   style={active ? { background: "var(--grad-brand-soft)", boxShadow: "inset 0 0 0 1px rgba(16,185,129,.25)" } : undefined}
                 >
@@ -139,7 +141,7 @@ export function SiteChrome({ children, userName }: { children: ReactNode; userNa
         </div>
 
         {open && (
-          <div className="border-t hairline px-5 py-3 lg:hidden">
+          <div className="menu-enter border-t hairline px-5 py-3 lg:hidden">
             <div className="grid grid-cols-2 gap-2">
               {NAV.map((item) => (
                 <Link key={item.href} href={item.href} onClick={() => setOpen(false)} className="rounded-lg card px-3 py-2.5 text-sm text-ink-700">

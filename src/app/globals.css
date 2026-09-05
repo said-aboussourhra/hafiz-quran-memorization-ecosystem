@@ -3448,3 +3448,117 @@ body {
   color: #f3dd9b;
   border-color: rgba(217,180,92,.7);
 }
+
+/* ============================================================
+   PREMIUM MOTION SYSTEM — انتقالات فخمة وجمالية قوية
+   نظام كشف بالتمرير + انتقالات صفحات سينمائية + تفاعلات راقية
+   ============================================================ */
+
+/* --- Reveal: كشف العناصر عند دخولها مجال الرؤية (المكوّن <Reveal />) --- */
+.reveal {
+  --rv-dur: 950ms;
+  --rv-ease: cubic-bezier(.22, 1, .36, 1);
+  --rv-delay: 0ms;
+  transition:
+    opacity var(--rv-dur) var(--rv-ease) var(--rv-delay),
+    transform var(--rv-dur) var(--rv-ease) var(--rv-delay),
+    filter var(--rv-dur) var(--rv-ease) var(--rv-delay);
+  will-change: opacity, transform;
+}
+.reveal[data-state="visible"] { opacity: 1; transform: none; filter: none; }
+.reveal[data-state="hidden"] { opacity: 0; pointer-events: none; }
+.reveal[data-variant="up"][data-state="hidden"]     { transform: translateY(34px); filter: blur(6px); }
+.reveal[data-variant="down"][data-state="hidden"]   { transform: translateY(-26px); filter: blur(5px); }
+.reveal[data-variant="zoom"][data-state="hidden"]   { transform: scale(.9); filter: blur(8px); }
+.reveal[data-variant="right"][data-state="hidden"]  { transform: translateX(44px); filter: blur(6px); }
+.reveal[data-variant="left"][data-state="hidden"]   { transform: translateX(-44px); filter: blur(6px); }
+.reveal[data-variant="fade"][data-state="hidden"]   { filter: none; }
+
+/* --- انتقالات صفحات سينمائية (تُعيد تشغيلها <main key={pathname}> ) --- */
+.page-enter {
+  animation: pageEnter 750ms var(--ease-premium) both;
+}
+@keyframes pageEnter {
+  0%   { opacity: 0; transform: translateY(20px) scale(.995); filter: blur(8px); }
+  55%  { filter: blur(0); }
+  100% { opacity: 1; transform: none; filter: none; }
+}
+
+/* --- دخول الترويسة مرة واحدة عند تحميل الموقع --- */
+@keyframes headerIn {
+  from { opacity: 0; transform: translateY(-110%); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.header-enter { animation: headerIn 650ms var(--ease-premium) 80ms both; }
+
+/* --- قائمة الموبايل المنسدلة --- */
+@keyframes menuIn {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: none; }
+}
+.menu-enter { animation: menuIn 320ms var(--ease-premium) both; }
+
+/* --- رابط تنقّل فاخر: خط تدرّج ينمو عند المرور --- */
+.nav-lux { position: relative; }
+.nav-lux::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0.9rem;
+  bottom: 3px;
+  height: 2.5px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #10b981, #2563eb);
+  transform: scaleX(0);
+  transform-origin: center;
+  opacity: 0;
+  transition: transform 380ms var(--ease-premium), opacity 250ms ease;
+}
+.nav-lux:hover::after { transform: scaleX(1); opacity: 1; }
+
+/* --- تدرّج ظهور ناعم للصور عند التحميل --- */
+img { transition: opacity .45s ease, filter .45s ease; }
+
+/* --- أزرار: نبضة ضغط ناعمة مشتركة --- */
+a, button { -webkit-tap-highlight-color: transparent; }
+
+/* --- ترويسة الأقسام: حجم سائل (fluid) لكل الشاشات --- */
+.section-title {
+  font-size: clamp(1.5rem, 1.05rem + 2.3vw, 2.35rem) !important;
+  line-height: 1.4 !important;
+}
+
+/* --- عنوان البطل: سائل بدل قفزات sm/lg الصارمة --- */
+.hero-fluid-title {
+  font-size: clamp(1.85rem, 1rem + 5.2vw, 4rem) !important;
+  line-height: 1.42 !important;
+}
+
+/* --- شبكات البطاقات: تباعد سائل --- */
+.grid-fluid { gap: clamp(0.85rem, 2.2vw, 1.5rem); }
+
+/* --- بطاقات ميزات: رفع فخم عند المرور مع لمعة ذهبية على الإطار --- */
+.card-premium { transition: transform .45s var(--ease-premium), box-shadow .45s ease, border-color .45s ease; }
+.card-premium:hover { transform: translateY(-5px); }
+.lift:hover { transform: translateY(-6px) scale(1.015); }
+
+/* --- أيقونات العناوين: دوران خفيف عند مرور المؤشر --- */
+.group:hover .royal-badge,
+.card-premium:hover .royal-badge { transform: translateY(-3px) scale(1.08) rotate(-4deg); }
+
+/* --- أشرطة فاصلة تتوهج ببطء --- */
+.divider-gold, .hr-lux { animation: hrGlow 4.5s ease-in-out infinite; }
+@keyframes hrGlow {
+  0%, 100% { opacity: .75; }
+  50%      { opacity: 1; }
+}
+
+/* --- احترام تفضيل تقليل الحركة: كل عناصر الكشف تظهر فوراً --- */
+@media (prefers-reduced-motion: reduce) {
+  .reveal[data-state="hidden"] {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    pointer-events: auto !important;
+  }
+  .page-enter, .header-enter, .menu-enter { animation: none !important; }
+}
