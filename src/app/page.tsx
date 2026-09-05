@@ -8,6 +8,7 @@ import { TOTAL_AYAHS } from "@/lib/surahs";
 import { VIRTUES } from "@/lib/virtues";
 import { AyahOfDayCard } from "@/components/AyahOfDayCard";
 import { DailyPlanCard } from "@/components/hafiz/DailyPlanCard";
+import { Reveal } from "@/components/Reveal";
 import { ayahOfToday } from "@/lib/ayahOfDay";
 
 export const dynamic = "force-dynamic";
@@ -67,7 +68,7 @@ export default async function HomePage() {
             <span className="h-2 w-2 rounded-full" style={{ background: "linear-gradient(135deg,#10b981,#2563eb)" }} />
             <span className="h-px flex-1 bg-gradient-to-r from-ocean-500/50 to-transparent" />
           </div>
-          <h1 className="rise mt-4 font-display text-[1.75rem] font-bold leading-[1.45] text-ink-900 sm:mt-6 sm:text-5xl lg:text-6xl" style={{ animationDelay: "80ms" }}>
+          <h1 className="rise hero-fluid-title mt-4 font-display font-bold text-ink-900 sm:mt-6" style={{ animationDelay: "80ms" }}>
             رحلتك مع القرآن
             <br />
             <span className="shine-text">تبدأ بآية</span>
@@ -110,85 +111,99 @@ export default async function HomePage() {
           { v: "٣٠", l: "جزءاً", icon: "✦" },
           { v: user ? `${stats.completionPct}٪` : "ابدأ", l: user ? "نسبة إتمامك" : "رحلتك الآن", icon: "🌙" },
         ].map((s, i) => (
-          <div key={s.l} className="pop lift card-premium shine ornate-card relative overflow-hidden p-5 text-center sm:p-6" style={{ animationDelay: `${i * 90}ms` }}>
-            <RoyalCorners />
-            <div className="royal-badge mx-auto mb-3 h-12 w-12 text-xl sm:h-14 sm:w-14 sm:text-2xl">{s.icon}</div>
-            <div className="font-display text-2xl font-extrabold stat-num sm:text-3xl">{s.v}</div>
-            <div className="mt-1 text-[11px] font-semibold text-ink-500 sm:text-xs">{s.l}</div>
-          </div>
+          <Reveal key={s.l} delay={i * 90} variant="up">
+            <div className="lift card-premium shine ornate-card relative h-full overflow-hidden p-5 text-center sm:p-6">
+              <RoyalCorners />
+              <div className="royal-badge mx-auto mb-3 h-12 w-12 text-xl sm:h-14 sm:w-14 sm:text-2xl">{s.icon}</div>
+              <div className="font-display text-2xl font-extrabold stat-num sm:text-3xl">{s.v}</div>
+              <div className="mt-1 text-[11px] font-semibold text-ink-500 sm:text-xs">{s.l}</div>
+            </div>
+          </Reveal>
         ))}
       </section>
 
       {/* DAILY PLAN — HAFIZ smart session entry */}
-      <section>
+      <Reveal variant="up">
         <DailyPlanCard />
-      </section>
+      </Reveal>
 
       {/* AYAH OF THE DAY — the crown jewel, pinnacle of luxury */}
       <section className="relative">
         <ArabesqueBg />
-        <div className="relative text-center">
-          <p className="eyebrow justify-center">آية اليوم</p>
-          <h2 className="mt-3 font-display section-title text-ink-900">بطاقة آية اليوم — جوهرة يومك القرآنية</h2>
-          <p className="mx-auto mt-3 max-w-xl text-ink-500">تحفة فاخرة بدقة ١٠٨٠×١٠٨٠، بإطار ملكي ذهبي وتوهّج زمردي — شاركها أو نزّلها بلمسة واحدة.</p>
-          <OrnamentDivider />
-        </div>
-        <div className="relative mt-8">
+        <Reveal variant="up">
+          <div className="relative text-center">
+            <p className="eyebrow justify-center">آية اليوم</p>
+            <h2 className="mt-3 font-display section-title text-ink-900">بطاقة آية اليوم — جوهرة يومك القرآنية</h2>
+            <p className="mx-auto mt-3 max-w-xl text-ink-500">تحفة فاخرة بدقة ١٠٨٠×١٠٨٠، بإطار ملكي ذهبي وتوهّج زمردي — شاركها أو نزّلها بلمسة واحدة.</p>
+            <OrnamentDivider />
+          </div>
+        </Reveal>
+        <Reveal variant="zoom" delay={120} className="relative mt-8">
           <AyahOfDayCard ayah={ayahOfToday()} />
-        </div>
+        </Reveal>
       </section>
 
       {/* VIRTUES OF READING QURAN */}
       <section className="relative">
         <ArabesqueBg />
-        <div className="relative text-center">
-          <p className="eyebrow justify-center">فضل قراءة القرآن</p>
-          <h2 className="mt-3 font-display section-title text-ink-900">ثمارٌ لا تنقطع لحامل القرآن</h2>
-          <p className="mx-auto mt-3 max-w-xl text-ink-500">آيات وأحاديث صحيحة تذكّرك بعظيم الأجر في كل حرف تقرؤه.</p>
-          <OrnamentDivider />
-        </div>
+        <Reveal variant="up">
+          <div className="relative text-center">
+            <p className="eyebrow justify-center">فضل قراءة القرآن</p>
+            <h2 className="mt-3 font-display section-title text-ink-900">ثمارٌ لا تنقطع لحامل القرآن</h2>
+            <p className="mx-auto mt-3 max-w-xl text-ink-500">آيات وأحاديث صحيحة تذكّرك بعظيم الأجر في كل حرف تقرؤه.</p>
+            <OrnamentDivider />
+          </div>
+        </Reveal>
         <div className="relative mt-6 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {VIRTUES.slice(0, 6).map((v, i) => (
-            <div key={i} className="lift group shine card-premium ornate-card relative overflow-hidden p-5 sm:p-7">
-              <RoyalCorners />
-              <span className="absolute -left-3 -top-5 text-7xl text-emerald-500/10">”</span>
-              <span className={`inline-block rounded-full px-3 py-1 text-[11px] font-semibold ${v.kind === "ayah" ? "bg-emerald-700/10 text-emerald-700" : "bg-ocean-600/10 text-ocean-700"}`}>
-                {v.kind === "ayah" ? "آية كريمة" : "حديث شريف"}
-              </span>
-              <p className="mt-4 text-xl leading-loose text-ink-900" style={{ fontFamily: "var(--font-quran)" }}>{v.text}</p>
-              <p className="mt-4 text-sm text-ink-500">{v.source}</p>
-            </div>
+            <Reveal key={i} delay={(i % 3) * 110} variant="up" className="h-full">
+              <div className="lift group shine card-premium ornate-card relative h-full overflow-hidden p-5 sm:p-7">
+                <RoyalCorners />
+                <span className="absolute -left-3 -top-5 text-7xl text-emerald-500/10">”</span>
+                <span className={`inline-block rounded-full px-3 py-1 text-[11px] font-semibold ${v.kind === "ayah" ? "bg-emerald-700/10 text-emerald-700" : "bg-ocean-600/10 text-ocean-700"}`}>
+                  {v.kind === "ayah" ? "آية كريمة" : "حديث شريف"}
+                </span>
+                <p className="mt-4 text-xl leading-loose text-ink-900" style={{ fontFamily: "var(--font-quran)" }}>{v.text}</p>
+                <p className="mt-4 text-sm text-ink-500">{v.source}</p>
+              </div>
+            </Reveal>
           ))}
         </div>
       </section>
 
       {/* FEATURES */}
       <section className="relative">
-        <div className="text-center">
-          <p className="eyebrow justify-center">لماذا حافظ</p>
-          <h2 className="mt-3 font-display section-title text-ink-900">كل ما تحتاجه لحفظ القرآن في مكان واحد</h2>
-          <OrnamentDivider />
-        </div>
+        <Reveal variant="up">
+          <div className="text-center">
+            <p className="eyebrow justify-center">لماذا حافظ</p>
+            <h2 className="mt-3 font-display section-title text-ink-900">كل ما تحتاجه لحفظ القرآن في مكان واحد</h2>
+            <OrnamentDivider />
+          </div>
+        </Reveal>
         <div className="mt-6 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map((f) => (
-            <div key={f.title} className="lift group shine card-premium ornate-card relative overflow-hidden p-5 sm:p-7">
-              <RoyalCorners />
-              <div className="absolute -left-6 -top-6 font-arabic text-7xl text-emerald-500/10 transition group-hover:text-ocean-500/15">{f.glyph}</div>
-              <div className="royal-badge h-14 w-14 text-2xl">{f.glyph}</div>
-              <h3 className="mt-4 font-display text-xl font-bold text-ink-900">{f.title}</h3>
-              <p className="mt-3 text-sm leading-relaxed text-ink-700">{f.body}</p>
-            </div>
+          {FEATURES.map((f, i) => (
+            <Reveal key={f.title} delay={(i % 3) * 110} variant="up" className="h-full">
+              <div className="lift group shine card-premium ornate-card relative h-full overflow-hidden p-5 sm:p-7">
+                <RoyalCorners />
+                <div className="absolute -left-6 -top-6 font-arabic text-7xl text-emerald-500/10 transition group-hover:text-ocean-500/15">{f.glyph}</div>
+                <div className="royal-badge h-14 w-14 text-2xl">{f.glyph}</div>
+                <h3 className="mt-4 font-display text-xl font-bold text-ink-900">{f.title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-ink-700">{f.body}</p>
+              </div>
+            </Reveal>
           ))}
         </div>
       </section>
 
       {/* QUICK ACCESS */}
       <section>
-        <div className="text-center">
-          <p className="eyebrow justify-center">أدوات القرآن</p>
-          <h2 className="mt-3 font-display section-title text-ink-900">شبكة أدوات القرآن — تسع أدوات بين يديك</h2>
-          <OrnamentDivider />
-        </div>
+        <Reveal variant="up">
+          <div className="text-center">
+            <p className="eyebrow justify-center">أدوات القرآن</p>
+            <h2 className="mt-3 font-display section-title text-ink-900">شبكة أدوات القرآن — تسع أدوات بين يديك</h2>
+            <OrnamentDivider />
+          </div>
+        </Reveal>
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[
             { href: "/reciters", icon: "🎙", title: "القرّاء", body: "اختر قارئك المفضّل واستمع لآية بصوته" },
@@ -200,18 +215,21 @@ export default async function HomePage() {
             { href: "/universe", icon: "✺", title: "كون القرآن", body: "تابع رحلتك بصرياً في سماءٍ من نور" },
             { href: "/certificates", icon: "🏅", title: "الشهادات", body: "شهادات إنجاز رقمية قابلة للتحقق" },
             { href: "/achievements", icon: "🏆", title: "الإنجازات", body: "محطات تُفتح مع تقدّمك في الحفظ" },
-          ].map((c) => (
-            <Link key={c.href} href={c.href} className="lift group shine card-premium ornate-card rounded-3xl p-5 text-center sm:p-6">
-              <RoyalCorners />
-              <div className="royal-badge mx-auto h-14 w-14 text-2xl sm:h-16 sm:w-16 sm:text-3xl">{c.icon}</div>
-              <h3 className="mt-4 font-display text-lg font-bold text-ink-900">{c.title}</h3>
-              <p className="mt-2 text-sm text-ink-500">{c.body}</p>
-            </Link>
+          ].map((c, i) => (
+            <Reveal key={c.href} delay={(i % 3) * 90} variant="up" className="h-full">
+              <Link href={c.href} className="lift group shine card-premium ornate-card flex h-full flex-col items-center justify-center rounded-3xl p-5 text-center sm:p-6">
+                <RoyalCorners />
+                <div className="royal-badge mx-auto h-14 w-14 text-2xl sm:h-16 sm:w-16 sm:text-3xl">{c.icon}</div>
+                <h3 className="mt-4 font-display text-lg font-bold text-ink-900">{c.title}</h3>
+                <p className="mt-2 text-sm text-ink-500">{c.body}</p>
+              </Link>
+            </Reveal>
           ))}
         </div>
       </section>
 
       {/* CTA */}
+      <Reveal variant="zoom" delay={80}>
       <section className="card-gold shine ornate-card relative overflow-hidden rounded-[1.75rem] p-8 text-center sm:rounded-3xl sm:p-16">
         <ArabesqueBg />
         <RoyalCorners />
@@ -228,9 +246,12 @@ export default async function HomePage() {
           {!user && <Link href="/signup" className="rounded-2xl btn-ghost px-8 py-4 text-sm font-bold sm:text-base">إنشاء حساب</Link>}
         </div>
       </section>
+      </Reveal>
 
-      <div className="divider-ornament" />
-      <div className="-mt-16 pb-6 text-center text-xs text-ink-500">حافظ — رفيقك في حفظ القرآن الكريم</div>
+      <Reveal variant="fade" delay={100}>
+        <div className="divider-ornament" />
+        <div className="-mt-16 pb-6 text-center text-xs text-ink-500">حافظ — رفيقك في حفظ القرآن الكريم</div>
+      </Reveal>
     </div>
   );
 }

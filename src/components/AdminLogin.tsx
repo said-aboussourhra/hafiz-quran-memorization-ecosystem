@@ -8,7 +8,6 @@ import {
   hasAdminSession,
   getAdminUsername,
   ADMIN_USERNAME,
-  ADMIN_PASSWORD,
 } from "@/lib/adminAuth";
 import { useAdminLogin } from "./AdminLoginProvider";
 
@@ -202,13 +201,6 @@ export function AdminLogin() {
                 </>
               )}
             </button>
-
-            {/* معلومات الدخول */}
-            <div className="p-4 rounded-xl bg-cream-50 border border-emerald-100 text-sm text-ink-600">
-              <p className="font-semibold mb-1">معلومات الدخول:</p>
-              <p>اسم المستخدم: <code className="bg-white px-2 py-1 rounded text-emerald-800 font-mono">{ADMIN_USERNAME}</code></p>
-              <p>كلمة السر: <code className="bg-white px-2 py-1 rounded text-emerald-800 font-mono">{ADMIN_PASSWORD}</code></p>
-            </div>
           </form>
         </div>
       </div>
