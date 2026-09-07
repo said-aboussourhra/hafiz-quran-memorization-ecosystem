@@ -1,28 +1,19 @@
 /**
  * ============================================================================
- * HAFIZ — ADMIN AUTHENTICATION (مصادقة لوحة المطوّر)
+ * HAFIZ — ADMIN SESSION (جلسة لوحة المطوّر)
  * ----------------------------------------------------------------------------
- * مصادقة بسيطة لصفحة الإدارة باستخدام بيانات ثابته (لا تتطلب قاعدة بيانات).
- * عند النجاح، يُطلق حدث مخصص hafiz:open-admin ويخزن الحالة في sessionStorage.
- * ===========================================================================
+ * هذه الوحدة تدير حالة الجلسة المحلية فقط (sessionStorage) للسماح بواجهة
+ * لوحة التحكم. التحقق من بيانات الدخول يتم حصرياً على الخادم في:
+ * src/app/api/admin/login/route.ts
+ * لا توجد أي بيانات دخول (اسم مستخدم أو كلمة سر) في هذه الوحدة أو في الواجهة.
+ * ============================================================================
  */
-
-// بيانات الدخول الثابتة
-const ADMIN_USERNAME = "SAID-ABOUSSOURHRA";
-const ADMIN_PASSWORD = "HH188218";
 
 // مفتاح التخزين
 const ADMIN_SESSION_KEY = "hafiz_admin_auth_v1";
 
 /**
- * التحقق من مصادقة المسئول
- */
-export function authenticateAdmin(username: string, password: string): boolean {
-  return username === ADMIN_USERNAME && password === ADMIN_PASSWORD;
-}
-
-/**
- * تخزين حالة الدخول
+ * تخزين حالة الدخول محلياً بعد نجاح التحقق الخادمي
  */
 export function storeAdminSession(): void {
   try {
@@ -31,7 +22,6 @@ export function storeAdminSession(): void {
     const event = new CustomEvent("hafiz:open-admin", {
       detail: {
         timestamp: Date.now(),
-        user: ADMIN_USERNAME,
       },
     });
     window.dispatchEvent(event);
@@ -41,7 +31,7 @@ export function storeAdminSession(): void {
 }
 
 /**
- * التحقق من وجود جلسة مسجل دخول
+ * التحقق من وجود جلسة مسجل دخول محلية
  */
 export function hasAdminSession(): boolean {
   try {
@@ -61,13 +51,3 @@ export function clearAdminSession(): void {
     // تجاهل
   }
 }
-
-/**
- * الحصول على اسم المسئول
- */
-export function getAdminUsername(): string {
-  return ADMIN_USERNAME;
-}
-
-// تصدير البيانات الثابتة للاستخدام في الواجهة
-export { ADMIN_USERNAME, ADMIN_PASSWORD };
