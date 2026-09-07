@@ -2,13 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import {
-  authenticateAdmin,
-  storeAdminSession,
-  hasAdminSession,
-  getAdminUsername,
-  ADMIN_USERNAME,
-} from "@/lib/adminAuth";
+import { storeAdminSession, hasAdminSession } from "@/lib/adminAuth";
 import { useAdminLogin } from "./AdminLoginProvider";
 
 /**
@@ -76,16 +70,36 @@ export function AdminLogin() {
     // تأخير طفيف للأنيميشن
     await new Promise((resolve) => setTimeout(resolve, 300));
 
-    if (authenticateAdmin(username, password)) {
-      storeAdminSession();
-      setIsLoading(false);
-      // إغلاق النموذج وتحويل المستخدم
-      closeLogin();
-      router.push("/admin");
-    } else {
+    try {
+      const response = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (response.ok) {
+        storeAdminSession();
+        setIsLoading(false);
+        // إغلاق النموذج وتحويل المستخدم
+        closeLogin();
+        router.push("/admin");
+      } else {
+        let message = "اسم المستخدم أو كلمة السر غير صحيحة";
+        try {
+          const data = (await response.json()) as { error?: string };
+          if (data.error) message = data.error;
+        } catch {
+          // نحتفظ بالرسالة الافتراضية
+        }
+        setIsLoading(false);
+        setShake(true);
+        setError(message);
+        setTimeout(() => setShake(false), 500);
+      }
+    } catch {
       setIsLoading(false);
       setShake(true);
-      setError("اسم المستخدم أو كلمة السر غير صحيحة");
+      setError("تعذر الاتصال بالخادم، حاول مجدداً");
       setTimeout(() => setShake(false), 500);
     }
   };
@@ -128,7 +142,7 @@ export function AdminLogin() {
               </div>
               <h2 className="font-display text-xl font-bold shine-text">دخول لوحة التحكم</h2>
               <p className="text-sm text-ink-500">
-                مسجل دخول: <span className="font-semibold text-emerald-700">{getAdminUsername()}</span>
+                التحقق يتم على الخادم بطريقة آمنة
               </p>
             </div>
           </div>
@@ -154,7 +168,7 @@ export function AdminLogin() {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder={ADMIN_USERNAME}
+                placeholder="اسم المستخدم"
                 className="w-full px-4 py-3 rounded-xl border border-emerald-200 bg-white/80 text-ink-900 placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition"
                 autoComplete="username"
                 autoFocus

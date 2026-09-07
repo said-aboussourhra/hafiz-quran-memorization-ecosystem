@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { hasAdminSession, clearAdminSession, getAdminUsername } from "@/lib/adminAuth";
+import { hasAdminSession, clearAdminSession } from "@/lib/adminAuth";
 import { INTRO_VERSES, type IntroVerse } from "@/lib/introVerses";
 import { storeAudio, getStoredAudio, hasStoredAudio, getAllStoredAudio, deleteStoredAudio } from "@/lib/introAudioStore";
 
@@ -160,7 +160,7 @@ export default function AdminPage() {
             </div>
             <div>
               <h1 className="font-display text-xl font-bold shine-text">لوحة التحكم</h1>
-              <p className="text-sm text-ink-500">مرحبا بك، {getAdminUsername()}</p>
+              <p className="text-sm text-ink-500">مرحبا بك، مدير النظام</p>
             </div>
           </div>
           <button
