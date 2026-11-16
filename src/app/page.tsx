@@ -18,6 +18,7 @@ const FEATURES = [
   { glyph: "كتاب", title: "التفسير الميسّر", body: "انقر على أي كلمة أو آية ليظهر تفسيرها الميسّر فوراً، فتقرأ وتفهم في آنٍ واحد." },
   { glyph: "↻", title: "كرّر معي", body: "منهج تلقين بالتكرار: تستمع للآية وتكرّرها حتى ترسخ، آيةً آيةً، بهدوء وتركيز." },
   { glyph: "؟", title: "اختبارات ذكية", body: "أربع طرق للاختبار: استرجاع بالنطق، كتابة الآية مع تصحيح كلمة بكلمة، ترتيب الكلمات، وملء الفراغات." },
+  { glyph: "🎓", title: "أكاديمية التجويد والمدارس", body: "مسار تدريبي متدرج للطلاب، اختبارات قصيرة، وخطة صفية وأدوات عرض جاهزة للمعلم." },
   { glyph: "✦", title: "كون القرآن", body: "رحلتك تتجسّد نجوماً متلألئة، تتابع تقدّمك بصرياً في سماءٍ من نور." },
   { glyph: "🏆", title: "إنجازات وتحفيز", body: "تحفيزات مستمرة، فضائل قراءة القرآن، ومحطّات إنجاز تُفتح مع تقدّمك المحفوظ في حسابك." },
 ];
@@ -79,6 +80,7 @@ export default async function HomePage() {
           <div className="rise mt-6 flex w-full flex-wrap items-center justify-center gap-2.5 px-4 sm:mt-9 sm:gap-3 sm:px-0" style={{ animationDelay: "240ms" }}>
             <Link href="/mushaf" className="flex-1 basis-full rounded-2xl btn-primary px-6 py-3 text-center text-sm font-semibold sm:basis-auto sm:px-7 sm:py-3.5 sm:text-base">افتح المصحف</Link>
             <Link href="/memorize" className="flex-1 basis-full rounded-2xl btn-ghost px-6 py-3 text-center text-sm font-semibold sm:basis-auto sm:px-7 sm:py-3.5 sm:text-base">ابدأ الحفظ</Link>
+            <Link href="/academy" className="flex-1 basis-full rounded-2xl border border-blue-200 bg-blue-50 px-6 py-3 text-center text-sm font-bold text-blue-900 transition hover:bg-blue-100 sm:basis-auto sm:px-7 sm:py-3.5 sm:text-base">تعلم التجويد · للطلاب والمعلمين</Link>
           </div>
           {!user && (
             <p className="rise mt-4 text-sm text-ink-500" style={{ animationDelay: "300ms" }}>
@@ -206,6 +208,7 @@ export default async function HomePage() {
         </Reveal>
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[
+            { href: "/academy", icon: "🎓", title: "أكاديمية التجويد", body: "مسار الطالب وأدوات الحصة للمعلم" },
             { href: "/reciters", icon: "🎙", title: "القرّاء", body: "اختر قارئك المفضّل واستمع لآية بصوته" },
             { href: "/plan", icon: "🗓", title: "خطة الحفظ", body: "خطّط لختم القرآن حفظاً بإيقاعك المناسب" },
             { href: "/review", icon: "🔁", title: "المراجعة الذكية", body: "تذكير بالتكرار المتباعد قبل النسيان" },
