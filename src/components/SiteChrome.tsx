@@ -13,6 +13,7 @@ import { useAdminLogin } from "./AdminLoginProvider";
 const NAV = [
   { href: "/", label: "الرئيسية" },
   { href: "/mushaf", label: "المصحف" },
+  { href: "/academy", label: "أكاديمية التجويد" },
   { href: "/reciters", label: "القرّاء" },
   { href: "/memorize", label: "الحفظ" },
   { href: "/review", label: "المراجعة" },
@@ -24,7 +25,7 @@ const NAV = [
 
 const MOBILE = [
   { href: "/", label: "الرئيسية", icon: "home" },
-  { href: "/journey", label: "رحلتي", icon: "stars" },
+  { href: "/academy", label: "التجويد", icon: "stars" },
   { href: "/mushaf", label: "المصحف", icon: "quran" },
   { href: "/memorize", label: "الحفظ", icon: "book" },
   { href: "/dashboard", label: "حسابي", icon: "trophy" },
@@ -189,6 +190,7 @@ export function SiteChrome({ children, userName }: { children: ReactNode; userNa
             <h4 className="font-display text-sm font-bold text-ink-900">القرآن</h4>
             <ul className="mt-3 space-y-2 text-sm text-ink-500">
               <li><Link href="/mushaf" className="transition hover:text-emerald-700">المصحف</Link></li>
+              <li><Link href="/academy" className="transition hover:text-emerald-700">أكاديمية التجويد</Link></li>
               <li><Link href="/memorize" className="transition hover:text-emerald-700">الحفظ</Link></li>
               <li><Link href="/review" className="transition hover:text-emerald-700">المراجعة</Link></li>
               <li><Link href="/search" className="transition hover:text-emerald-700">بحث</Link></li>
