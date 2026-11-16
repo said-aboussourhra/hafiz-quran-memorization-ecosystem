@@ -15,14 +15,14 @@ export type TimingSource =
   | { kind: "bundled"; slug: "islam-sobhi" | "maher-muaiqly"; label: string };
 
 const TIMING_SOURCE_MAP: Record<string, TimingSource> = {
-  dosari: { kind: "qdc", chapterReciterId: 97, label: "ياسر الدوسري · Quran.com" },
-  abdulbasit: { kind: "qdc", chapterReciterId: 2, label: "عبد الباسط · Quran.com" },
+  // Quran.com recording IDs (not the separate EveryAyah IDs).
+  abdulbasit: { kind: "qdc", chapterReciterId: 1, label: "عبد الباسط · Quran.com" },
   sudais: { kind: "qdc", chapterReciterId: 3, label: "السديس · Quran.com" },
   shatri: { kind: "qdc", chapterReciterId: 4, label: "الشاطري · Quran.com" },
   husary: { kind: "qdc", chapterReciterId: 6, label: "الحصري · Quran.com" },
   afasy: { kind: "qdc", chapterReciterId: 7, label: "العفاسي · Quran.com" },
-  minshawi: { kind: "qdc", chapterReciterId: 9, label: "المنشاوي · Quran.com" },
-  shuraim: { kind: "qdc", chapterReciterId: 10, label: "الشريم · Quran.com" },
+  minshawi: { kind: "qdc", chapterReciterId: 8, label: "المنشاوي · Quran.com" },
+  shuraim: { kind: "qdc", chapterReciterId: 9, label: "الشريم · Quran.com" },
   islam_sobhi: { kind: "bundled", slug: "islam-sobhi", label: "إسلام صبحي · محاذاة صوتية" },
   maher: { kind: "bundled", slug: "maher-muaiqly", label: "ماهر المعيقلي · محاذاة صوتية" },
 };

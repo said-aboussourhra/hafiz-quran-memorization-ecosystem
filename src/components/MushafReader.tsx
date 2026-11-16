@@ -495,9 +495,8 @@ export function MushafReader({
     const loadedFullSurah = timingSource
       ? await loadTimings(reciter.id, surahNum, expectedWordCounts)
       : null;
-    // If an official QDC map is incomplete but this reciter has per-ayah
-    // files, prefer complete per-ayah playback with honest duration estimates.
-    // CC BY aligned maps intentionally remain enabled on their exact source.
+    // Keep any source-matched timed words even when coverage is partial;
+    // untimed spans stay unlit instead of being guessed from a different file.
     // Use the source-matched map even when some ayahs are untimed; timed
     // words remain accurate, while gaps are left unlit rather than guessed.
     const timedFullSurah = loadedFullSurah;
