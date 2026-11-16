@@ -15,7 +15,8 @@ import {
   type TouchEvent,
 } from "react";
 
-import type { SurahContent } from "@/lib/quran";
+import type { QuranWord, SurahContent } from "@/lib/quran";
+import { getTajweedRule, TAJWEED_RULES } from "@/lib/tajweed";
 import { AyahMarker } from "@/components/AyahMarker";
 import { SurahHeader } from "@/components/SurahHeader";
 import { OrnamentStar } from "@/components/Ornament";
@@ -94,6 +95,13 @@ const PAPERS = [
   { id: "blue", label: "أزرق هادئ", preview: "#f1f8ff" },
   { id: "night", label: "ليلي", preview: "#17211f" },
 ];
+
+const MUSHAF_SHAPES = [
+  { id: "printed", label: "مصحف مطبوع", detail: "صور صفحات مصحف المدينة الأصلية" },
+  { id: "digital", label: "صفحات تفاعلية", detail: "نص عثماني قابل للتظليل والأدوات" },
+  { id: "ayah", label: "آية بآية", detail: "كل آية في بطاقة مستقلة" },
+  { id: "continuous", label: "قراءة متواصلة", detail: "نص متصل للقراءة والتمرير" },
+] as const;
 
 const HIGHLIGHT_COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#8b5cf6", "#ef4444"];
 const SLEEP_OPTIONS: (number | null)[] = [null, 10, 20, 30];
@@ -389,6 +397,7 @@ export function MushafReader({
   const [hlStyle, setHlStyle] = useState<HighlightStyle>(() => readHighlightStyle());
   const [highlight, setHighlight] = useState(() => readBool("hafiz_highlight", true));
   const [hlColor, setHlColor] = useState(() => readString("hafiz_hlcolor", "#10b981"));
+  const [tajweedEnabled, setTajweedEnabled] = useState(() => readBool("hafiz_tajweed", true));
   const [reciter, setReciter] = useState<Reciter>(
     () => RECITERS.find((r) => r.id === readString("hafiz_reciter", "")) ?? DEFAULT_RECITER,
   );
@@ -863,6 +872,25 @@ export function MushafReader({
     try { localStorage.setItem("hafiz_paper", value); } catch { /* ignore */ }
   };
 
+  const chooseMushafShape = (shape: "printed" | "digital" | "ayah" | "continuous") => {
+    if (shape === "printed" || shape === "digital") {
+      changeView("mushaf");
+      const usePrintedPages = shape === "printed";
+      setPrintMode(usePrintedPages);
+      try { localStorage.setItem("hafiz_print_mushaf", usePrintedPages ? "1" : "0"); } catch { /* ignore */ }
+    } else {
+      changeView(shape);
+    }
+  };
+
+  const toggleTajweed = () => {
+    setTajweedEnabled((current) => {
+      const next = !current;
+      try { localStorage.setItem("hafiz_tajweed", next ? "1" : "0"); } catch { /* ignore */ }
+      return next;
+    });
+  };
+
   const toggleHighlight = () => {
     setHighlight((current) => {
       const next = !current;
@@ -1056,6 +1084,26 @@ export function MushafReader({
      RENDER HELPERS
   ========================================================= */
 
+  const ruleForWord = (words: QuranWord[], index: number) =>
+    tajweedEnabled ? getTajweedRule(words.map((word) => word.t), index) : null;
+
+  const renderTajweedWords = (words: QuranWord[]) => {
+    const wordTexts = words.map((word) => word.t);
+    return words.map((word, index) => {
+      const rule = tajweedEnabled ? getTajweedRule(wordTexts, index) : null;
+      return (
+        <span
+          key={index}
+          className={rule ? `tajweed-word tajweed-${rule.id}` : undefined}
+          title={rule ? `${rule.label}: ${rule.detail}` : undefined}
+          aria-label={rule ? `${word.t}، ${rule.label}` : undefined}
+        >
+          {word.t}{" "}
+        </span>
+      );
+    });
+  };
+
   const renderBookAyah = (ayah: SurahContent["ayahs"][number]) => {
     const playing = playingAyah === ayah.numberInSurah;
     const isSajdaHere = isSajda(surah.meta.number, ayah.numberInSurah);
@@ -1076,20 +1124,24 @@ export function MushafReader({
           }`}
         >
           {highlight && playing
-            ? ayah.words.map((word, wi) => (
-                <span
-                  key={wi}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    engine.seekToWord(ayah.numberInSurah, wi + 1);
-                  }}
-                  className={`quran-word cursor-pointer ${wi === activeWord ? "quran-word-active" : ""}`}
-                  style={wi === activeWord ? ({ "--word-active": hlColor } as CSSProperties) : undefined}
-                  aria-current={wi === activeWord ? "true" : undefined}
-                >
-                  {word.t}{" "}
-                </span>
-              ))
+            ? ayah.words.map((word, wi) => {
+                const rule = ruleForWord(ayah.words, wi);
+                return (
+                  <span
+                    key={wi}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      engine.seekToWord(ayah.numberInSurah, wi + 1);
+                    }}
+                    className={`quran-word cursor-pointer ${rule ? `tajweed-word tajweed-${rule.id}` : ""} ${wi === activeWord ? "quran-word-active" : ""}`}
+                    style={wi === activeWord ? ({ "--word-active": hlColor } as CSSProperties) : undefined}
+                    title={rule ? `${rule.label}: ${rule.detail}` : undefined}
+                    aria-current={wi === activeWord ? "true" : undefined}
+                  >
+                    {word.t}{" "}
+                  </span>
+                );
+              })
             : showHifz
               ? ayah.words.map((word, wi) => {
                   const key = `${ayah.numberInSurah}:${wi}`;
@@ -1108,7 +1160,9 @@ export function MushafReader({
                     </span>
                   );
                 })
-              : ayah.text}
+              : tajweedEnabled
+                ? renderTajweedWords(ayah.words)
+                : ayah.text}
           <span
             role="button"
             tabIndex={-1}
@@ -1617,16 +1671,22 @@ export function MushafReader({
                             }}
                           >
                             {highlight && playing
-                              ? ayah.words.map((word, wi) => (
-                                  <span
-                                    key={wi}
-                                    className="cursor-pointer"
-                                    style={wi === activeWord ? { color: hlColor, background: `${hlColor}22`, borderRadius: 6, padding: "0 2px" } : undefined}
-                                  >
-                                    {word.t}{" "}
-                                  </span>
-                                ))
-                              : ayah.text}
+                              ? ayah.words.map((word, wi) => {
+                                  const rule = ruleForWord(ayah.words, wi);
+                                  return (
+                                    <span
+                                      key={wi}
+                                      className={`cursor-pointer ${rule ? `tajweed-word tajweed-${rule.id}` : ""}`}
+                                      style={wi === activeWord ? { color: hlColor, background: `${hlColor}22`, borderRadius: 6, padding: "0 2px" } : undefined}
+                                      title={rule ? `${rule.label}: ${rule.detail}` : undefined}
+                                    >
+                                      {word.t}{" "}
+                                    </span>
+                                  );
+                                })
+                              : tajweedEnabled
+                                ? renderTajweedWords(ayah.words)
+                                : ayah.text}
                             <AyahMarker n={ayah.numberInSurah} active={playing} />
                           </div>
 
@@ -1700,18 +1760,24 @@ export function MushafReader({
                           onClick={hideText ? () => revealAyah(ayah.numberInSurah) : undefined}
                         >
                           {highlight && playing
-                            ? ayah.words.map((word, wordIndex) => (
-                                <span
-                                  key={wordIndex}
-                                  onClick={() => engine.seekToWord(ayah.numberInSurah, wordIndex + 1)}
-                                  className={`quran-word cursor-pointer ${wordIndex === activeWord ? "quran-word-active" : ""}`}
-                                  style={wordIndex === activeWord ? ({ "--word-active": hlColor } as CSSProperties) : undefined}
-                                  aria-current={wordIndex === activeWord ? "true" : undefined}
-                                >
-                                  {word.t}{" "}
-                                </span>
-                              ))
-                            : ayah.text}
+                            ? ayah.words.map((word, wordIndex) => {
+                                const rule = ruleForWord(ayah.words, wordIndex);
+                                return (
+                                  <span
+                                    key={wordIndex}
+                                    onClick={() => engine.seekToWord(ayah.numberInSurah, wordIndex + 1)}
+                                    className={`quran-word cursor-pointer ${rule ? `tajweed-word tajweed-${rule.id}` : ""} ${wordIndex === activeWord ? "quran-word-active" : ""}`}
+                                    style={wordIndex === activeWord ? ({ "--word-active": hlColor } as CSSProperties) : undefined}
+                                    title={rule ? `${rule.label}: ${rule.detail}` : undefined}
+                                    aria-current={wordIndex === activeWord ? "true" : undefined}
+                                  >
+                                    {word.t}{" "}
+                                  </span>
+                                );
+                              })
+                            : tajweedEnabled
+                              ? renderTajweedWords(ayah.words)
+                              : ayah.text}
                         </p>
                       </div>
                     );
@@ -2025,6 +2091,31 @@ export function MushafReader({
             </button>
           </div>
 
+          <div className="mb-3 rounded-2xl bg-slate-50 p-3">
+            <div className="mb-2 text-[10px] font-bold text-slate-500">شكل المصحف والقراءة</div>
+            <div className="grid grid-cols-2 gap-2">
+              {MUSHAF_SHAPES.map((shape) => {
+                const active = shape.id === "printed"
+                  ? view === "mushaf" && printMode
+                  : shape.id === "digital"
+                    ? view === "mushaf" && !printMode
+                    : view === shape.id;
+                return (
+                  <button
+                    key={shape.id}
+                    type="button"
+                    onClick={() => chooseMushafShape(shape.id)}
+                    aria-pressed={active}
+                    className={`rounded-xl border p-2.5 text-right transition ${active ? "border-emerald-400 bg-emerald-50 text-emerald-900 ring-1 ring-emerald-200" : "border-transparent bg-white text-slate-700 hover:border-emerald-200"}`}
+                  >
+                    <span className="block text-[11px] font-black">{shape.label}</span>
+                    <span className="mt-0.5 block text-[9px] leading-relaxed text-slate-500">{shape.detail}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="rounded-2xl bg-slate-50 p-3">
             <div className="mb-2 text-[10px] font-bold text-slate-500">لون الورق</div>
             <div className="flex flex-wrap gap-2">
@@ -2041,6 +2132,44 @@ export function MushafReader({
               ))}
             </div>
           </div>
+
+          <section className="mt-3 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-3" aria-label="أحكام التجويد">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="text-[11px] font-black text-emerald-950">قواعد التجويد</div>
+                <div className="mt-0.5 text-[9px] text-slate-500">تلوين استرشادي لأحكام ظاهرة في النص العثماني</div>
+              </div>
+              <button
+                type="button"
+                onClick={toggleTajweed}
+                className={`relative h-6 w-11 shrink-0 rounded-full transition ${tajweedEnabled ? "bg-emerald-600" : "bg-slate-300"}`}
+                aria-label="تفعيل ألوان التجويد"
+                aria-pressed={tajweedEnabled}
+              >
+                <span className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow transition-all ${tajweedEnabled ? "right-1" : "right-6"}`} />
+              </button>
+            </div>
+            {tajweedEnabled && (
+              <>
+                <div className="mt-3 grid grid-cols-2 gap-x-2 gap-y-2">
+                  {TAJWEED_RULES.map((rule) => (
+                    <div key={rule.id} className="flex min-w-0 items-center gap-1.5" title={rule.detail}>
+                      <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: rule.color }} aria-hidden />
+                      <span className="truncate text-[10px] font-bold text-slate-700">{rule.label}</span>
+                    </div>
+                  ))}
+                </div>
+                {view === "mushaf" && printMode && (
+                  <p className="mt-2 rounded-lg bg-white/80 px-2 py-1.5 text-[9px] leading-relaxed text-slate-600">
+                    التلوين يظهر عند اختيار «صفحات تفاعلية» أو أحد أشكال النص؛ صورة المصحف المطبوع تبقى كما هي.
+                  </p>
+                )}
+                <p className="mt-2 text-[9px] leading-relaxed text-slate-500">
+                  ألوان تعليمية أولية لبعض العلامات القابلة للتعرّف آلياً؛ قد لا تشمل جميع المواضع أو أوجه الأداء، ولا تغني عن التلقي والمشافهة.
+                </p>
+              </>
+            )}
+          </section>
 
           <div className="mt-3 rounded-2xl bg-slate-50 p-3">
             <div className="mb-2 flex items-center justify-between">
