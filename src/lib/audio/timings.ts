@@ -1,47 +1,50 @@
 /**
- * Timing provider for the Audio Engine.
+ * Exact word-timing providers for one specific reciter × surah recording.
  *
- * HARD RULE (Phase 4): word timings belong to ONE specific recording and are
- * NEVER shared between reciters or guessed. A recording only reaches
- * WORD_VERIFIED / WORD_AUTO status when a real timing map is loaded for it.
- *
- * The provider below can load word timings from a verified API, but it is
- * explicitly gated behind `VERIFIED_RECITATION_MAP` so we never claim word
- * sync for a reciter whose timings we have not actually confirmed.
+ * Quran.com chapter-recitation timestamps are paired with the exact audio URL
+ * returned by the same endpoint. Two additional full-surah recordings use the
+ * CC BY 4.0 forced-alignment corpus documented in public/audio-timings.
+ * Everything else falls back to per-ayah recordings with clearly-labelled
+ * duration-based word estimates; timing maps are never shared between voices.
  */
 import type { AyahTimings, RecordingTimings, SyncStatus, WordTiming } from "./types";
 import { getRecordings } from "../reciterRegistry";
 
-/**
- * Map of our reciter IDs → verified timing-source keys.
- *
- * To add a reciter's word timings, verify (1) the exact timing dataset and
- * (2) that it corresponds to the same audio files used in `reciterRegistry`,
- * then add an entry here. Until then the reciter stays at VERSE_ONLY/AUDIO_ONLY.
- */
-const VERIFIED_RECITATION_MAP: Record<string, TimingSource> = {
-  // Example (uncomment ONLY after verifying the dataset matches the audio):
-  // afasy: { kind: "qurancom", recitationId: 7, label: "Mishary Alafasy · quran.com" },
+export type TimingSource =
+  | { kind: "qdc"; chapterReciterId: number; label: string }
+  | { kind: "bundled"; slug: "islam-sobhi" | "maher-muaiqly"; label: string };
+
+const TIMING_SOURCE_MAP: Record<string, TimingSource> = {
+  dosari: { kind: "qdc", chapterReciterId: 97, label: "ياسر الدوسري · Quran.com" },
+  abdulbasit: { kind: "qdc", chapterReciterId: 2, label: "عبد الباسط · Quran.com" },
+  sudais: { kind: "qdc", chapterReciterId: 3, label: "السديس · Quran.com" },
+  shatri: { kind: "qdc", chapterReciterId: 4, label: "الشاطري · Quran.com" },
+  husary: { kind: "qdc", chapterReciterId: 6, label: "الحصري · Quran.com" },
+  afasy: { kind: "qdc", chapterReciterId: 7, label: "العفاسي · Quran.com" },
+  minshawi: { kind: "qdc", chapterReciterId: 9, label: "المنشاوي · Quran.com" },
+  shuraim: { kind: "qdc", chapterReciterId: 10, label: "الشريم · Quran.com" },
+  islam_sobhi: { kind: "bundled", slug: "islam-sobhi", label: "إسلام صبحي · محاذاة صوتية" },
+  maher: { kind: "bundled", slug: "maher-muaiqly", label: "ماهر المعيقلي · محاذاة صوتية" },
 };
 
-type TimingSource = {
-  kind: "qurancom";
-  recitationId: number;
-  label: string;
+type QdcSegment = number[];
+type QdcTimestamp = {
+  verse_key?: string;
+  timestamp_from?: number;
+  timestamp_to?: number;
+  segments?: QdcSegment[];
+  left_out?: boolean;
+};
+type TimingPayload = {
+  reciter?: string;
+  chapter?: number;
+  audio_file?: { audio_url?: string; timestamps?: QdcTimestamp[] };
 };
 
-export function getVerifiedTimingSource(reciterId: string): TimingSource | null {
-  return VERIFIED_RECITATION_MAP[reciterId] ?? null;
+export function getTimingSource(reciterId: string): TimingSource | null {
+  return TIMING_SOURCE_MAP[reciterId] ?? null;
 }
 
-/**
- * Determine the honest sync status for a recording before any timings load.
- * - per-ayah files  → VERSE_ONLY (ayah-level highlight via file boundaries)
- * - full-surah file → AUDIO_ONLY (no position data without a timing map)
- * - no recording    → NOT_AVAILABLE
- * If a verified timing source exists, it may upgrade to WORD_VERIFIED after
- * `loadTimings` succeeds.
- */
 export function baseSyncStatus(
   reciterId: string,
   surahId: number,
@@ -49,97 +52,86 @@ export function baseSyncStatus(
 ): SyncStatus {
   const recordings = getRecordings(reciterId).filter((r) => r.surahId === surahId);
   if (recordings.length === 0) return "NOT_AVAILABLE";
-  if (getVerifiedTimingSource(reciterId)) {
-    // We have a verified source; timings still must load to be used, but the
-    // *capability* exists. Until loaded we report the underlying granularity.
-    return granularity === "ayah" ? "VERSE_ONLY" : "AUDIO_ONLY";
-  }
   return granularity === "ayah" ? "VERSE_ONLY" : "AUDIO_ONLY";
 }
 
-type QuranComWord = {
-  position?: number;
-  timestamp?: number;
-  audio_url?: string | null;
-  verse_key?: string;
-  code?: string;
-};
+function parsePayload(
+  payload: TimingPayload,
+  expectedWordCounts?: ReadonlyMap<number, number>,
+): { timings: RecordingTimings; complete: boolean; audioUrl: string } | null {
+  const rows = payload.audio_file?.timestamps ?? [];
+  const audioUrl = payload.audio_file?.audio_url ?? null;
+  if (!audioUrl || !audioUrl.startsWith("https://") || rows.length === 0) return null;
 
-type QuranComVerse = {
-  id?: number;
-  verse_number?: number;
-  verse_key?: string;
-  words?: QuranComWord[];
-  timestamps?: number[];
-};
+  const map: RecordingTimings = new Map();
+  for (const row of rows) {
+    const match = row.verse_key?.match(/^(\d+):(\d+)$/);
+    if (!match || row.left_out) continue;
+    const ayah = Number(match[2]);
+    const segments: WordTiming[] = (row.segments ?? [])
+      .filter((segment) => segment.length >= 3 && segment.slice(0, 3).every(Number.isFinite))
+      .map(([wordNumber, startMs, endMs]) => ({
+        wordNumber,
+        start: Math.max(0, startMs / 1000),
+        end: Math.max(0, endMs / 1000),
+      }))
+      .filter((word) => Number.isInteger(word.wordNumber) && word.wordNumber > 0 && word.end > word.start)
+      .sort((a, b) => a.start - b.start);
+    if (!segments.length) continue;
+    const start = typeof row.timestamp_from === "number" ? row.timestamp_from / 1000 : segments[0].start;
+    const end = typeof row.timestamp_to === "number" ? row.timestamp_to / 1000 : segments[segments.length - 1].end;
+    map.set(ayah, { ayah, start, end, words: segments });
+  }
+  if (!map.size) return null;
 
-/**
- * Fetch the exact word timings for a reciter × surah. Returns null when:
- *  - no verified source is configured, or
- *  - the network/API fails, or
- *  - the payload contains no usable timestamps.
- *
- * On success the returned map is keyed by numberInSurah.
- */
+  let complete = true;
+  if (expectedWordCounts) {
+    for (const [ayah, count] of expectedWordCounts) {
+      const timing = map.get(ayah);
+      if (!timing) { complete = false; break; }
+      const covered = new Set(timing.words.map((word) => word.wordNumber));
+      for (let word = 1; word <= count; word++) {
+        if (!covered.has(word)) { complete = false; break; }
+      }
+      if (!complete) break;
+    }
+  }
+  return { timings: map, complete, audioUrl };
+}
+
+/** Load timings and the matching full-surah URL for a supported recording. */
 export async function loadTimings(
   reciterId: string,
   surahId: number,
-): Promise<{ timings: RecordingTimings; status: SyncStatus } | null> {
-  const source = getVerifiedTimingSource(reciterId);
+  expectedWordCounts?: ReadonlyMap<number, number>,
+ ): Promise<{ timings: RecordingTimings; status: SyncStatus; audioUrl: string; complete: boolean } | null> {
+  const source = getTimingSource(reciterId);
   if (!source) return null;
 
-  if (source.kind === "qurancom") {
-    const url =
-      `https://api.quran.com/api/v4/verses/by_chapter/${surahId}` +
-      `?words=true&word_fields=text_uthmani,location,timestamp&per_page=300&recitation=${source.recitationId}`;
-    try {
-      const res = await fetch(url, { next: { revalidate: 60 * 60 * 24 * 30 } });
-      if (!res.ok) return null;
-      const json = (await res.json()) as { verses?: QuranComVerse[] };
-      const verses = json.verses ?? [];
-      if (verses.length === 0) return null;
-
-      const map: RecordingTimings = new Map();
-      let sawWordTiming = false;
-
-      for (const v of verses) {
-        const ayahNum = v.verse_number;
-        if (!ayahNum) continue;
-        const words: WordTiming[] = [];
-        const wordList = v.words ?? [];
-
-        for (let i = 0; i < wordList.length; i++) {
-          const w = wordList[i];
-          // quran.com timestamps are in milliseconds.
-          const ts = typeof w.timestamp === "number" ? w.timestamp / 1000 : null;
-          if (ts == null) continue;
-          const next = wordList[i + 1];
-          const nextTs =
-            next && typeof next.timestamp === "number" ? next.timestamp / 1000 : null;
-          words.push({
-            wordNumber: w.position ?? i + 1,
-            start: ts,
-            end: nextTs != null && nextTs > ts ? nextTs : ts + 0.6,
-          });
-          sawWordTiming = true;
-        }
-
-        if (words.length > 0) {
-          map.set(ayahNum, {
-            ayah: ayahNum,
-            start: words[0].start,
-            end: words[words.length - 1].end,
-            words,
-          });
-        }
-      }
-
-      if (!sawWordTiming || map.size === 0) return null;
-      return { timings: map, status: "WORD_VERIFIED" };
-    } catch {
-      return null;
+  try {
+    let url: string;
+    if (source.kind === "qdc") {
+      url = `https://api.quran.com/api/v4/chapter_recitations/${source.chapterReciterId}/${surahId}?segments=true`;
+    } else {
+      url = `/audio-timings/${source.slug}/${surahId}.json`;
     }
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12_000);
+    let res: Response;
+    try {
+      res = await fetch(url, { cache: "force-cache", signal: controller.signal });
+    } finally {
+      clearTimeout(timeout);
+    }
+    if (!res.ok) return null;
+    const payload = (await res.json()) as TimingPayload;
+    const parsed = parsePayload(payload, expectedWordCounts);
+    if (!parsed) return null;
+    // Complete coverage means every expected word has a time range, not that
+    // a human audited the timestamps. Keep that distinction explicit in UI.
+    const status: SyncStatus = "WORD_AUTO";
+    return { timings: parsed.timings, status, audioUrl: parsed.audioUrl, complete: parsed.complete };
+  } catch {
+    return null;
   }
-
-  return null;
 }

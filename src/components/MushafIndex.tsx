@@ -1,9 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { SURAHS } from "@/lib/surahs";
+import { useEffect, useMemo, useState } from "react";
+import { SURAHS, TOTAL_AYAHS, getSurah } from "@/lib/surahs";
 import { JUZ_INFO } from "@/lib/plan";
+import { getPosition } from "@/lib/bookmarks";
+import { JUZ_START_PAGES } from "@/lib/mushafPages";
+import { OrnamentStar } from "@/components/Ornament";
 
 type Prog = Record<number, { status: string; pct: number }>;
 
@@ -35,10 +38,36 @@ function ProgressRing({ pct, num }: { pct: number; num: number }) {
   );
 }
 
+/** Animated count-up for hero stats. */
+function CountUp({ to, suffix = "" }: { to: number; suffix?: string }) {
+  const [v, setV] = useState(0);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const id = window.requestAnimationFrame(() => setV(to));
+      return () => window.cancelAnimationFrame(id);
+    }
+    const start = performance.now();
+    const dur = 1400;
+    let raf = 0;
+    const tick = (t: number) => {
+      const p = Math.min(1, (t - start) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setV(Math.round(to * eased));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [to]);
+  return <>{v.toLocaleString("ar-EG")}{suffix}</>;
+}
+
+type ViewMode = "surah" | "juzGroup" | "juzGrid";
+
 export function MushafIndex({ prog, loggedIn }: { prog: Prog; loggedIn: boolean }) {
   const [q, setQ] = useState("");
   const [tab, setTab] = useState<"all" | "meccan" | "medinan" | "memorized" | "inprogress" | "favorites">("all");
-  const [byJuz, setByJuz] = useState(false);
+  const [view, setView] = useState<ViewMode>("surah");
   const [favs, setFavs] = useState<Set<number>>(() => {
     if (typeof window === "undefined") return new Set();
     try {
@@ -57,6 +86,13 @@ export function MushafIndex({ prog, loggedIn }: { prog: Prog; loggedIn: boolean 
       return null;
     }
   });
+  const [position, setPosition] = useState<{ surah: number; ayah: number; page?: number } | null>(null);
+
+  useEffect(() => {
+    const pos = getPosition();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (pos) setPosition({ surah: pos.surah, ayah: pos.ayah, page: pos.page });
+  }, []);
 
   const toggleFav = (n: number, e: React.MouseEvent) => {
     e.preventDefault();
@@ -82,9 +118,7 @@ export function MushafIndex({ prog, loggedIn }: { prog: Prog; loggedIn: boolean 
     });
   }, [q, tab, prog, favs]);
 
-  // group by juz when byJuz is on
   const juzGroups = useMemo(() => {
-    if (!byJuz) return null;
     const groups = new Map<number, typeof SURAHS>();
     for (const s of filtered) {
       const arr = groups.get(s.juz) ?? [];
@@ -92,7 +126,7 @@ export function MushafIndex({ prog, loggedIn }: { prog: Prog; loggedIn: boolean 
       groups.set(s.juz, arr);
     }
     return [...groups.entries()].sort((a, b) => a[0] - b[0]);
-  }, [filtered, byJuz]);
+  }, [filtered]);
 
   const memorizedCount = Object.values(prog).filter((p) => p.status === "memorized" || p.status === "mastered").length;
 
@@ -107,7 +141,6 @@ export function MushafIndex({ prog, loggedIn }: { prog: Prog; loggedIn: boolean 
         className="lift group relative flex items-center justify-between rounded-2xl card p-4"
         style={p.status !== "not_started" ? { borderColor: `${meta.color}55` } : undefined}
       >
-        {/* status accent bar */}
         {p.status !== "not_started" && <span className="absolute inset-y-3 right-0 w-1 rounded-full" style={{ background: meta.color }} />}
         <div className="flex items-center gap-4">
           <ProgressRing pct={p.pct} num={s.number} />
@@ -127,16 +160,58 @@ export function MushafIndex({ prog, loggedIn }: { prog: Prog; loggedIn: boolean 
     );
   };
 
+  const continueSurah = position?.surah ?? lastRead?.surah ?? null;
+  const continueMeta = continueSurah ? getSurah(continueSurah) : undefined;
+
   return (
     <div>
-      {/* Continue reading */}
-      {lastRead && (
-        <Link href={`/mushaf/${lastRead.surah}`} className="lift mb-5 flex items-center justify-between rounded-2xl p-4" style={{ background: "linear-gradient(135deg,#ecfdf5,#eff6ff)", border: "1px solid rgba(16,185,129,0.35)" }}>
+      {/* ===== Hero stats ===== */}
+      <div className="card-premium relative mb-6 overflow-hidden rounded-[28px] p-5 sm:p-7" style={{ background: "linear-gradient(140deg,#0b3d33 0%,#082a22 55%,#051d17 100%)", border: "1px solid rgba(201,164,74,.4)" }}>
+        <OrnamentStar className="pointer-events-none absolute -left-8 -top-8 h-40 w-40 text-emerald-400/10" />
+        <OrnamentStar className="pointer-events-none absolute -bottom-10 -right-6 h-48 w-48 text-amber-300/10" />
+        <div className="relative grid grid-cols-2 gap-4 text-center sm:grid-cols-4">
+          {[
+            { v: 114, label: "سورة" },
+            { v: TOTAL_AYAHS, label: "آية" },
+            { v: 30, label: "جزء" },
+            { v: 604, label: "صفحة" },
+          ].map((s) => (
+            <div key={s.label}>
+              <div className="font-display text-3xl font-bold text-amber-200 sm:text-4xl"><CountUp to={s.v} /></div>
+              <div className="mt-1 text-xs font-bold tracking-wide text-emerald-200/80">{s.label}</div>
+            </div>
+          ))}
+        </div>
+        <p className="relative mt-4 text-center text-xs font-semibold text-emerald-100/70 sm:text-sm">
+          المصحف كاملاً بالرسم العثماني · كتاب مفتوح بصفحة مزدوجة · تلاوة متزامنة كلمةً بكلمة
+        </p>
+      </div>
+
+      {/* Continue reading — exact ayah position */}
+      {continueSurah && continueMeta && (
+        <Link
+          href={position && position.surah === continueSurah
+            ? position.page && position.page <= 604
+              ? `/mushaf/${continueSurah}?page=${position.page}`
+              : `/mushaf/${continueSurah}?ayah=${position.ayah}`
+            : `/mushaf/${continueSurah}`}
+          className="lift mb-5 flex items-center justify-between rounded-2xl p-4"
+          style={{ background: "linear-gradient(135deg,#ecfdf5,#eff6ff)", border: "1px solid rgba(16,185,129,0.35)" }}
+        >
           <div className="flex items-center gap-3">
             <span className="grid h-11 w-11 place-items-center rounded-xl text-white shadow-md" style={{ background: "linear-gradient(135deg,#10b981,#3b82f6)" }}>↩</span>
             <div>
               <div className="text-xs font-semibold text-emerald-700">أكمل من حيث توقفت</div>
-              <div className="text-xl text-ink-900" style={{ fontFamily: "var(--font-quran)" }}>سورة {lastRead.name}</div>
+              <div className="text-xl text-ink-900" style={{ fontFamily: "var(--font-quran)" }}>
+                سورة {continueMeta.nameAr}
+                {position && position.surah === continueSurah && (
+                  <span className="ms-2 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-800">
+                    {position.page && position.page <= 604
+                      ? `الصفحة ${position.page.toLocaleString("ar-EG")}`
+                      : `الآية ${position.ayah.toLocaleString("ar-EG")}`}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
           <span className="text-sm font-semibold text-emerald-700">افتح ←</span>
@@ -145,7 +220,7 @@ export function MushafIndex({ prog, loggedIn }: { prog: Prog; loggedIn: boolean 
 
       {/* Search + view toggle */}
       <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[220px]">
+        <div className="relative min-w-[220px] flex-1">
           <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-ink-400">🔍</span>
           <input
             value={q}
@@ -155,24 +230,27 @@ export function MushafIndex({ prog, loggedIn }: { prog: Prog; loggedIn: boolean 
           />
         </div>
         <div className="flex gap-1 rounded-2xl bg-cream-100 p-1">
-          <button onClick={() => setByJuz(false)} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${!byJuz ? "bg-white text-emerald-700 shadow" : "text-ink-500"}`}>بالسورة</button>
-          <button onClick={() => setByJuz(true)} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${byJuz ? "bg-white text-emerald-700 shadow" : "text-ink-500"}`}>بالجزء</button>
+          <button onClick={() => setView("surah")} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${view === "surah" ? "bg-white text-emerald-700 shadow" : "text-ink-500"}`}>بالسورة</button>
+          <button onClick={() => setView("juzGroup")} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${view === "juzGroup" ? "bg-white text-emerald-700 shadow" : "text-ink-500"}`}>بالجزء</button>
+          <button onClick={() => setView("juzGrid")} className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${view === "juzGrid" ? "bg-white text-emerald-700 shadow" : "text-ink-500"}`}>الأجزاء</button>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="mt-3 flex flex-wrap gap-2">
-        {([
-          ["all", "الكل"],
-          ["memorized", "المحفوظ"],
-          ["inprogress", "قيد الحفظ"],
-          ["favorites", `المفضّلة${favs.size ? ` (${favs.size.toLocaleString("ar-EG")})` : ""}`],
-          ["meccan", "مكية"],
-          ["medinan", "مدنية"],
-        ] as const).map(([k, l]) => (
-          <button key={k} onClick={() => setTab(k)} className={`rounded-full px-4 py-1.5 text-sm font-semibold transition ${tab === k ? "btn-primary" : "btn-ghost"}`}>{l}</button>
-        ))}
-      </div>
+      {view !== "juzGrid" && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {([
+            ["all", "الكل"],
+            ["memorized", "المحفوظ"],
+            ["inprogress", "قيد الحفظ"],
+            ["favorites", `المفضّلة${favs.size ? ` (${favs.size.toLocaleString("ar-EG")})` : ""}`],
+            ["meccan", "مكية"],
+            ["medinan", "مدنية"],
+          ] as const).map(([k, l]) => (
+            <button key={k} onClick={() => setTab(k)} className={`rounded-full px-4 py-1.5 text-sm font-semibold transition ${tab === k ? "btn-primary" : "btn-ghost"}`}>{l}</button>
+          ))}
+        </div>
+      )}
 
       {/* Legend */}
       <div className="mt-3 flex flex-wrap items-center gap-4 text-[11px] text-ink-500">
@@ -182,8 +260,35 @@ export function MushafIndex({ prog, loggedIn }: { prog: Prog; loggedIn: boolean 
         ))}
       </div>
 
-      {/* Grid */}
-      {byJuz && juzGroups ? (
+      {/* ===== Juz grid (30 juz) ===== */}
+      {view === "juzGrid" ? (
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {JUZ_INFO.map((j) => {
+            const start = getSurah(j.startSurah);
+            const startPage = JUZ_START_PAGES[j.juz - 1];
+            const inJuz = SURAHS.filter((s) => s.juz === j.juz);
+            return (
+              <Link
+                key={j.juz}
+                href={`/mushaf/${j.startSurah}?page=${startPage}`}
+                className="lift group relative overflow-hidden rounded-2xl card p-4 text-center"
+              >
+                <OrnamentStar className="pointer-events-none absolute -left-4 -top-4 h-16 w-16 text-emerald-500/10 transition group-hover:rotate-12" />
+                <span className="relative mx-auto grid h-12 w-12 place-items-center rounded-full text-base font-black text-white shadow-md" style={{ background: "linear-gradient(135deg,#10b981,#2563eb)" }}>
+                  {j.juz.toLocaleString("ar-EG")}
+                </span>
+                <div className="relative mt-2 font-display text-base font-bold text-ink-900">{j.name}</div>
+                <div className="relative mt-0.5 text-[11px] font-semibold text-ink-500">
+                  صفحة {startPage?.toLocaleString("ar-EG")} · سورة {start?.nameAr ?? j.startSurah}
+                </div>
+                <div className="relative mt-1 text-[10px] font-bold text-emerald-700">
+                  {inJuz.length.toLocaleString("ar-EG")} {inJuz.length === 1 ? "سورة" : "سور"}
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      ) : view === "juzGroup" ? (
         <div className="mt-6 space-y-8">
           {juzGroups.map(([juz, surahs]) => (
             <div key={juz}>
@@ -198,7 +303,7 @@ export function MushafIndex({ prog, loggedIn }: { prog: Prog; loggedIn: boolean 
       ) : (
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{filtered.map(renderCard)}</div>
       )}
-      {filtered.length === 0 && <p className="mt-10 text-center text-ink-500">لا توجد نتائج مطابقة.</p>}
+      {view !== "juzGrid" && filtered.length === 0 && <p className="mt-10 text-center text-ink-500">لا توجد نتائج مطابقة.</p>}
     </div>
   );
 }

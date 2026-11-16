@@ -1,10 +1,8 @@
 function toArabicDigits(n: number): string {
-  // Clear Western numerals (e.g. 123) for maximum readability.
-  return String(n);
+  return n.toLocaleString("ar-EG");
 }
 
-// A gold ornamental rosette used as the end-of-ayah marker, with the
-// ayah number rendered in Eastern Arabic numerals at its center.
+/** Ornamental rosette ayah marker in the emerald-and-gold Mushaf palette. */
 export function AyahMarker({ n, active = false }: { n: number; active?: boolean }) {
   const gold = active ? "#2563eb" : "#0a7468";
   const goldLight = active ? "#54bbe8" : "#3fd0b6";
@@ -24,10 +22,11 @@ export function AyahMarker({ n, active = false }: { n: number; active?: boolean 
     petals += `${i === 0 ? "M" : "L"}${x1.toFixed(1)},${y1.toFixed(1)} L${x2.toFixed(1)},${y2.toFixed(1)} `;
   }
   petals += "Z";
+  const label = `الآية ${toArabicDigits(n)}`;
 
   return (
-    <span className="ayah-rosette" style={{ color: gold }}>
-      <svg viewBox="0 0 100 100" aria-hidden>
+    <span className="ayah-rosette" style={{ color: gold }} role="img" aria-label={label}>
+      <svg viewBox="0 0 100 100" aria-hidden="true">
         <path d={petals} fill={goldLight} fillOpacity="0.28" stroke={gold} strokeWidth="2" strokeLinejoin="round" />
         <circle cx={cx} cy={cy} r="30" fill="#fffdf6" stroke={gold} strokeWidth="2" />
         <circle cx={cx} cy={cy} r="34" fill="none" stroke={gold} strokeWidth="1" strokeOpacity="0.5" />

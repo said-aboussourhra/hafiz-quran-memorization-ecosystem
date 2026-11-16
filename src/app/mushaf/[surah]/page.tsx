@@ -20,11 +20,23 @@ export function generateMetadata({ params }: { params: Promise<{ surah: string }
   });
 }
 
-export default async function SurahPage({ params }: { params: Promise<{ surah: string }> }) {
+export default async function SurahPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ surah: string }>;
+  searchParams?: Promise<{ ayah?: string; page?: string }>;
+}) {
   const { surah } = await params;
   const n = Number(surah);
   const meta = getSurah(n);
   if (!meta) notFound();
+
+  const sp = searchParams ? await searchParams : {};
+  const ayahParam = sp.ayah ? Number(sp.ayah) : NaN;
+  const initialAyah = Number.isInteger(ayahParam) && ayahParam >= 1 && ayahParam <= meta.ayahCount ? ayahParam : undefined;
+  const pageParam = sp.page ? Number(sp.page) : NaN;
+  const initialPage = Number.isInteger(pageParam) && pageParam >= 1 && pageParam <= 604 ? pageParam : undefined;
 
   const content = await fetchSurah(n);
 
@@ -32,30 +44,31 @@ export default async function SurahPage({ params }: { params: Promise<{ surah: s
   const next = n < 114 ? n + 1 : null;
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between gap-3 rounded-2xl card px-4 py-3">
-        <Link href="/mushaf" className="flex items-center gap-1.5 text-sm text-ink-500 hover:text-ink-900">
-          <span>الفهرس</span>
+    <div className="space-y-4">
+      {/* Slim breadcrumb — the reader itself carries the full toolbar */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Link href="/mushaf" className="flex items-center gap-1.5 rounded-xl px-2 py-1.5 text-sm font-bold text-ink-500 transition hover:bg-emerald-50 hover:text-emerald-800">
+          <span>›</span> فهرس السور
         </Link>
-        <div className="text-center">
-          <div className="font-arabic text-xl text-ink-900">{meta.nameAr}</div>
-          <div className="text-[10px] text-ink-500">{meta.ayahCount.toLocaleString("ar-EG")} آية · {meta.revelation === "meccan" ? "مكية" : "مدنية"} · جزء {meta.juz}</div>
+        <div className="flex items-center gap-2">
+          {prev && (
+            <Link href={`/mushaf/${prev}`} className="rounded-xl btn-ghost px-3 py-1.5 text-xs font-bold" title="السورة السابقة">
+              السابقة
+            </Link>
+          )}
+          <Link href={`/memorize?surah=${meta.number}`} className="rounded-xl btn-primary px-4 py-1.5 text-xs font-bold">
+            ابدأ حفظ هذه السورة
+          </Link>
+          {next && (
+            <Link href={`/mushaf/${next}`} className="rounded-xl btn-ghost px-3 py-1.5 text-xs font-bold" title="السورة التالية">
+              التالية
+            </Link>
+          )}
         </div>
-        <div className="flex gap-1.5">
-          {next && <Link href={`/mushaf/${next}`} className="grid h-9 w-9 place-items-center rounded-lg btn-ghost text-sm" title="التالية">›</Link>}
-          {prev && <Link href={`/mushaf/${prev}`} className="grid h-9 w-9 place-items-center rounded-lg btn-ghost text-sm" title="السابقة">‹</Link>}
-        </div>
-      </div>
-
-      <div className="flex flex-wrap items-center justify-center gap-3">
-        <Link href={`/memorize?surah=${meta.number}`} className="rounded-xl btn-primary px-6 py-2.5 text-sm font-semibold">
-          ابدأ حفظ هذه السورة
-        </Link>
-        <span className="text-sm text-ink-500">{meta.meaning}</span>
       </div>
 
       {content ? (
-        <MushafReader surah={content} />
+        <MushafReader key={meta.number} surah={content} initialAyah={initialAyah} initialPage={initialPage} />
       ) : (
         <div className="rounded-3xl card p-10 text-center">
           <p className="font-arabic text-4xl text-ink-900">{meta.nameAr}</p>

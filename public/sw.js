@@ -1,7 +1,9 @@
 // HAFIZ service worker — offline-first for the Mushaf, tafsir & recitations.
-const APP = "hafiz-app-v3";      // app shell & static assets
-const QURAN = "hafiz-quran-v2";  // Quran text + tafsir (JSON)
-const AUDIO = "hafiz-audio-v2";  // recitation mp3s
+const APP = "hafiz-app-v6";      // app shell & static assets
+const QURAN = "hafiz-quran-v3";  // Quran text + tafsir (JSON)
+const AUDIO = "hafiz-audio-v3";  // recitation mp3s
+const MUSHAF = "hafiz-mushaf-pages-v1"; // only pages actually read, capped below
+const TIMINGS = "hafiz-audio-timings-v1"; // cached word maps for offline follow-along
 const CORE = ["/", "/mushaf", "/memorize", "/review", "/plan", "/names", "/adhkar", "/manifest.json", "/icon-192.png", "/icon-512.png"];
 
 self.addEventListener("install", (event) => {
@@ -12,7 +14,7 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => ![APP, QURAN, AUDIO].includes(k)).map((k) => caches.delete(k)))
+      Promise.all(keys.filter((k) => ![APP, QURAN, AUDIO, MUSHAF, TIMINGS].includes(k)).map((k) => caches.delete(k)))
     )
   );
   self.clients.claim();
@@ -31,6 +33,42 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;
   const url = new URL(request.url);
+
+  // ---- Word timing maps: cache the maps actually requested for reading ----
+  if (url.origin === self.location.origin && url.pathname.startsWith("/audio-timings/") && url.pathname.endsWith(".json")) {
+    event.respondWith(
+      caches.open(TIMINGS).then(async (cache) => {
+        const cached = await cache.match(request);
+        if (cached) return cached;
+        try {
+          const res = await fetch(request);
+          if (res.ok) { await cache.put(request, res.clone()); await trimCache(TIMINGS, 36); }
+          return res;
+        } catch {
+          return cached || Response.error();
+        }
+      })
+    );
+    return;
+  }
+
+  // ---- Printed Mushaf pages: cache on demand, never pre-cache 604 images ----
+  if (url.origin === self.location.origin && url.pathname.startsWith("/mushaf-pages/") && url.pathname.endsWith(".png")) {
+    event.respondWith(
+      caches.open(MUSHAF).then(async (cache) => {
+        const cached = await cache.match(request);
+        if (cached) return cached;
+        try {
+          const res = await fetch(request);
+          if (res.ok) { await cache.put(request, res.clone()); await trimCache(MUSHAF, 12); }
+          return res;
+        } catch {
+          return cached || Response.error();
+        }
+      })
+    );
+    return;
+  }
 
   // ---- Quran text + tafsir: cache-first (permanent offline) ----
   if (url.hostname.includes("alquran.cloud")) {
