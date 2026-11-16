@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getTajweedRule, TAJWEED_RULES } from "@/lib/tajweed";
-import { TAJWEED_ACADEMY, type AcademyLesson } from "@/lib/tajweedAcademy";
+import { TAJWEED_ACADEMY, type AcademyExample, type AcademyLesson } from "@/lib/tajweedAcademy";
+import { ayahUrl, DEFAULT_RECITER, hasPerAyah, RECITERS, type Reciter } from "@/lib/reciters";
+import { SURAHS } from "@/lib/surahs";
 
 type LessonRecord = { bestScore: number; attempts: number; passed: boolean; lastAt: string };
 type Mode = "student" | "teacher";
@@ -19,7 +21,17 @@ function readRecords(): Record<string, LessonRecord> {
   }
 }
 
-function LessonExample({ text, note }: { text: string; note: string }) {
+const GLOBAL_AYAH_STARTS = (() => {
+  const starts = new Map<number, number>();
+  let previousAyahs = 0;
+  for (const surah of SURAHS) {
+    starts.set(surah.number, previousAyahs);
+    previousAyahs += surah.ayahCount;
+  }
+  return starts;
+})();
+
+function LessonExample({ text, note, reference, reciter }: AcademyExample & { reciter: Reciter }) {
   const words = text.split(/\s+/).filter(Boolean);
   const labels = words.map((_, index) => getTajweedRule(words, index));
   return (
@@ -39,6 +51,148 @@ function LessonExample({ text, note }: { text: string; note: string }) {
         })}
       </p>
       <p className="mt-2 text-xs leading-relaxed text-ink-500">{note}</p>
+      {reference && <RecitationModel key={`${reference.surah}:${reference.ayah}:${reciter.id}`} reference={reference} reciter={reciter} />}
+    </div>
+  );
+}
+
+function RecitationModel({ reference, reciter }: { reference: NonNullable<AcademyExample["reference"]>; reciter: Reciter }) {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const [speed, setSpeed] = useState(0.8);
+  const [error, setError] = useState("");
+  const id = `${reference.surah}:${reference.ayah}:${reciter.id}`;
+  const surah = SURAHS.find((item) => item.number === reference.surah);
+  const globalAyah = (GLOBAL_AYAH_STARTS.get(reference.surah) ?? 0) + reference.ayah;
+  const src = ayahUrl(reciter, reference.surah, reference.ayah, globalAyah);
+
+  useEffect(() => {
+    const stopOtherExamples = (event: Event) => {
+      const requestedId = (event as CustomEvent<string>).detail;
+      if (requestedId !== id && audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+    };
+    window.addEventListener("hafiz-academy-play-example", stopOtherExamples);
+    return () => {
+      window.removeEventListener("hafiz-academy-play-example", stopOtherExamples);
+      audioRef.current?.pause();
+      if (audioRef.current) audioRef.current.src = "";
+    };
+  }, [id]);
+
+  const toggle = async () => {
+    if (!src) { setError("لا يتوفر تسجيل آية بهذا القارئ."); return; }
+    setError("");
+    if (audioRef.current && playing) {
+      audioRef.current.pause();
+      return;
+    }
+    window.dispatchEvent(new CustomEvent("hafiz-academy-play-example", { detail: id }));
+    if (!audioRef.current) {
+      const createdAudio = new Audio(src);
+      createdAudio.preload = "none";
+      createdAudio.playbackRate = speed;
+      createdAudio.onended = () => setPlaying(false);
+      createdAudio.onpause = () => setPlaying(false);
+      createdAudio.onerror = () => { setPlaying(false); setError("تعذّر تحميل التلاوة؛ تحقق من الاتصال ثم أعد المحاولة."); };
+      audioRef.current = createdAudio;
+    }
+    const audio = audioRef.current;
+    if (!audio) return;
+    try {
+      await audio.play();
+      setPlaying(true);
+    } catch {
+      setPlaying(false);
+      setError("تعذّر تشغيل التلاوة من هذا المتصفح.");
+    }
+  };
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-emerald-50 pt-3">
+      <button type="button" onClick={() => void toggle()} className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-3 py-2 text-[11px] font-black text-white transition hover:bg-emerald-800" aria-label={playing ? "إيقاف نموذج التلاوة" : "استماع إلى نموذج التلاوة"}>
+        <span aria-hidden>{playing ? "Ⅱ" : "▶"}</span>{playing ? "أوقف النموذج" : "اسمع الآية نموذجاً"}
+      </button>
+      <button type="button" onClick={() => { const next = speed === 0.8 ? 1 : 0.8; setSpeed(next); audioRef.current?.pause(); audioRef.current = null; setPlaying(false); }} className="rounded-xl border border-slate-200 px-2.5 py-2 text-[10px] font-bold text-slate-600" title="تبديل سرعة النموذج">{speed === 0.8 ? "بطيء ٠٫٨×" : "عادي ١×"}</button>
+      <span className="text-[10px] text-slate-500">{surah?.nameAr} · آية {reference.ayah.toLocaleString("ar-EG")} · {reciter.name}</span>
+      <Link href={`/mushaf/${reference.surah}?ayah=${reference.ayah}`} className="rounded-lg border border-slate-200 px-2 py-1.5 text-[9px] font-bold text-slate-600 hover:bg-slate-50">افتحها في المصحف</Link>
+      {error && <span role="status" className="w-full text-[10px] text-rose-700">{error}</span>}
+      <span className="w-full text-[9px] leading-relaxed text-slate-400">هذا تسجيل للآية كاملة، وليس مقطعاً معزولاً للحكم؛ ركّز على المثال الملون واسمعه في سياقه.</span>
+    </div>
+  );
+}
+
+function VoiceRecorder() {
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const objectUrlRef = useRef<string | null>(null);
+  const maxDurationRef = useRef<number | null>(null);
+  const [recording, setRecording] = useState(false);
+  const [recordedUrl, setRecordedUrl] = useState<string | null>(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => () => {
+    if (maxDurationRef.current != null) window.clearTimeout(maxDurationRef.current);
+    recorderRef.current?.stop();
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
+  }, []);
+
+  const stopRecording = () => {
+    if (maxDurationRef.current != null) window.clearTimeout(maxDurationRef.current);
+    maxDurationRef.current = null;
+    if (recorderRef.current?.state === "recording") recorderRef.current.stop();
+  };
+
+  const startRecording = async () => {
+    setError("");
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+      setError("التسجيل الصوتي غير مدعوم هنا. جرّب متصفحاً حديثاً مع إذن الميكروفون.");
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      const recorder = new MediaRecorder(stream);
+      const parts: Blob[] = [];
+      recorder.ondataavailable = (event) => { if (event.data.size > 0) parts.push(event.data); };
+      recorder.onstop = () => {
+        stream.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+        setRecording(false);
+        if (!parts.length) return;
+        const blob = new Blob(parts, { type: recorder.mimeType || "audio/webm" });
+        if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = URL.createObjectURL(blob);
+        setRecordedUrl(objectUrlRef.current);
+      };
+      recorder.onerror = () => setError("حدث خطأ في التسجيل. تحقق من إذن الميكروفون.");
+      recorderRef.current = recorder;
+      recorder.start();
+      setRecording(true);
+      maxDurationRef.current = window.setTimeout(stopRecording, 30_000);
+    } catch {
+      setError("لم يُسمح بالميكروفون. يمكنك متابعة الاستماع من غير تسجيل.");
+    }
+  };
+
+  const removeRecording = () => {
+    if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
+    objectUrlRef.current = null;
+    setRecordedUrl(null);
+  };
+
+  return (
+    <div className="rounded-2xl border border-blue-100 bg-blue-50/70 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div><div className="text-xs font-black text-blue-950">الآن: سجّل تلاوتك وقارنها</div><div className="mt-1 text-[10px] leading-5 text-slate-600">استمع للنموذج، سجّل حتى ٣٠ ثانية، ثم أعد الاستماع لنفسك.</div></div>
+        {!recording ? <button type="button" onClick={() => void startRecording()} className="rounded-xl bg-blue-700 px-3 py-2 text-[11px] font-black text-white">🎙 ابدأ التسجيل</button> : <button type="button" onClick={stopRecording} className="animate-pulse rounded-xl bg-rose-600 px-3 py-2 text-[11px] font-black text-white">■ أوقف التسجيل</button>}
+      </div>
+      {recordedUrl && <div className="mt-3 rounded-xl bg-white p-3"><audio controls src={recordedUrl} className="h-9 w-full" aria-label="استمع إلى تسجيل التمرين" /><button type="button" onClick={removeRecording} className="mt-2 text-[10px] font-bold text-rose-700">احذف التسجيل من الذاكرة المؤقتة</button></div>}
+      {error && <p role="status" className="mt-2 text-[10px] leading-5 text-rose-700">{error}</p>}
+      <p className="mt-2 text-[9px] leading-5 text-slate-500">لا يُرسل الصوت إلى الخادم ولا يُقيّم آلياً؛ يبقى مؤقتاً في الصفحة. اعرض التلاوة على معلمك لتصحيح المخرج والصفة.</p>
     </div>
   );
 }
@@ -67,10 +221,13 @@ export function AcademyClient({ initialLessonId }: { initialLessonId?: string })
   const [timerSeconds, setTimerSeconds] = useState(5 * 60);
   const [timerRunning, setTimerRunning] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [reciterId, setReciterId] = useState(DEFAULT_RECITER.id);
 
   useEffect(() => {
     const loadSavedProgress = window.setTimeout(() => {
       setRecords(readRecords());
+      const savedReciterId = localStorage.getItem("hafiz-academy-reciter-v1");
+      if (savedReciterId && RECITERS.some((item) => item.id === savedReciterId && hasPerAyah(item))) setReciterId(savedReciterId);
       setReady(true);
     }, 0);
     return () => window.clearTimeout(loadSavedProgress);
@@ -98,6 +255,13 @@ export function AcademyClient({ initialLessonId }: { initialLessonId?: string })
   }, [timerRunning]);
 
   const activeLesson = TAJWEED_ACADEMY.find((lesson) => lesson.id === activeLessonId) ?? null;
+  const reciter = RECITERS.find((item) => item.id === reciterId && hasPerAyah(item)) ?? DEFAULT_RECITER;
+  const chooseReciter = (nextId: string) => {
+    const next = RECITERS.find((item) => item.id === nextId && hasPerAyah(item));
+    if (!next) return;
+    setReciterId(next.id);
+    try { localStorage.setItem("hafiz-academy-reciter-v1", next.id); } catch { /* ignore */ }
+  };
   const passedCount = Object.values(records).filter((record) => record.passed).length;
   const averageScore = useMemo(() => {
     const scores = Object.values(records).filter((record) => record.attempts > 0).map((record) => record.bestScore);
@@ -196,7 +360,7 @@ export function AcademyClient({ initialLessonId }: { initialLessonId?: string })
               مسار دراسي قصير، تدريب تفاعلي، وتقويم بنّاء للطالب؛ مع خطة حصة وأدوات عرض جاهزة للمعلم.
             </p>
             <div className="mt-5 flex flex-wrap gap-2 text-[10px] font-bold text-emerald-50/90">
-              {["١٢ درساً متدرجاً", "اختبار بعد كل درس", "خطة صفية للطباعة", "يعمل على الهاتف واللوح"].map((label) => (
+              {["١٢ درساً متدرجاً", "اسمع وكرّر مع قارئ", "سجّل تلاوتك محلياً", "خطة صفية للمعلم"].map((label) => (
                 <span key={label} className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5">{label}</span>
               ))}
             </div>
@@ -270,7 +434,7 @@ export function AcademyClient({ initialLessonId }: { initialLessonId?: string })
             </aside>
           </section>
 
-          {activeLesson && <LessonWorkspace lesson={activeLesson} questionIndex={questionIndex} answers={answers} selectedAnswer={selectedAnswer} result={result} onAnswer={answerQuestion} onAdvance={advanceQuestion} onRetry={retryLesson} onShare={() => void shareLesson(activeLesson)} copied={copied} />}
+          {activeLesson && <LessonWorkspace lesson={activeLesson} reciter={reciter} onReciterChange={chooseReciter} questionIndex={questionIndex} answers={answers} selectedAnswer={selectedAnswer} result={result} onAnswer={answerQuestion} onAdvance={advanceQuestion} onRetry={retryLesson} onShare={() => void shareLesson(activeLesson)} copied={copied} />}
         </>
       ) : (
         <TeacherToolkit
@@ -278,6 +442,8 @@ export function AcademyClient({ initialLessonId }: { initialLessonId?: string })
           onShare={shareLesson}
           copied={copied}
           onPrint={() => window.print()}
+          reciter={reciter}
+          onReciterChange={chooseReciter}
         />
       )}
 
@@ -303,6 +469,7 @@ export function AcademyClient({ initialLessonId }: { initialLessonId?: string })
                   })}
                 </div>
                 <p className="mt-4 text-sm leading-7 text-white/70">{activeLesson.examples[0]?.note}</p>
+                {activeLesson.examples[0]?.reference && <div className="mx-auto mt-5 max-w-xl rounded-2xl bg-white p-3 text-right"><RecitationModel key={`${activeLesson.id}:${reciter.id}`} reference={activeLesson.examples[0].reference!} reciter={reciter} /></div>}
               </div>
             </div>
             <div className="mx-auto mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -324,10 +491,31 @@ export function AcademyClient({ initialLessonId }: { initialLessonId?: string })
   );
 }
 
+function PronunciationPractice({ lesson }: { lesson: AcademyLesson }) {
+  const [checked, setChecked] = useState<Record<number, boolean>>({});
+  const steps = [
+    "استمع إلى الآية كاملة مرة بسرعة عادية، ثم مرة بطيئة.",
+    "ردّد المثال الملون مع القارئ، وانتبه للحرف المؤثر ومخرجه.",
+    "سجّل صوتك، واستمع إليه بعد النموذج، ثم أعد المحاولة.",
+  ];
+  return (
+    <section className="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-4" aria-label="تدريب النطق">
+      <div className="flex items-center gap-2"><span className="grid h-8 w-8 place-items-center rounded-xl bg-blue-700 text-white">🎧</span><div><h3 className="text-xs font-black text-blue-950">مختبر النطق · اسمع، ردد، سجّل</h3><p className="mt-0.5 text-[10px] text-slate-500">{lesson.cue}</p></div></div>
+      <div className="mt-3 space-y-2">
+        {steps.map((step, index) => <label key={step} className="flex cursor-pointer items-start gap-2 rounded-xl bg-white px-3 py-2.5 text-[10px] leading-5 text-slate-700 ring-1 ring-blue-50"><input type="checkbox" checked={Boolean(checked[index])} onChange={(event) => setChecked((current) => ({ ...current, [index]: event.target.checked }))} className="mt-1 accent-blue-700" />{step}</label>)}
+      </div>
+      <div className="mt-3"><VoiceRecorder /></div>
+      <p className="mt-2 text-[9px] leading-5 text-slate-500">معيار التعلم هنا ليس تقليد نغمة القارئ، بل صحة المخرج والصفة وتطبيق الحكم. استعن بمعلمك لتصحيحها.</p>
+    </section>
+  );
+}
+
 function LessonWorkspace({
-  lesson, questionIndex, answers, selectedAnswer, result, onAnswer, onAdvance, onRetry, onShare, copied,
+  lesson, reciter, onReciterChange, questionIndex, answers, selectedAnswer, result, onAnswer, onAdvance, onRetry, onShare, copied,
 }: {
   lesson: AcademyLesson;
+  reciter: Reciter;
+  onReciterChange: (id: string) => void;
   questionIndex: number;
   answers: Record<number, number>;
   selectedAnswer: number | undefined;
@@ -344,13 +532,20 @@ function LessonWorkspace({
     <section id="academy-lesson" className="scroll-mt-24 rounded-3xl border border-emerald-200 bg-white p-5 shadow-lg sm:p-8">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div><p className="text-xs font-black text-emerald-700">{lesson.unit} · {lesson.level} · {lesson.minutes} دقائق</p><h2 className="mt-1 font-display text-2xl font-black text-ink-900">{lesson.title}</h2></div>
-        <button type="button" onClick={onShare} className="rounded-xl border border-emerald-100 px-3 py-2 text-xs font-bold text-emerald-800 hover:bg-emerald-50">{copied ? "نُسخ رابط الدرس ✓" : "مشاركة الدرس"}</button>
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="text-[10px] font-bold text-slate-500" htmlFor="academy-reciter">القارئ النموذج</label>
+          <select id="academy-reciter" value={reciter.id} onChange={(event) => onReciterChange(event.target.value)} className="max-w-[12rem] rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-[11px] font-bold text-slate-700">
+            {RECITERS.filter(hasPerAyah).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+          </select>
+          <button type="button" onClick={onShare} className="rounded-xl border border-emerald-100 px-3 py-2 text-xs font-bold text-emerald-800 hover:bg-emerald-50">{copied ? "نُسخ رابط الدرس ✓" : "مشاركة الدرس"}</button>
+        </div>
       </div>
       <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_.9fr]">
         <div className="space-y-4">
           <div className="rounded-2xl bg-emerald-50 p-4"><div className="text-xs font-black text-emerald-900">القاعدة</div><p className="mt-2 text-sm leading-7 text-slate-700">{lesson.idea}</p></div>
           <div className="rounded-2xl border-r-4 border-amber-400 bg-amber-50 p-4"><div className="text-xs font-black text-amber-900">مفتاح التذكر</div><p className="mt-1 text-sm font-bold leading-7 text-slate-700">{lesson.cue}</p></div>
-          <div className="space-y-2"><h3 className="text-xs font-black text-slate-600">أمثلة مع تلميح لوني</h3>{lesson.examples.map((example) => <LessonExample key={example.text} {...example} />)}</div>
+          <div className="space-y-2"><h3 className="text-xs font-black text-slate-600">اسمع الأحكام داخل الآيات</h3>{lesson.examples.map((example) => <LessonExample key={example.text} {...example} reciter={reciter} />)}</div>
+          <PronunciationPractice lesson={lesson} />
         </div>
         <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-4 sm:p-5">
           <div className="flex items-center justify-between gap-3"><div><div className="text-xs font-black text-blue-900">اختبر فهمك</div><div className="mt-1 text-[10px] text-slate-500">السؤال {(questionIndex + 1).toLocaleString("ar-EG")} من {lesson.questions.length.toLocaleString("ar-EG")}</div></div><span className="rounded-full bg-white px-3 py-1 text-[10px] font-black text-blue-800">اجتياز من ٢/٣</span></div>
@@ -384,7 +579,7 @@ function LessonWorkspace({
   );
 }
 
-function TeacherToolkit({ onTeach, onShare, copied, onPrint }: { onTeach: (lesson: AcademyLesson) => void; onShare: (lesson: AcademyLesson) => void; copied: boolean; onPrint: () => void }) {
+function TeacherToolkit({ onTeach, onShare, copied, onPrint, reciter, onReciterChange }: { onTeach: (lesson: AcademyLesson) => void; onShare: (lesson: AcademyLesson) => void; copied: boolean; onPrint: () => void; reciter: Reciter; onReciterChange: (id: string) => void }) {
   const [selectedId, setSelectedId] = useState(TAJWEED_ACADEMY[0].id);
   const lesson = TAJWEED_ACADEMY.find((item) => item.id === selectedId) ?? TAJWEED_ACADEMY[0];
   const stages = [
@@ -417,7 +612,12 @@ function TeacherToolkit({ onTeach, onShare, copied, onPrint }: { onTeach: (lesso
           <select id="academy-teacher-lesson" value={selectedId} onChange={(event) => setSelectedId(event.target.value)} className="mt-1 w-full rounded-xl border-0 bg-white px-3 py-3 text-sm font-bold text-slate-900">
             {TAJWEED_ACADEMY.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
           </select>
+          <label className="mt-3 block text-[10px] font-bold text-white/70" htmlFor="academy-teacher-reciter">قارئ النموذج</label>
+          <select id="academy-teacher-reciter" value={reciter.id} onChange={(event) => onReciterChange(event.target.value)} className="mt-1 w-full rounded-xl border-0 bg-white px-3 py-2.5 text-sm font-bold text-slate-900">
+            {RECITERS.filter(hasPerAyah).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+          </select>
           <p className="mt-3 text-xs leading-6 text-white/75">{lesson.objective}</p>
+          {lesson.examples[0]?.reference && <div className="mt-3 rounded-xl bg-white p-3"><RecitationModel key={`${lesson.id}:${reciter.id}`} reference={lesson.examples[0].reference!} reciter={reciter} /></div>}
           <div className="mt-4 flex flex-wrap gap-2">
             <button type="button" onClick={() => onTeach(lesson)} className="flex-1 rounded-xl bg-emerald-300 px-3 py-3 text-xs font-black text-emerald-950">ابدأ وضع العرض ⛶</button>
             <button type="button" onClick={() => onShare(lesson)} className="rounded-xl border border-white/20 px-3 py-3 text-xs font-bold hover:bg-white/10">{copied ? "نُسخ الرابط ✓" : "نسخ رابط الدرس"}</button>
