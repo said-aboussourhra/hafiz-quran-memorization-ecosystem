@@ -4241,3 +4241,24 @@ a, button { -webkit-tap-highlight-color: transparent; }
   .quran-word-active { animation: none; }
   .quran-word { transition: none; }
 }
+
+/* Tajweed hints for interactive text; scanned printed pages remain untouched. */
+.tajweed-word {
+  color: var(--tajweed-color);
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: color-mix(in srgb, var(--tajweed-color) 62%, transparent);
+  text-decoration-thickness: 1.4px;
+  text-underline-offset: .17em;
+  border-radius: .15em;
+}
+.tajweed-ikhfa { --tajweed-color: #c2410c; }
+.tajweed-idgham { --tajweed-color: #047857; }
+.tajweed-izhar { --tajweed-color: #1d4ed8; }
+.tajweed-iqlab { --tajweed-color: #7e22ce; }
+.tajweed-ghunnah { --tajweed-color: #0891b2; }
+.tajweed-qalqalah { --tajweed-color: #be123c; }
+.tajweed-madd { --tajweed-color: #a16207; }
+@media (prefers-reduced-motion: reduce) {
+  .tajweed-word { transition: none; }
+}
