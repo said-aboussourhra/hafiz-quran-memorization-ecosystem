@@ -49,8 +49,8 @@ export function Reveal({
     const el = ref.current;
     if (!el) return;
     if (typeof IntersectionObserver === "undefined") {
-      setState("visible");
-      return;
+      const frame = window.requestAnimationFrame(() => setState("visible"));
+      return () => window.cancelAnimationFrame(frame);
     }
     const io = new IntersectionObserver(
       (entries) => {
@@ -70,7 +70,6 @@ export function Reveal({
   }, [once, threshold, rootMargin]);
 
   return (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     <Tag
       ref={ref as any}
       id={id}

@@ -30,10 +30,10 @@ export const SYNC_META: Record<
   { label: string; level: SyncLevel; color: string; canHighlightWord: boolean }
 > = {
   NOT_AVAILABLE: { label: "غير متاح", level: 0 as unknown as SyncLevel, color: "#94a3b8", canHighlightWord: false },
-  AUDIO_ONLY: { label: "صوت فقط", level: 1, color: "#94a3b8", canHighlightWord: false },
-  VERSE_ONLY: { label: "تزامن آلي", level: 2, color: "#f59e0b", canHighlightWord: false },
-  WORD_AUTO: { label: "كلمات (تلقائي)", level: 3, color: "#3b82f6", canHighlightWord: true },
-  WORD_VERIFIED: { label: "كلمات موثّقة", level: 3, color: "#10b981", canHighlightWord: true },
+  AUDIO_ONLY: { label: "صوت بلا تزامن", level: 1, color: "#94a3b8", canHighlightWord: false },
+  VERSE_ONLY: { label: "مزامنة الآية", level: 2, color: "#f59e0b", canHighlightWord: false },
+  WORD_AUTO: { label: "تظليل آلي · راجع التوقيت", level: 3, color: "#3b82f6", canHighlightWord: true },
+  WORD_VERIFIED: { label: "تظليل متزامن موثّق", level: 3, color: "#10b981", canHighlightWord: true },
 };
 
 /** One word's timing within a specific recording, in seconds. */
